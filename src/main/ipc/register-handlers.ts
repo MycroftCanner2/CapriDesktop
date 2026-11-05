@@ -1,6 +1,7 @@
 import { getStorageRoot } from '../services/storage-location'
 import { scriptPlayer } from '../services/script/script-player'
-import { getLlmSettings, listCloudModels, setLlmSettings, testCloudConnection, type LlmSettingsUpdate } from '../services/llm-gateway'
+import { getLlmSettings, listCloudModels, setLlmSettings, testCloudConnection, type LlmAuthMode, type LlmSettingsUpdate } from '../services/llm-gateway'
+import { cancelXaiLogin, getXaiAuthStatus, xaiSignIn, xaiSignOut, type XaiLoginMethod } from '../services/xai-oauth'
 import { setupService, SetupStep } from '../services/setup-service'
 import * as os from 'os'
 import { getUserName } from '../services/user-profile'
@@ -317,9 +318,19 @@ export function registerIpcHandlers(): void {
 
   ipcMain.handle(IPC_CHANNELS.LLM_GET_SETTINGS, () => getLlmSettings())
   ipcMain.handle(IPC_CHANNELS.LLM_SET_SETTINGS, (_event, update: LlmSettingsUpdate) => setLlmSettings(update))
-  ipcMain.handle(IPC_CHANNELS.LLM_LIST_MODELS, (_event, baseUrl: string, apiKey?: string) => listCloudModels(baseUrl, apiKey))
-  ipcMain.handle(IPC_CHANNELS.LLM_TEST, (_event, baseUrl: string, model: string, apiKey?: string) =>
-    testCloudConnection(baseUrl, model, apiKey)
+  ipcMain.handle(IPC_CHANNELS.LLM_LIST_MODELS, (_event, baseUrl: string, apiKey?: string, authMode?: LlmAuthMode) =>
+    listCloudModels(baseUrl, apiKey, authMode)
+  )
+  ipcMain.handle(IPC_CHANNELS.LLM_TEST, (_event, baseUrl: string, model: string, apiKey?: string, authMode?: LlmAuthMode) =>
+    testCloudConnection(baseUrl, model, apiKey, authMode)
+  )
+  ipcMain.handle(IPC_CHANNELS.XAI_STATUS, () => getXaiAuthStatus())
+  ipcMain.handle(IPC_CHANNELS.XAI_SIGN_OUT, () => xaiSignOut())
+  ipcMain.handle(IPC_CHANNELS.XAI_CANCEL_SIGN_IN, () => cancelXaiLogin())
+  ipcMain.handle(IPC_CHANNELS.XAI_SIGN_IN, (event, method?: XaiLoginMethod) =>
+    xaiSignIn(method === 'device' ? 'device' : 'browser', (prompt) => {
+      if (!event.sender.isDestroyed()) event.sender.send(IPC_CHANNELS.XAI_DEVICE_CODE, prompt)
+    })
   )
 
   ipcMain.handle(IPC_CHANNELS.AGENT_DETECT_OLLAMA, async () => {

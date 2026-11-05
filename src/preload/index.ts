@@ -1,4 +1,5 @@
-import type { LlmPublicSettings, LlmSettingsUpdate } from '../main/services/llm-gateway'
+import type { LlmAuthMode, LlmPublicSettings, LlmSettingsUpdate } from '../main/services/llm-gateway'
+import type { XaiAuthStatus, XaiDeviceCodePrompt, XaiLoginMethod } from '../main/services/xai-oauth'
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron'
 import {
   IPC_CHANNELS,
@@ -229,11 +230,26 @@ const api = {
     setLlmSettings: (update: LlmSettingsUpdate): Promise<{ success: boolean; error?: string; settings: LlmPublicSettings }> =>
       ipcRenderer.invoke(IPC_CHANNELS.LLM_SET_SETTINGS, update),
 
-    listLlmModels: (baseUrl: string, apiKey?: string): Promise<{ ok: boolean; models: string[]; error?: string }> =>
-      ipcRenderer.invoke(IPC_CHANNELS.LLM_LIST_MODELS, baseUrl, apiKey),
+    listLlmModels: (baseUrl: string, apiKey?: string, authMode?: LlmAuthMode): Promise<{ ok: boolean; models: string[]; error?: string }> =>
+      ipcRenderer.invoke(IPC_CHANNELS.LLM_LIST_MODELS, baseUrl, apiKey, authMode),
 
-    testLlm: (baseUrl: string, model: string, apiKey?: string): Promise<{ ok: boolean; error?: string }> =>
-      ipcRenderer.invoke(IPC_CHANNELS.LLM_TEST, baseUrl, model, apiKey),
+    testLlm: (baseUrl: string, model: string, apiKey?: string, authMode?: LlmAuthMode): Promise<{ ok: boolean; error?: string }> =>
+      ipcRenderer.invoke(IPC_CHANNELS.LLM_TEST, baseUrl, model, apiKey, authMode),
+
+    xaiStatus: (): Promise<XaiAuthStatus> => ipcRenderer.invoke(IPC_CHANNELS.XAI_STATUS),
+
+    xaiSignIn: (method?: XaiLoginMethod): Promise<{ ok: boolean; status: XaiAuthStatus; error?: string }> =>
+      ipcRenderer.invoke(IPC_CHANNELS.XAI_SIGN_IN, method),
+
+    xaiSignOut: (): Promise<XaiAuthStatus> => ipcRenderer.invoke(IPC_CHANNELS.XAI_SIGN_OUT),
+
+    xaiCancelSignIn: (): Promise<void> => ipcRenderer.invoke(IPC_CHANNELS.XAI_CANCEL_SIGN_IN),
+
+    onXaiDeviceCode: (callback: (prompt: XaiDeviceCodePrompt) => void): (() => void) => {
+      const listener = (_e: IpcRendererEvent, prompt: XaiDeviceCodePrompt): void => callback(prompt)
+      ipcRenderer.on(IPC_CHANNELS.XAI_DEVICE_CODE, listener)
+      return () => ipcRenderer.removeListener(IPC_CHANNELS.XAI_DEVICE_CODE, listener)
+    },
 
     clearHistory: (): Promise<boolean> =>
       ipcRenderer.invoke(IPC_CHANNELS.AGENT_CLEAR_HISTORY),

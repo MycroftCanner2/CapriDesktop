@@ -1,4 +1,5 @@
-import type { LlmPublicSettings, LlmSettingsUpdate } from '../main/services/llm-gateway'
+import type { LlmAuthMode, LlmPublicSettings, LlmSettingsUpdate } from '../main/services/llm-gateway'
+import type { XaiAuthStatus, XaiDeviceCodePrompt, XaiLoginMethod } from '../main/services/xai-oauth'
 import {
   CompanionEmotionState,
   AgentEventPayload,
@@ -103,8 +104,13 @@ export interface IElectronAPI {
     detectOllama: () => Promise<{ running: boolean; models: string[] }>
     getLlmSettings: () => Promise<LlmPublicSettings>
     setLlmSettings: (update: LlmSettingsUpdate) => Promise<{ success: boolean; error?: string; settings: LlmPublicSettings }>
-    listLlmModels: (baseUrl: string, apiKey?: string) => Promise<{ ok: boolean; models: string[]; error?: string }>
-    testLlm: (baseUrl: string, model: string, apiKey?: string) => Promise<{ ok: boolean; error?: string }>
+    listLlmModels: (baseUrl: string, apiKey?: string, authMode?: LlmAuthMode) => Promise<{ ok: boolean; models: string[]; error?: string }>
+    testLlm: (baseUrl: string, model: string, apiKey?: string, authMode?: LlmAuthMode) => Promise<{ ok: boolean; error?: string }>
+    xaiStatus: () => Promise<XaiAuthStatus>
+    xaiSignIn: (method?: XaiLoginMethod) => Promise<{ ok: boolean; status: XaiAuthStatus; error?: string }>
+    xaiSignOut: () => Promise<XaiAuthStatus>
+    xaiCancelSignIn: () => Promise<void>
+    onXaiDeviceCode: (callback: (prompt: XaiDeviceCodePrompt) => void) => () => void
     clearHistory: () => Promise<boolean>
     respondPermission: (requestId: string, approved: boolean) => Promise<boolean>
     cancel: () => Promise<boolean>
