@@ -80,6 +80,13 @@ export const IPC_CHANNELS = {
   LLM_SET_SETTINGS: 'llm:setSettings',
   LLM_LIST_MODELS: 'llm:listModels',
   LLM_TEST: 'llm:test',
+  /** Sign in with Grok (xAI subscription OAuth) */
+  XAI_SIGN_IN: 'xai:signIn',
+  XAI_SIGN_OUT: 'xai:signOut',
+  XAI_CANCEL_SIGN_IN: 'xai:cancelSignIn',
+  XAI_STATUS: 'xai:status',
+  /** Main -> renderer: device-code sign-in shows a short code to type in the browser */
+  XAI_DEVICE_CODE: 'xai:deviceCode',
 
   // Terminal & System
   TERMINAL_INPUT: 'terminal:input',

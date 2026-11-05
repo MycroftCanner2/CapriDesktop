@@ -56,6 +56,11 @@ function cloudErrorMessage(code: LlmErrorCode, es: boolean, detail: string): str
     model: ['el proveedor no aceptó ese modelo o el pedido', 'the provider did not accept that model or the request'],
     network: ['no pude conectarme con el proveedor', 'I could not reach the provider'],
     insecure: ['la dirección no es segura para mandar tu API key', 'that address is not safe for your API key'],
+    signin: ['tenés que iniciar sesión con Grok otra vez', 'you need to sign in with Grok again'],
+    entitlement: [
+      'xAI no habilita tu plan para usar Grok desde apps (HTTP 403); revisá tu suscripción SuperGrok / X Premium o usá una API key de xAI',
+      "xAI doesn't let your plan use Grok from apps (HTTP 403); check your SuperGrok / X Premium subscription or use an xAI API key"
+    ],
     other: ['algo falló al procesar la respuesta', 'something failed while handling the reply']
   }
   return es
