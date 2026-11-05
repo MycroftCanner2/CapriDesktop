@@ -22,7 +22,7 @@ import { personalize } from './user-profile'
 import { windowManager } from '../windows/window-manager'
 import { IPC_CHANNELS } from '../ipc/channels'
 
-const REPO = 'nunezValen/CapriDesktop'
+const REPO = 'MycroftCanner2/CapriDesktop'
 const SCRIPT_FILE = /^(\d+\.\d+\.\d+)(?:\.(es|en))?\.txt$/i
 
 type Lang = string
@@ -183,9 +183,22 @@ class UpdateService {
         if (release.html_url) await shell.openExternal(release.html_url)
         return
       }
+      // The portable build is a single exe the user put somewhere by hand: it can't be installed over,
+      // so she opens the release page and the new exe simply replaces the old one
+      if (isPortableBuild()) {
+        await sayAfterIntro(
+          es
+            ? `[excited] ¡Salió la versión ${latest}! [curious] Soy la versión portable: te abro la página para que bajes el nuevo .exe y reemplaces este.`
+            : `[excited] Version ${latest} is out! [curious] I'm the portable build: I'm opening the page so you can grab the new .exe and replace this one.`
+        )
+        if (release.html_url) await shell.openExternal(release.html_url)
+        return
+      }
+      // Never the portable exe: run with /S it would just start a second Capri instead of installing
+      const isInstallerExe = (name: string): boolean => /\.exe$/i.test(name) && !/portable/i.test(name)
       const asset = isLinux
         ? assets.find((a) => /\.AppImage$/i.test(a.name))
-        : assets.find((a) => /setup.*\.exe$/i.test(a.name)) || assets.find((a) => /\.exe$/i.test(a.name))
+        : assets.find((a) => /setup.*\.exe$/i.test(a.name) && isInstallerExe(a.name)) || assets.find((a) => isInstallerExe(a.name))
       if (!asset) {
         await sayAfterIntro(
           es
@@ -254,6 +267,11 @@ async function startWindowsUpdate(installer: string): Promise<void> {
   // No script running: the installer directly, which loses the retries but still updates her
   console.warn('[UpdateService] The update script did not start, running the installer directly')
   launch(`"" "${installer}" /S --updated --force-run`)
+}
+
+/** electron-builder's portable target sets this before starting the app */
+export function isPortableBuild(): boolean {
+  return process.platform === 'win32' && !!process.env.PORTABLE_EXECUTABLE_DIR
 }
 
 async function download(url: string, dest: string): Promise<void> {

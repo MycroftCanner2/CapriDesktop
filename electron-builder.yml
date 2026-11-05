@@ -1,4 +1,5 @@
-# Windows installer (NSIS): npm run dist:win. Linux .deb: npm run dist:linux
+# Windows installer (NSIS) + portable exe: npm run dist:win. Portable only: npm run dist:win:portable.
+# Linux .deb: npm run dist:linux
 # appId keeps the old name on purpose: it's what makes a new version install over an existing one
 appId: dev.cybercompanion.capri
 productName: Capri Desktop
@@ -81,8 +82,17 @@ win:
   target:
     - target: nsis
       arch: [x64]
+    # Single self-contained exe, no install: settings go to CapriDesktop-Data next to it
+    - target: portable
+      arch: [x64]
   icon: assets/icon.ico
   artifactName: CapriDesktop-Setup-${version}.${ext}
+
+portable:
+  # "portable" in the name keeps the updater from mistaking it for the installer
+  artifactName: CapriDesktop-Portable-${version}.${ext}
+  # Unpacks once per version instead of on every start
+  unpackDirName: CapriDesktop-${version}
 
 nsis:
   oneClick: false

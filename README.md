@@ -4,12 +4,14 @@
   <img src="src/renderer/src/assets/capri/walking/walking.gif" alt="Capri walking" width="260">
 </p>
 
-**Capri Desktop** is a cyberpunk desktop companion for Windows built with **Electron**, **Vite**, **React**, **TypeScript** and **TailwindCSS**. It puts **Capri**, an animated netrunner inspired by *Cyberpunk: Edgerunners*, on your desktop: she walks around your screen, talks to you with a neural voice, listens to you, controls Spotify and your apps, comments on your **League of Legends** and **Cyberpunk 2077** matches in real time, runs voice macros, builds small coding projects for you, and even draws in Paint. Everything AI-related runs **locally** (Ollama + Whisper).
+**Capri Desktop** is a cyberpunk desktop companion for Windows built with **Electron**, **Vite**, **React**, **TypeScript** and **TailwindCSS**. It puts **Capri**, an animated netrunner inspired by *Cyberpunk: Edgerunners*, on your desktop: she walks around your screen, talks to you with a neural voice, listens to you, controls Spotify and your apps, comments on your **League of Legends** and **Cyberpunk 2077** matches in real time, runs voice macros, builds small coding projects for you, and even draws in Paint. Her brain is **Grok**: sign in with your **SuperGrok / X Premium** subscription (or use an xAI API key, or switch to a fully local Ollama model). Voice and hearing (Edge-TTS + Whisper) keep running on your PC.
 
 ---
 
 ## Table of Contents
 
+- [Brain: Grok (Sign in with Grok)](#brain-grok-sign-in-with-grok)
+- [Portable Windows build](#portable-windows-build-no-install)
 1. [Who is Capri?](#1-who-is-capri)
 2. [Voice: speaking and listening](#2-voice-speaking-and-listening)
 3. [How it works](#3-how-it-works)
@@ -22,6 +24,34 @@
 10. [Permissions and system access](#10-permissions-and-system-access)
 11. [Installation and development](#11-installation-and-development)
 12. [License and credits](#12-license-and-credits)
+
+---
+
+## Brain: Grok (Sign in with Grok)
+
+Capri thinks with **Grok** by default. There are three ways to give her a brain, all in the first-run wizard or later in **model settings** (Dev Deck → model):
+
+| Option | What you need | Billing |
+| --- | --- | --- |
+| **Sign in with Grok** (default) | A **SuperGrok** or eligible **X Premium** subscription. You can log in with your X account. | Your subscription's usage pool, no API key |
+| **xAI API key** | An `xai-…` key from [console.x.ai](https://console.x.ai) with credit (or `XAI_API_KEY` in the environment / Capri's `.env`) | Per token, separate from X Premium |
+| **Local (Ollama)** | A PC that can run `qwen2.5-coder:7b` | Free, fully offline |
+
+**How to sign in**
+
+1. Cloud → provider **Grok (xAI)** → **Grok subscription** → **Sign in with Grok**.
+2. Your browser opens xAI's sign-in page (`auth.x.ai`). Log in (X account works) and approve.
+3. Back in Capri you'll see *Signed in: you@…*. The model defaults to `grok-4.7`; **List models** shows what your account can use, **Test connection** sends one tiny request.
+
+If the browser can't reach Capri (port `56121` busy, remote desktop…), use **Sign in with a code instead**: Capri shows a short code to type at `accounts.x.ai/oauth2/device`.
+
+**Good to know**
+
+- xAI has no public way to register third-party OAuth apps, so Capri uses the same shared Grok CLI sign-in client as the integrations xAI announced (Hermes Agent, OpenClaw, OpenCode, Kilo Code). It requests nothing beyond what those do and identifies itself as `capridesktop`.
+- **xAI decides which plans can use it.** If you can sign in but Capri says *HTTP 403 / your plan can't use Grok from apps*, your tier isn't enabled for this surface: check the subscription at x.ai, or switch to an xAI API key.
+- Tokens are encrypted with your OS keychain (`safeStorage`) in `capri_xai_oauth.json`, refreshed automatically, and never reach the UI. **Sign out** deletes them; you can also revoke Capri from your xAI account settings.
+- Subscription requests go to `https://api.x.ai/v1/responses` (xAI's Responses API). For testing another xAI route, set `CAPRI_XAI_OAUTH_BASE`.
+- Capri never uses x.com / grok.com cookies or scrapes the web app.
 
 ---
 
@@ -384,6 +414,17 @@ Capri polls Riot's official local API (`https://127.0.0.1:2999/liveclientdata/al
    - component setup: Python + Whisper + Edge-TTS (voice and hearing), FFmpeg, Ollama, the `qwen2.5-coder:7b` model and the `capri` personality (built with your name). Everything is downloaded with `winget` / `pip` and runs locally.
 
 Components can be installed later; features that depend on them (voice, local AI) start working once they're ready.
+
+### Portable Windows build (no install)
+
+1. Download `CapriDesktop-Portable-x.y.z.exe` from **Releases** and put it in any folder (a USB stick works).
+2. Double-click it. Nothing is installed: her settings, memories and Grok sign-in go to a `CapriDesktop-Data` folder **next to the exe** (set `CAPRI_PORTABLE_DATA=0` to use `%APPDATA%` instead).
+3. The first run still sets up voice and hearing (Python, Whisper, FFmpeg) inside that data folder; with **Sign in with Grok** she doesn't need Ollama at all.
+4. To update, download the new portable exe and replace the old one. Asked to update herself, the portable build opens the release page instead of running an installer.
+
+Sign-in and API keys are encrypted for your Windows user, so on another PC she simply asks you to sign in again.
+
+**Building it yourself:** on Windows run `npm ci` then `npm run dist:win:portable` (portable only) or `npm run dist:win` (installer + portable). The files land in `release/`. Without a Windows PC, run the **Build Windows** GitHub Actions workflow (Actions → Build Windows → Run workflow) and download the artifacts; pushing a `v*` tag also attaches them to a draft release.
 
 ### Install (Linux)
 

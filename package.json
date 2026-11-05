@@ -4,7 +4,7 @@
   "type": "module",
   "description": "Capri, a cyberpunk desktop companion that lives on your screen: voice chat with a local LLM, game commentary (League of Legends, Cyberpunk 2077), voice macros and a coding agent.",
   "main": "./out/main/index.js",
-  "homepage": "https://github.com/nunezValen/CapriDesktop",
+  "homepage": "https://github.com/MycroftCanner2/CapriDesktop",
   "author": {
     "name": "nunezValen",
     "url": "https://github.com/nunezValen"
@@ -20,6 +20,7 @@
     "dev": "electron-vite dev",
     "build": "electron-vite build",
     "dist:win": "electron-vite build && electron-builder --win",
+    "dist:win:portable": "electron-vite build && electron-builder --win portable --x64",
     "dist:linux": "electron-vite build && electron-builder --linux"
   },
   "dependencies": {
