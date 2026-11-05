@@ -36,8 +36,25 @@ process.on('unhandledRejection', (reason) => {
 // Set app name
 app.setName('Capri Desktop')
 
+// Portable build (CapriDesktop-Portable-x.y.z.exe): settings, memories and the Grok sign-in live in a
+// "CapriDesktop-Data" folder next to the exe, so the whole thing travels on a USB stick.
+// CAPRI_PORTABLE_DATA=0 keeps them in %APPDATA% instead. The sign-in and API keys are encrypted for
+// this Windows user, so on another PC Capri just asks to sign in again.
+let portableData = false
+if (!app.commandLine.hasSwitch('user-data-dir') && process.env.PORTABLE_EXECUTABLE_DIR && process.env.CAPRI_PORTABLE_DATA !== '0') {
+  const dir = path.join(process.env.PORTABLE_EXECUTABLE_DIR, 'CapriDesktop-Data')
+  try {
+    fs.mkdirSync(dir, { recursive: true })
+    fs.accessSync(dir, fs.constants.W_OK)
+    app.setPath('userData', dir)
+    portableData = true
+  } catch {
+    // Read-only folder (e.g. a protected drive): fall back to the normal location
+  }
+}
+
 // Existing data stays where it is, unless a folder was chosen by hand (--user-data-dir)
-if (!app.commandLine.hasSwitch('user-data-dir')) {
+if (!portableData && !app.commandLine.hasSwitch('user-data-dir')) {
   const legacy = legacyUserDataDir(app.getPath('appData'), app.isPackaged, fs.existsSync)
   if (legacy) app.setPath('userData', legacy)
 }

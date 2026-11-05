@@ -68,7 +68,7 @@ export const OnboardingView: React.FC = () => {
       if (p.hasName) setName((typed) => typed || p.name)
     }).catch(() => {})
   }, [])
-  const [provider, setProvider] = useState<'local' | 'cloud'>('local')
+  const [provider, setProvider] = useState<'local' | 'cloud'>('cloud')
   const [status, setStatus] = useState<SetupStatus | null>(null)
   const [running, setRunning] = useState<StepId | null>(null)
   const [failed, setFailed] = useState<Set<StepId>>(new Set())
