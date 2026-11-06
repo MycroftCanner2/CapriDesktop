@@ -1,5 +1,6 @@
 import type { LlmAuthMode, LlmPublicSettings, LlmSettingsUpdate } from '../main/services/llm-gateway'
 import type { XaiAuthStatus, XaiDeviceCodePrompt, XaiLoginMethod } from '../main/services/xai-oauth'
+import type { HotkeyAction, HotkeyProblem, Hotkeys } from '../shared/hotkeys'
 import {
   CompanionEmotionState,
   AgentEventPayload,
@@ -74,6 +75,9 @@ export interface IElectronAPI {
     getLanguageSettings: () => Promise<{ textLang: string; speechLang: string; micLang: string }>
     setLanguageSettings: (next: { textLang?: string; speechLang?: string; micLang?: string }) => Promise<{ textLang: string; speechLang: string; micLang: string }>
     onGamingModeChanged: (callback: (enabled: boolean) => void) => () => void
+    getGamingOpacity: () => Promise<number>
+    setGamingOpacity: (value: number) => Promise<number>
+    onGamingOpacityChanged: (callback: (value: number) => void) => () => void
     moveBy: (dx: number, dy: number) => Promise<{ x: number; y: number } | null>
     getConsciousness: () => Promise<{
       shutdownCount: number
@@ -128,7 +132,16 @@ export interface IElectronAPI {
     finish: () => Promise<boolean>
     open: () => Promise<boolean>
     getStorage: () => Promise<string | null>
-    chooseStorage: (reset?: boolean) => Promise<string | null>
+    chooseStorage: (reset?: boolean) => Promise<{
+      root: string | null
+      items: { kind: 'models' | 'whisper' | 'voiceEnv' | 'tools'; from: string; to: string; bytes: number }[]
+      ollamaProgram: { from: string; to: string; bytes: number } | null
+      neededBytes: number
+      freeBytes: number | null
+      enoughSpace: boolean
+      invalid: boolean
+    } | null>
+    moveStorage: (root: string | null) => Promise<{ ok: boolean; root: string | null; status: any }>
   }
   system: {
     selectDirectory: () => Promise<string | null>
@@ -143,6 +156,10 @@ export interface IElectronAPI {
     sttState: () => Promise<'off' | 'loading' | 'ready' | 'failed'>
     getArrowKeys: () => Promise<boolean>
     setArrowKeys: (enabled: boolean) => Promise<boolean>
+    getHotkeys: () => Promise<Hotkeys>
+    setHotkey: (action: HotkeyAction, accelerator: string) => Promise<{ hotkeys: Hotkeys; problem: HotkeyProblem | null }>
+    resetHotkeys: () => Promise<Hotkeys>
+    onHotkeysChanged: (callback: (hotkeys: Hotkeys) => void) => () => void
     synthesize: (text: string, langOverride?: string) => Promise<{ success: boolean; audioDataUrl?: string; error?: string }>
     getConfig: () => Promise<any>
     setConfig: (config: any) => Promise<{ success: boolean; config?: any; error?: string }>
