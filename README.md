@@ -428,7 +428,7 @@ Components can be installed later; features that depend on them (voice, local AI
 
 Sign-in and API keys are encrypted for your Windows user, so on another PC she simply asks you to sign in again.
 
-**Building it yourself:** on Windows run `npm ci` then `npm run dist:win:portable` (portable only) or `npm run dist:win` (installer + portable). The files land in `release/`. Without a Windows PC, run the **Build Windows** GitHub Actions workflow (Actions → Build Windows → Run workflow) and download the artifacts; pushing a `v*` tag also attaches them to a draft release.
+**Building it yourself:** run `npm ci` then `npm run dist:win:portable` (portable only) or `npm run dist:win` (installer + portable). The files land in `release/`. Builds are made locally on Windows, or on Linux with Wine; this fork does not use GitHub Actions.
 
 ### Install (Linux)
 
