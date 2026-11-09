@@ -1,4 +1,6 @@
 import type { LlmAuthMode, LlmPublicSettings, LlmSettingsUpdate } from '../main/services/llm-gateway'
+import type { TallowStatus } from '../main/tallow/tallow-service'
+import type { TallowAction, TallowLevel, TallowMood, TallowSound } from '../main/tallow/text'
 import type { XaiAuthStatus, XaiDeviceCodePrompt, XaiLoginMethod } from '../main/services/xai-oauth'
 import type { HotkeyAction, HotkeyProblem, Hotkeys } from '../shared/hotkeys'
 import {
@@ -21,7 +23,27 @@ export interface SetupStatus {
   persona: boolean
 }
 
+export type { TallowStatus }
+
+export interface TallowLinePayload {
+  line: string
+  mood: TallowMood
+  level: TallowLevel
+  action: TallowAction
+  sound: TallowSound | null
+  timestamp: number
+}
+
 export interface IElectronAPI {
+  tallow: {
+    getStatus: () => Promise<TallowStatus>
+    start: () => Promise<TallowStatus>
+    setToken: (token: string) => Promise<TallowStatus>
+    forget: () => Promise<boolean>
+    openDataFolder: () => Promise<string>
+    onStatus: (callback: (status: TallowStatus) => void) => () => void
+    onLine: (callback: (line: TallowLinePayload) => void) => () => void
+  }
   deck: {
     toggle: () => Promise<boolean>
     show: () => Promise<void>

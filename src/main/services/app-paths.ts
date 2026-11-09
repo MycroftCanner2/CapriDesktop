@@ -52,7 +52,7 @@ export function voiceDataDir(): string {
   return dir
 }
 
-/** Drawings Capri learned from the scanner (writable): user data folder when installed, repo assets in dev */
+/** Drawings Tallow learned from the scanner (writable): user data folder when installed, repo assets in dev */
 export function learnedDrawingsDir(): string {
   const dir = app.isPackaged ? path.join(app.getPath('userData'), 'learned_drawings') : assetPath('game_data', 'learned_drawings')
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })

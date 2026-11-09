@@ -5,7 +5,7 @@ import { assetPath } from '../services/app-paths'
 /** First-run window: name, language and dependency setup */
 export function createOnboardingWindow(): BrowserWindow {
   const win = new BrowserWindow({
-    title: 'Capri // Setup',
+    title: 'Tallow // Setup',
     icon: assetPath('icon.png'),
     width: 620,
     height: 780,

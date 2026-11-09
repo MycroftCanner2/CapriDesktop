@@ -47,7 +47,7 @@ export interface VoiceConfigData {
 }
 
 const EDGE_VOICES_EN = [
-  { id: 'en-US-AriaNeural', label: 'Aria (Capri Original - Expressive & Confident)' },
+  { id: 'en-US-AriaNeural', label: 'Aria (Tallow Original - Expressive & Confident)' },
   { id: 'en-US-AnaNeural', label: 'Ana (Cute & Cartoon)' },
   { id: 'en-US-JennyNeural', label: 'Jenny (Warm & Friendly)' },
   { id: 'en-US-EmmaMultilingualNeural', label: 'Emma (Multilingual & Cheerful)' },
@@ -57,7 +57,7 @@ const EDGE_VOICES_EN = [
 ]
 
 const EDGE_VOICES_ES = [
-  { id: 'es-AR-ElenaNeural', label: 'Elena (Capri Original Argentina - Amigable)' },
+  { id: 'es-AR-ElenaNeural', label: 'Elena (Tallow Original Argentina - Amigable)' },
   { id: 'es-MX-DaliaNeural', label: 'Dalia (México - Expresiva y Natural)' },
   { id: 'es-ES-ElviraNeural', label: 'Elvira (España - Positiva y Clara)' },
   { id: 'es-CO-SalomeNeural', label: 'Salomé (Colombia - Cálida)' },
@@ -268,9 +268,9 @@ export const VoiceSettingsModal: React.FC<VoiceSettingsModalProps> = ({ isOpen, 
       {/* Outer Cyber Frame */}
       <div className="cp-frame w-full max-w-2xl flex flex-col overflow-hidden animate-fade-in" style={{ ['--c' as string]: '14px' }}>
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-3.5 bg-black/90 border-b border-[#ff5f57]/30">
-          <div className="flex items-center gap-2.5 text-[#ff5f57] font-bold tracking-wider">
-            <Volume2 size={18} className="text-[#ff5f57] animate-pulse" />
+        <div className="flex items-center justify-between px-5 py-3.5 bg-black/90 border-b border-[#e0af67]/30">
+          <div className="flex items-center gap-2.5 text-[#e0af67] font-bold tracking-wider">
+            <Volume2 size={18} className="text-[#e0af67] animate-pulse" />
             <span className="cp-title text-[18px]">{t('vs_title')}</span>
           </div>
           <button
@@ -303,12 +303,12 @@ export const VoiceSettingsModal: React.FC<VoiceSettingsModalProps> = ({ isOpen, 
                 onClick={() => setProvider('edge-tts')}
                 className={`p-3 rounded-none border flex flex-col items-center justify-center text-center transition-all cursor-pointer ${
                   provider === 'edge-tts'
-                    ? 'bg-[#ff5f57]/15 border-[#ff5f57] text-white'
+                    ? 'bg-[#e0af67]/15 border-[#e0af67] text-white'
                     : 'bg-black/60 border-stone-800 text-stone-400 hover:border-stone-600 hover:text-stone-200'
                 }`}
               >
                 <div className="flex items-center gap-1.5 font-bold mb-1">
-                  <Radio size={14} className={provider === 'edge-tts' ? 'text-[#ff5f57]' : 'text-stone-500'} />
+                  <Radio size={14} className={provider === 'edge-tts' ? 'text-[#e0af67]' : 'text-stone-500'} />
                   <span>Edge-TTS</span>
                 </div>
                 <span className="text-[12px] text-stone-400">{t('vs_edgeDesc')}</span>
@@ -364,7 +364,7 @@ export const VoiceSettingsModal: React.FC<VoiceSettingsModalProps> = ({ isOpen, 
                 <select
                   value={activeVoiceEn}
                   onChange={(e) => setActiveVoiceEn(e.target.value)}
-                  className="w-full bg-[#1f0e0e] border border-cp-500/40 rounded-none px-3 py-2 text-white outline-none focus:border-[#ff5f57]"
+                  className="w-full bg-[#1a1713] border border-cp-500/40 rounded-none px-3 py-2 text-white outline-none focus:border-[#e0af67]"
                 >
                   {EDGE_VOICES_EN.map((v) => (
                     <option key={v.id} value={v.id}>
@@ -380,7 +380,7 @@ export const VoiceSettingsModal: React.FC<VoiceSettingsModalProps> = ({ isOpen, 
                 <select
                   value={activeVoiceEs}
                   onChange={(e) => setActiveVoiceEs(e.target.value)}
-                  className="w-full bg-[#1f0e0e] border border-cp-500/40 rounded-none px-3 py-2 text-white outline-none focus:border-[#ff5f57]"
+                  className="w-full bg-[#1a1713] border border-cp-500/40 rounded-none px-3 py-2 text-white outline-none focus:border-[#e0af67]"
                 >
                   {EDGE_VOICES_ES.map((v) => (
                     <option key={v.id} value={v.id}>
@@ -443,7 +443,7 @@ export const VoiceSettingsModal: React.FC<VoiceSettingsModalProps> = ({ isOpen, 
                     placeholder="xi-api-key..."
                     value={elApiKey}
                     onChange={(e) => setElApiKey(e.target.value)}
-                    className="w-full bg-[#1f0e0e] border border-cp-500/40 rounded-none px-3 py-2 pr-10 text-white outline-none focus:border-cp-500 placeholder:text-stone-600"
+                    className="w-full bg-[#1a1713] border border-cp-500/40 rounded-none px-3 py-2 pr-10 text-white outline-none focus:border-cp-500 placeholder:text-stone-600"
                   />
                   <button
                     type="button"
@@ -462,7 +462,7 @@ export const VoiceSettingsModal: React.FC<VoiceSettingsModalProps> = ({ isOpen, 
                   <select
                     value={elVoiceId}
                     onChange={(e) => setElVoiceId(e.target.value)}
-                    className="w-full bg-[#1f0e0e] border border-cp-500/40 rounded-none px-3 py-2 text-white outline-none focus:border-cp-500"
+                    className="w-full bg-[#1a1713] border border-cp-500/40 rounded-none px-3 py-2 text-white outline-none focus:border-cp-500"
                   >
                     {ELEVENLABS_POPULAR_VOICES.map((v) => (
                       <option key={v.id} value={v.id}>
@@ -477,7 +477,7 @@ export const VoiceSettingsModal: React.FC<VoiceSettingsModalProps> = ({ isOpen, 
                     placeholder={t('vs_voiceIdPlaceholder')}
                     value={elVoiceId}
                     onChange={(e) => setElVoiceId(e.target.value)}
-                    className="w-full bg-[#1f0e0e]/60 border border-stone-800 rounded-none px-3 py-1.5 text-stone-300 outline-none focus:border-cp-500 text-[13px]"
+                    className="w-full bg-[#1a1713]/60 border border-stone-800 rounded-none px-3 py-1.5 text-stone-300 outline-none focus:border-cp-500 text-[13px]"
                   />
                 </div>
               </div>
@@ -488,7 +488,7 @@ export const VoiceSettingsModal: React.FC<VoiceSettingsModalProps> = ({ isOpen, 
                 <select
                   value={elModelId}
                   onChange={(e) => setElModelId(e.target.value)}
-                  className="w-full bg-[#1f0e0e] border border-cp-500/40 rounded-none px-3 py-2 text-white outline-none focus:border-cp-500"
+                  className="w-full bg-[#1a1713] border border-cp-500/40 rounded-none px-3 py-2 text-white outline-none focus:border-cp-500"
                 >
                   <option value="eleven_multilingual_v2">eleven_multilingual_v2 ({t('vs_mExpressive')})</option>
                   <option value="eleven_turbo_v2_5">eleven_turbo_v2_5 ({t('vs_mLatency')})</option>
@@ -563,7 +563,7 @@ export const VoiceSettingsModal: React.FC<VoiceSettingsModalProps> = ({ isOpen, 
                     placeholder="Bearer fish audio key..."
                     value={fishApiKey}
                     onChange={(e) => setFishApiKey(e.target.value)}
-                    className="w-full bg-[#1f0e0e] border border-yellow-500/40 rounded-none px-3 py-2 pr-10 text-white outline-none focus:border-yellow-500 placeholder:text-stone-600"
+                    className="w-full bg-[#1a1713] border border-yellow-500/40 rounded-none px-3 py-2 pr-10 text-white outline-none focus:border-yellow-500 placeholder:text-stone-600"
                   />
                   <button
                     type="button"
@@ -586,7 +586,7 @@ export const VoiceSettingsModal: React.FC<VoiceSettingsModalProps> = ({ isOpen, 
                   placeholder={t('vs_refIdPlaceholder')}
                   value={fishRefId}
                   onChange={(e) => setFishRefId(e.target.value)}
-                  className="w-full bg-[#1f0e0e] border border-yellow-500/40 rounded-none px-3 py-2 text-white outline-none focus:border-yellow-500 placeholder:text-stone-600 cp-mono"
+                  className="w-full bg-[#1a1713] border border-yellow-500/40 rounded-none px-3 py-2 text-white outline-none focus:border-yellow-500 placeholder:text-stone-600 cp-mono"
                 />
                 <span className="text-[12px] text-stone-500 mt-1 block">
                   {t('vs_fishHelp')}
@@ -599,7 +599,7 @@ export const VoiceSettingsModal: React.FC<VoiceSettingsModalProps> = ({ isOpen, 
                 <select
                   value={fishModel}
                   onChange={(e) => setFishModel(e.target.value)}
-                  className="w-full bg-[#1f0e0e] border border-yellow-500/40 rounded-none px-3 py-2 text-white outline-none focus:border-yellow-500"
+                  className="w-full bg-[#1a1713] border border-yellow-500/40 rounded-none px-3 py-2 text-white outline-none focus:border-yellow-500"
                 >
                   <option value="s2.1-pro-free">s2.1-pro-free ({t('vs_recommended')})</option>
                   <option value="s2.1-pro">s2.1-pro (Premium)</option>
@@ -632,7 +632,7 @@ export const VoiceSettingsModal: React.FC<VoiceSettingsModalProps> = ({ isOpen, 
                 <select
                   value={fishFormat}
                   onChange={(e) => setFishFormat(e.target.value)}
-                  className="w-full bg-[#1f0e0e] border border-yellow-500/40 rounded-none px-3 py-2 text-white outline-none focus:border-yellow-500"
+                  className="w-full bg-[#1a1713] border border-yellow-500/40 rounded-none px-3 py-2 text-white outline-none focus:border-yellow-500"
                 >
                   <option value="mp3">mp3 ({t('vs_recommended')})</option>
                   <option value="wav">wav ({t('vs_fmtWav')})</option>
@@ -643,7 +643,7 @@ export const VoiceSettingsModal: React.FC<VoiceSettingsModalProps> = ({ isOpen, 
           )}
 
           {/* Cyberpunk Robotic dsp Audio Filter & Pitch Shift (Shared across providers) */}
-          <div className="p-4 bg-[#130808] border border-cp-500/30 rounded-none space-y-3">
+          <div className="p-4 bg-[#100e0b] border border-cp-500/30 rounded-none space-y-3">
             <div className="flex items-center justify-between">
               <label className="text-cp-300 font-bold flex items-center gap-1.5">
                 <Sliders size={13} className="text-cp-400" />
@@ -654,7 +654,7 @@ export const VoiceSettingsModal: React.FC<VoiceSettingsModalProps> = ({ isOpen, 
             <select
               value={synthPreset}
               onChange={(e) => setSynthPreset(e.target.value)}
-              className="w-full bg-[#1f0e0e] border border-cp-500/40 rounded-none px-3 py-2 text-white outline-none focus:border-[#ff5f57]"
+              className="w-full bg-[#1a1713] border border-cp-500/40 rounded-none px-3 py-2 text-white outline-none focus:border-[#e0af67]"
             >
               <option value="cyber_android">cyber_android ({t('vs_dspAndroid')})</option>
               <option value="aguda_cyber">aguda_cyber ({t('vs_dspAguda')})</option>
@@ -705,7 +705,7 @@ export const VoiceSettingsModal: React.FC<VoiceSettingsModalProps> = ({ isOpen, 
                 type="text"
                 value={testPhrase}
                 onChange={(e) => setTestPhrase(e.target.value)}
-                className="flex-1 bg-black/70 border border-cp-500/40 rounded-none px-3 py-2 text-white outline-none focus:border-[#ff5f57]"
+                className="flex-1 bg-black/70 border border-cp-500/40 rounded-none px-3 py-2 text-white outline-none focus:border-[#e0af67]"
                 placeholder={t('vs_testPhrase')}
               />
               <button
@@ -717,7 +717,7 @@ export const VoiceSettingsModal: React.FC<VoiceSettingsModalProps> = ({ isOpen, 
                     ? 'bg-yellow-500 hover:bg-yellow-400 text-black'
                     : isTesting
                     ? 'bg-stone-700 text-stone-400 cursor-not-allowed'
-                    : 'bg-[#ff5f57] hover:bg-cp-300 text-black'
+                    : 'bg-[#e0af67] hover:bg-cp-300 text-black'
                 }`}
               >
                 {isTesting ? (
@@ -748,7 +748,7 @@ export const VoiceSettingsModal: React.FC<VoiceSettingsModalProps> = ({ isOpen, 
         </div>
 
         {/* Footer Actions */}
-        <div className="flex items-center justify-between px-5 py-3.5 bg-black/90 border-t border-[#ff5f57]/30">
+        <div className="flex items-center justify-between px-5 py-3.5 bg-black/90 border-t border-[#e0af67]/30">
           <button
             type="button"
             onClick={handleResetDefaults}
@@ -772,7 +772,7 @@ export const VoiceSettingsModal: React.FC<VoiceSettingsModalProps> = ({ isOpen, 
               className={`px-5 py-1.5 rounded-none font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
                 saveSuccess
                   ? 'bg-cp-500 text-black'
-                  : 'bg-[#ff5f57] hover:bg-cp-300 text-black'
+                  : 'bg-[#e0af67] hover:bg-cp-300 text-black'
               }`}
             >
               {saveSuccess ? <Check size={14} /> : <Sliders size={14} />}

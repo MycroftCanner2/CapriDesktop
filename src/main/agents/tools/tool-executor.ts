@@ -438,9 +438,9 @@ export class ToolExecutor {
     const userProfile = process.env.USERPROFILE || os.homedir()
     let resolved = p.trim().replace(/\\\\/g, '\\')
 
-    // If local model hallucinated 'choomba', '<Your_Username>', '<username>', etc. as the Windows username
-    if (/[a-zA-Z]:[\\/]+Users[\\/]+(?:choomba|<[^>]+>|user|username)/i.test(resolved)) {
-      resolved = resolved.replace(/[a-zA-Z]:[\\/]+Users[\\/]+(?:choomba|<[^>]+>|user|username)/i, userProfile)
+    // If local model hallucinated 'friend', '<Your_Username>', '<username>', etc. as the Windows username
+    if (/[a-zA-Z]:[\\/]+Users[\\/]+(?:friend|<[^>]+>|user|username)/i.test(resolved)) {
+      resolved = resolved.replace(/[a-zA-Z]:[\\/]+Users[\\/]+(?:friend|<[^>]+>|user|username)/i, userProfile)
     }
 
     // Expand ~
@@ -1010,7 +1010,7 @@ export class ToolExecutor {
         target.includes('aplicacion') ||
         target.includes('programa')
       ) {
-        // Kill active browser, game, or spotify process without closing Capri
+        // Kill active browser, game, or spotify process without closing Tallow
         killProcesses(['opera', 'opera_gx', 'chrome', 'msedge', 'brave', 'firefox', 'Spotify'])
         return { success: true, output: 'Closed active application.' }
       }

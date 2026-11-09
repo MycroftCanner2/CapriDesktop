@@ -8,7 +8,7 @@ export function createDeckWindow(): BrowserWindow {
   const iconPath = assetPath('icon.png')
 
   const deckWindow = new BrowserWindow({
-    title: 'Capricorn // Dev Deck',
+    title: 'Crow Companion // Dev Deck',
     icon: iconPath,
     width: 1040,
     height: 720,

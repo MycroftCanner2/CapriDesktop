@@ -2,7 +2,7 @@
 
 import { consciousnessService } from './consciousness-service'
 
-export const DEFAULT_USER_NAME = 'choom'
+export const DEFAULT_USER_NAME = 'friend'
 
 export function getUserName(): string {
   return consciousnessService.getUserName() || DEFAULT_USER_NAME

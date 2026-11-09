@@ -29,7 +29,7 @@ export function cleanAppRequest(request: string): string {
   return request
     .trim()
     .replace(/[?!.,;¡¿]+$/g, '')
-    .replace(/[,\s]+(?:por\s+favor|porfa|please|plis|pls|capri|choomba|che|dale)$/i, '')
+    .replace(/[,\s]+(?:por\s+favor|porfa|please|plis|pls|capri|friend|che|dale)$/i, '')
     .replace(/^(?:(?:el|la|los|las|mi|the|my|a|al)\s+)?(?:(?:app|aplicaci[oó]n|programa|juego|application|program|game)\s+(?:de\s+|del\s+|called\s+|llamad[oa]\s+)?)?/i, '')
     .replace(/^(?:el|la|the)\s+/i, '')
     .trim()

@@ -1,5 +1,5 @@
 import { scriptPlayer } from '../services/script/script-player'
-import { getLlmSettings, isCloudMode } from '../services/llm-gateway'
+import { getLlmSettings, isTallowMode, usesOllama } from '../services/llm-gateway'
 import { personalize } from '../services/user-profile'
 import { consciousnessService } from '../services/consciousness-service'
 import { localizeLine } from '../../shared/lines'
@@ -18,11 +18,11 @@ import { roamingManager } from '../roaming/roaming-manager'
 import { activeWindowService } from '../services/active-window-service'
 import { hasPendingResult, openPendingResult } from '../services/pending-result'
 
-/** Dev Mode tasks shorter than this finish quietly instead of popping Capri up with the wake-up line */
+/** Dev Mode tasks shorter than this finish quietly instead of popping Tallow up with the wake-up line */
 const DEV_WAKEUP_MIN_MS = 20000
 
 export class AgentManager extends EventEmitter {
-  /** Capri's own local agent is the only engine */
+  /** Tallow's own local agent is the only engine */
   private capriLocal = new CapriLocalAgent()
 
   private currentCompanionState: CompanionEmotionState = 'standing'
@@ -79,10 +79,10 @@ export class AgentManager extends EventEmitter {
       return
     }
 
-    // Pet mode: the user is already looking at Capri, open the result right away
+    // Pet mode: the user is already looking at Tallow, open the result right away
     if (event.type === 'session.finished' || event.type === 'session.error') openPendingResult()
 
-    // Automate Capri emotion transitions only for Pet mode (Do not overwrite assistant speech with canned quotes!):
+    // Automate Tallow emotion transitions only for Pet mode (Do not overwrite assistant speech with canned quotes!):
     switch (event.type) {
       case 'session.started':
         this.isRunning = true
@@ -134,7 +134,7 @@ export class AgentManager extends EventEmitter {
     }
   }
 
-  /** If a Dev Mode task finishes while the user is in another window, Capri pops up to tell them. */
+  /** If a Dev Mode task finishes while the user is in another window, Tallow pops up to tell them. */
   private async handleDevTaskFinishedWakeup(): Promise<void> {
     // Telling a player to get back to work would also steal focus from the game
     if (windowManager.isGamingModeActive()) return
@@ -144,7 +144,7 @@ export class AgentManager extends EventEmitter {
     const isDeckUnfocused = !isDeckOpen || !deckWin.isFocused() || deckWin.isMinimized()
 
     if (!isDeckUnfocused) {
-      // User is actively focused on Capri's dev deck window. She remains in the editor.
+      // User is actively focused on Tallow's dev deck window. She remains in the editor.
       openPendingResult()
       return
     }
@@ -160,7 +160,7 @@ export class AgentManager extends EventEmitter {
       // Leave dev mode and restore desktop companion
       windowManager.hideDeck()
 
-      // Make Capri appear right in front of everything on screen
+      // Make Tallow appear right in front of everything on screen
       const companionWin = windowManager.getCompanionWindow()
       if (companionWin && !companionWin.isDestroyed()) {
         companionWin.show()
@@ -169,7 +169,7 @@ export class AgentManager extends EventEmitter {
         companionWin.focus()
       }
 
-      // Capri wakes up, greets user, displays speech bubble and speaks it aloud with neural voice
+      // Tallow wakes up, greets user, displays speech bubble and speaks it aloud with neural voice
       setTimeout(() => {
         this.setCompanionState('talking')
         this.setCompanionSpeech(wakeupPhrase, 7500, true)
@@ -220,7 +220,8 @@ export class AgentManager extends EventEmitter {
   }
 
   public async detectOllama(): Promise<{ running: boolean; models: string[] }> {
-    if (isCloudMode()) return { running: true, models: [getLlmSettings().model] }
+    if (isTallowMode()) return { running: true, models: ['tallow'] }
+    if (!usesOllama()) return { running: true, models: [getLlmSettings().model] }
     return await ollamaService.ensureRunning()
   }
 
@@ -269,7 +270,7 @@ export class AgentManager extends EventEmitter {
     }
   }
 
-  /** Kept for the IPC contract: Capri's local agent never asks for tool permissions */
+  /** Kept for the IPC contract: Tallow's local agent never asks for tool permissions */
   public respondPermission(_requestId: string, _approved: boolean): void {}
 
   public cancel(): void {
@@ -277,7 +278,7 @@ export class AgentManager extends EventEmitter {
     if (this.devTaskRunning) this.devTaskCancelled = true
     this.capriLocal.cancel()
     this.setCompanionState('idle')
-    this.setCompanionSpeech('Session cancelled, choomba.', 3000)
+    this.setCompanionSpeech('Session cancelled, friend.', 3000)
   }
 
   public getStatus(): { isRunning: boolean; mode: string } {

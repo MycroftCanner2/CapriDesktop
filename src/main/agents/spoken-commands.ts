@@ -14,7 +14,7 @@ function plain(text: string): string {
     .trim()
 }
 
-const POLITE = ['capri', 'hey capri', 'hola capri', 'oye capri', 'che capri', 'hey', 'che', 'dale', 'ok', 'okay', 'por favor', 'porfa', 'please', 'pls', 'bitte', 's il te plait', 'stp', 'per favore', 'пожалуйста', 'kapri', 'カプリ', '카프리', '请', '请你', 'お願い', 'ください', '부탁해']
+const POLITE = ['tallow', 'hey tallow', 'hi tallow', 'capri', 'hey capri', 'hola capri', 'oye capri', 'che capri', 'hey', 'che', 'dale', 'ok', 'okay', 'por favor', 'porfa', 'please', 'pls', 'bitte', 's il te plait', 'stp', 'per favore', 'пожалуйста', 'kapri', 'カプリ', '카프리', '请', '请你', 'お願い', 'ください', '부탁해']
   .map(plain)
   .sort((a, b) => b.length - a.length)
 

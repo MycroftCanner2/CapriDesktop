@@ -10,7 +10,7 @@ export class MockGameAdapter extends EventEmitter implements GameAdapter {
 
   private readonly mockSequence: { type: GameEventType; priority: GameEventPriority; payload?: any }[] = [
     { type: 'combat_started', priority: 'normal' },
-    { type: 'player_kill', priority: 'high', payload: { victim: 'Arasaka Guard' } },
+    { type: 'player_kill', priority: 'high', payload: { victim: 'the hawks Guard' } },
     { type: 'low_health', priority: 'high', payload: { healthPercent: 18 } },
     { type: 'multikill', priority: 'high', payload: { multikillCount: 2 } },
     { type: 'combat_ended', priority: 'normal' },

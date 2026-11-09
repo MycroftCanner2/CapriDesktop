@@ -32,10 +32,10 @@ export function extractSpokenDevExcerpt(rawText: string): string {
     .replace(/\s+/g, ' ')
     .trim()
 
-  // If nothing is left (e.g. prompt only returned raw code), return a cheerful netrunner voice line
+  // If nothing is left (e.g. prompt only returned raw code), return a cheerful crow voice line
   if (!cleaned || cleaned.length < 5) {
     const fallbackLines = [
-      "Done! Code is patched and ready, choomba!",
+      "Done! Code is patched and ready, friend!",
       "Executed! Check out the updated code!",
       "Target breached! Script updated with zero ICE alarms!"
     ]
@@ -79,7 +79,7 @@ export function stopDevVoice(): void {
 }
 
 // The deck going away (task finished while the user was elsewhere) hands the voice over to the
-// desktop Capri's wake-up line: the deck must not keep talking underneath it
+// desktop Tallow's wake-up line: the deck must not keep talking underneath it
 try {
   window.api?.deck?.onStatusChanged?.((open: boolean) => {
     if (!open) stopDevVoice()
@@ -87,7 +87,7 @@ try {
 } catch {}
 
 /**
- * Speaks text using Capri's neural voice (Edge TTS or dialogue blip) in Dev Mode, queued after
+ * Speaks text using Tallow's neural voice (Edge TTS or dialogue blip) in Dev Mode, queued after
  * whatever she is already saying. Respects isDevVoiceEnabled setting.
  */
 export async function speakDevVoice(text: string, options?: DevLineOptions): Promise<void> {
@@ -183,10 +183,10 @@ function playDevLine(text: string, options?: DevLineOptions): Promise<void> {
  */
 export async function speakDevAck(): Promise<void> {
   const acks = [
-    "Analyzing that code, choomba!",
-    "Jacking in and executing, choomba!",
+    "Analyzing that code, friend!",
+    "Jacking in and executing, friend!",
     "Whoa, let's see what you've got here!",
-    "Watching your code like a hawk, choomba!"
+    "Watching your code like a hawk, friend!"
   ]
   const randomAck = acks[Math.floor(Math.random() * acks.length)]
   // The user just sent something: interrupt whatever she was saying

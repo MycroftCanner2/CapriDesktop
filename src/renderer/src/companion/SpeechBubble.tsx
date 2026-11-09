@@ -71,9 +71,9 @@ export const SpeechBubble: React.FC<SpeechBubbleProps> = ({
       } as React.CSSProperties}
     >
       {/* Outer Cyan Neon Border with Chamfered Corners (Cut Top-Left and Cut Bottom-Right) */}
-      <div className="hud-chamfer-box p-[2px] bg-[#00f0ff] shadow-[0_0_14px_rgba(0,240,255,0.4)]">
+      <div className="hud-chamfer-box p-[2px] bg-[#d6c29a] shadow-[0_0_14px_rgba(214, 194, 154,0.4)]">
         {/* Inner Dark Surface */}
-        <div className={`hud-chamfer-box-inner bg-[#080a12]/95 backdrop-blur-xl ${compact ? 'px-2.5 py-1.5' : 'px-3.5 py-2'} relative`}>
+        <div className={`hud-chamfer-box-inner bg-[#0f0d0b]/95 backdrop-blur-xl ${compact ? 'px-2.5 py-1.5' : 'px-3.5 py-2'} relative`}>
           {/* Header Controls (Dismiss) */}
           {onClose && (
             <div className="absolute top-2 right-2.5 flex items-center gap-1.5 z-10">
@@ -92,14 +92,14 @@ export const SpeechBubble: React.FC<SpeechBubbleProps> = ({
           )}
 
           {/* Vertical Red/Magenta Accent Line on the left */}
-          <div className={`border-l-[3px] border-[#ff003c] ${compact ? 'pl-2 pr-2.5 gap-0.5' : 'pl-3 pr-4 gap-1'} flex flex-col shadow-[-2px_0_10px_rgba(255,0,60,0.5)]`}>
+          <div className={`border-l-[3px] border-[#d4532b] ${compact ? 'pl-2 pr-2.5 gap-0.5' : 'pl-3 pr-4 gap-1'} flex flex-col shadow-[-2px_0_10px_rgba(212, 83, 43,0.5)]`}>
             {/* Real-time Voice Command Stream */}
             {(isRecordingVoice || isProcessingVoice) ? (
               <div className="flex flex-col gap-1.5 py-0.5 w-full animate-fade-in">
-                <div className="flex items-center justify-between text-[11px] font-bold text-[#ff0055] tracking-wider">
+                <div className="flex items-center justify-between text-[11px] font-bold text-[#d4902b] tracking-wider">
                   <div className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-[#ff0055] animate-ping" />
-                    <span className="font-terminal uppercase text-[#00f0ff]">
+                    <span className="w-2 h-2 rounded-full bg-[#d4902b] animate-ping" />
+                    <span className="font-terminal uppercase text-[#d6c29a]">
                       {isProcessingVoice ? '[DECODING VOICE...]' : '[RECORDING // LISTENING...]'}
                     </span>
                   </div>
@@ -108,7 +108,7 @@ export const SpeechBubble: React.FC<SpeechBubbleProps> = ({
                     {[0.6, 1.1, 1.5, 0.9, 1.3, 0.7].map((factor, i) => (
                       <div
                         key={i}
-                        className="w-1 bg-[#00f0ff] rounded-full transition-all duration-75 shadow-[0_0_4px_#00f0ff]"
+                        className="w-1 bg-[#d6c29a] rounded-full transition-all duration-75 shadow-[0_0_4px_#d6c29a]"
                         style={{
                           height: `${Math.max(2, Math.min(13, Math.round(((audioLevel || 0) / 100) * 13 * factor)))}px`
                         }}
@@ -118,13 +118,13 @@ export const SpeechBubble: React.FC<SpeechBubbleProps> = ({
                 </div>
 
                 {/* Live stream of captured words */}
-                <div className="min-h-[26px] text-[12px] font-mono text-cyan-200 bg-black/75 px-2.5 py-1.5 rounded border border-cyan-400/60 shadow-[0_0_10px_rgba(0,240,255,0.25)] flex items-center flex-wrap break-words leading-tight">
-                  <span className="text-[#fcee0a] font-bold mr-1.5 select-none font-terminal">&gt; you:</span>
+                <div className="min-h-[26px] text-[12px] font-mono text-cyan-200 bg-black/75 px-2.5 py-1.5 rounded border border-cyan-400/60 shadow-[0_0_10px_rgba(214, 194, 154,0.25)] flex items-center flex-wrap break-words leading-tight">
+                  <span className="text-[#ddb23c] font-bold mr-1.5 select-none font-terminal">&gt; you:</span>
                   <span className="text-white">
                     {liveVoiceText ? `"${liveVoiceText}"` : (isProcessingVoice ? 'Processing command...' : 'Listening... your words will appear here...')}
                   </span>
                   <span
-                    className="inline-block w-1.5 h-3.5 ml-1 bg-[#00f0ff] align-middle shadow-[0_0_6px_#00f0ff]"
+                    className="inline-block w-1.5 h-3.5 ml-1 bg-[#d6c29a] align-middle shadow-[0_0_6px_#d6c29a]"
                     style={{ animation: 'blink-caret 0.7s infinite' }}
                   />
                 </div>
@@ -147,10 +147,10 @@ export const SpeechBubble: React.FC<SpeechBubbleProps> = ({
                     <button
                       type="button"
                       onClick={onStopVoice}
-                      className="px-2 py-0.5 rounded bg-[#ff003c]/20 hover:bg-[#ff003c]/40 text-[#ff0055] border border-[#ff003c]/70 text-[10px] font-bold cursor-pointer transition-colors shadow-sm flex items-center gap-1"
+                      className="px-2 py-0.5 rounded bg-[#d4532b]/20 hover:bg-[#d4532b]/40 text-[#d4902b] border border-[#d4532b]/70 text-[10px] font-bold cursor-pointer transition-colors shadow-sm flex items-center gap-1"
                     >
                       <span>{es ? '[ENVIAR]' : `[${localizeLine('Send', uiLang).toUpperCase()}]`}</span>
-                      <span className="text-[9px] px-1 bg-[#ff003c] text-white rounded">↓</span>
+                      <span className="text-[9px] px-1 bg-[#d4532b] text-white rounded">↓</span>
                     </button>
                   )}
                   </div>
@@ -160,16 +160,16 @@ export const SpeechBubble: React.FC<SpeechBubbleProps> = ({
               <>
                 {/* User prompt line (only rendered when an active user prompt exists - never shows stale prompts) */}
                 {userPrompt && (
-                  <div className="text-[11px] leading-tight text-[#8f9bb3] tracking-wide truncate">
+                  <div className="text-[11px] leading-tight text-[#dac8a5] tracking-wide truncate">
                     &gt; you: {userPrompt}
                   </div>
                 )}
 
-                {/* AI Name tag in Cyberpunk Yellow: > capri */}
-                <div className="text-[12px] font-bold text-[#fcee0a] tracking-wider flex items-center gap-1.5 font-terminal lowercase">
-                  <span>&gt; capri:</span>
+                {/* AI Name tag in Cyberpunk Yellow: > tallow */}
+                <div className="text-[12px] font-bold text-[#ddb23c] tracking-wider flex items-center gap-1.5 font-terminal lowercase">
+                  <span>&gt; tallow:</span>
                   {isExecuting && (
-                    <span className="text-[10px] text-[#00f0ff] animate-pulse font-normal tracking-normal uppercase">
+                    <span className="text-[10px] text-[#d6c29a] animate-pulse font-normal tracking-normal uppercase">
                       [{localizeLine('Processing', uiLang).toUpperCase()}...]
                     </span>
                   )}
@@ -180,7 +180,7 @@ export const SpeechBubble: React.FC<SpeechBubbleProps> = ({
                   <div className={`${compact ? 'text-[11px] leading-tight' : 'text-[12px] leading-snug'} text-[#f8fafc] font-normal tracking-wide break-words`}>
                     {displayText}
                     <span
-                      className="inline-block w-1.5 h-3.5 ml-1 bg-[#00f0ff] align-middle shadow-[0_0_6px_#00f0ff]"
+                      className="inline-block w-1.5 h-3.5 ml-1 bg-[#d6c29a] align-middle shadow-[0_0_6px_#d6c29a]"
                       style={{ animation: 'blink-caret 0.9s infinite' }}
                     />
                   </div>
@@ -194,31 +194,31 @@ export const SpeechBubble: React.FC<SpeechBubbleProps> = ({
         </div>
       </div>
 
-      {/* Speech Bubble Tail: Points UP when bubble is below Capri (gaming mode), or down when above Capri */}
+      {/* Speech Bubble Tail: Points UP when bubble is below Tallow (gaming mode), or down when above Tallow */}
       {tailPosition === 'top' ? (
         <div className="absolute -top-[9px] left-16 w-5 h-3 overflow-visible pointer-events-none z-30">
-          <svg viewBox="0 0 20 12" className="w-full h-full drop-shadow-[0_-2px_4px_rgba(0,240,255,0.5)]">
+          <svg viewBox="0 0 20 12" className="w-full h-full drop-shadow-[0_-2px_4px_rgba(214, 194, 154,0.5)]">
             <polygon
               points="1,11 6,1 18,11"
-              fill="#080a12"
-              stroke="#00f0ff"
+              fill="#0f0d0b"
+              stroke="#d6c29a"
               strokeWidth="2"
               strokeLinejoin="round"
             />
-            <line x1="2" y1="11" x2="17" y2="11" stroke="#080a12" strokeWidth="2.5" />
+            <line x1="2" y1="11" x2="17" y2="11" stroke="#0f0d0b" strokeWidth="2.5" />
           </svg>
         </div>
       ) : (
         <div className="absolute -bottom-[9px] right-24 w-5 h-3 overflow-visible pointer-events-none z-30">
-          <svg viewBox="0 0 20 12" className="w-full h-full drop-shadow-[0_2px_4px_rgba(0,240,255,0.5)]">
+          <svg viewBox="0 0 20 12" className="w-full h-full drop-shadow-[0_2px_4px_rgba(214, 194, 154,0.5)]">
             <polygon
               points="1,0 6,11 18,0"
-              fill="#080a12"
-              stroke="#00f0ff"
+              fill="#0f0d0b"
+              stroke="#d6c29a"
               strokeWidth="2"
               strokeLinejoin="round"
             />
-            <line x1="2" y1="0" x2="17" y2="0" stroke="#080a12" strokeWidth="2.5" />
+            <line x1="2" y1="0" x2="17" y2="0" stroke="#0f0d0b" strokeWidth="2.5" />
           </svg>
         </div>
       )}

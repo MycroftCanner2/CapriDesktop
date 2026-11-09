@@ -149,8 +149,8 @@ export async function askWhereAppIs(request: string): Promise<string | null> {
   const lang = speechLang()
   speak(
     lang === 'es'
-      ? `[curious] No encuentro ${request} por ningún lado, choomba. Mostrame dónde está y me lo acuerdo.`
-      : `[curious] I can't find ${request} anywhere, choomba. Show me where it is and I'll remember it.`
+      ? `[curious] No encuentro ${request} por ningún lado, friend. Mostrame dónde está y me lo acuerdo.`
+      : `[curious] I can't find ${request} anywhere, friend. Show me where it is and I'll remember it.`
   )
   const picked = await dialog.showOpenDialog({
     title: localizeLine(lang === 'es' ? `¿Dónde está ${request}?` : `Where is ${request}?`, lang),

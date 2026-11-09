@@ -19,7 +19,7 @@ export const LanguageSettingsModal: React.FC<{ isOpen: boolean; onClose: () => v
   const [settings, setSettings] = useState<LanguageSettings>({ textLang: 'auto', speechLang: 'auto', micLang: 'auto' })
   const [savedAt, setSavedAt] = useState(0)
   const effectiveLang = useUiLang()
-  // A fixed text language switches the window right away; 'auto' follows Capri's current language
+  // A fixed text language switches the window right away; 'auto' follows Tallow's current language
   const t = useMemo(() => translator(settings.textLang !== 'auto' ? toUiLang(settings.textLang) : effectiveLang), [settings.textLang, effectiveLang])
 
   useEffect(() => {

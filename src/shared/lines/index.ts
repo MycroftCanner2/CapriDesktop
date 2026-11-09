@@ -1,5 +1,5 @@
 /**
- * Capri's fixed lines in every language. The code only has them in English and Spanish, so a line
+ * Tallow's fixed lines in every language. The code only has them in English and Spanish, so a line
  * is translated as it leaves, at the few places every line goes through. en.json lists the English
  * lines (tools/extract-lines.cjs finds them) and each language file has its translations in the same
  * order. A line that isn't in the catalog, like anything the model wrote, goes out untouched.

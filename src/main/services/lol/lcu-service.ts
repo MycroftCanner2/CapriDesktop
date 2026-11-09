@@ -500,7 +500,7 @@ export class LcuService {
               try {
                 await this.request('POST', '/lol-matchmaking/v1/ready-check/accept')
                 const text = isEs
-                  ? '¡Partida encontrada y aceptada, choomba! ¡A la Grieta!'
+                  ? '¡Partida encontrada y aceptada, friend! ¡A la Grieta!'
                   : 'Match found and accepted, {name}! Ready up!'
 
                 agentManager.setCompanionState('happy')
@@ -576,7 +576,7 @@ export class LcuService {
                       plan.banCompleted = true
                       console.log(`[LcuService] Successfully locked in ban for ${champ.name}!`)
                       const text = isEs
-                        ? `¡Baneé a ${champ.name} como me pediste, choomba!`
+                        ? `¡Baneé a ${champ.name} como me pediste, friend!`
                         : `Banned ${champ.name} as requested, {name}!`
                       agentManager.setCompanionState('talking')
                       agentManager.setCompanionSpeech(text, 4500, true)
@@ -611,7 +611,7 @@ export class LcuService {
                   agentManager.setCompanionState('talking')
                   agentManager.setCompanionSpeech(
                     isEs
-                      ? `[worried] ${unavailableText(target.replaced, true)} y no tengo otro campeón tuyo${roleTxt ? ` para ${roleTxt}` : ''}. Elegí vos, choomba.`
+                      ? `[worried] ${unavailableText(target.replaced, true)} y no tengo otro campeón tuyo${roleTxt ? ` para ${roleTxt}` : ''}. Elegí vos, friend.`
                       : `[worried] ${unavailableText(target.replaced, false)} and I don't have another champion of yours${roleTxt ? ` for ${roleTxt}` : ''}. Your pick, {name}.`,
                     6000,
                     true

@@ -11,11 +11,11 @@ export interface ChampionComment {
 
 export const CHAMPION_PICK_REACTIONS: Record<string, ChampionComment> = {
   fizz: {
-    es: '¡Fizz! El terror del carril central. A esquivar habilidades con el juguetón y meter el tiburón, choomba.',
+    es: '¡Fizz! El terror del carril central. A esquivar habilidades con el juguetón y meter el tiburón, friend.',
     en: 'Fizz! Mid lane nightmare. Dodge everything with Playful/Trickster and feed them the shark, {name}.'
   },
   jinx: {
-    es: '¡Jinx! Caos, explosiones y minigun. Me gusta tu estilo, choomba, hagamos volar la grieta en pedazos.',
+    es: '¡Jinx! Caos, explosiones y minigun. Me gusta tu estilo, friend, hagamos volar la grieta en pedazos.',
     en: 'Jinx! Pure chaos, explosions and Pow-Pow. Love your style, {name}, let us blow up the Rift.'
   },
   yasuo: {
@@ -23,59 +23,59 @@ export const CHAMPION_PICK_REACTIONS: Record<string, ChampionComment> = {
     en: 'Yasuo... Hope the 0/10 powerspike stays inactive today, {name}. Land those clean tornadoes.'
   },
   yone: {
-    es: 'Yone en la grieta. Desatemos ese daño híbrido y partamos la teamfight en dos, choomba.',
-    en: 'Yone on the Rift. Let us unleash that hybrid damage and split their teamfight in half, choomba.'
+    es: 'Yone en la grieta. Desatemos ese daño híbrido y partamos la teamfight en dos, friend.',
+    en: 'Yone on the Rift. Let us unleash that hybrid damage and split their teamfight in half, friend.'
   },
   zed: {
     es: 'Zed... A las sombras les gusta tu estilo. Que no pestañeen sus carries porque desaparecen.',
     en: 'Zed... Shadows suit you, {name}. Their carries better not blink or they disappear.'
   },
   ahri: {
-    es: '¡Ahri! Encanto, movilidad y orbes. A cazar carries desprevenidos por los arbustos, choomba.',
+    es: '¡Ahri! Encanto, movilidad y orbes. A cazar carries desprevenidos por los arbustos, friend.',
     en: 'Ahri! Charm, mobility and spirit orbs. Time to ambush squishies from the brush, {name}.'
   },
   warwick: {
-    es: 'Warwick... Van a oler la sangre a kilómetros de distancia. No dejes escapar a ninguno, choomba.',
+    es: 'Warwick... Van a oler la sangre a kilómetros de distancia. No dejes escapar a ninguno, friend.',
     en: 'Warwick... They will smell the blood from across the map. Hunt them down without mercy, {name}.'
   },
   teemo: {
-    es: 'Teemo... Sos un peligro para la sociedad, choomba. Llenemos la grieta de hongos venenosos.',
-    en: 'Teemo... You are a menace to society, choomba! Let us paint the Rift with toxic mushrooms.'
+    es: 'Teemo... Sos un peligro para la sociedad, friend. Llenemos la grieta de hongos venenosos.',
+    en: 'Teemo... You are a menace to society, friend! Let us paint the Rift with toxic mushrooms.'
   },
   jhin: {
     es: '¡Jhin! Cuatro disparos, una obra de arte. La perfección es el único estándar aceptable, {name}.',
     en: 'Jhin! Four shots, a pure masterpiece. Perfection is our only standard, {name}.'
   },
   ekko: {
-    es: 'Ekko, el que quiebra el tiempo. Si te mandás una macana, siempre podés retroceder el reloj, choomba.',
+    es: 'Ekko, el que quiebra el tiempo. Si te mandás una macana, siempre podés retroceder el reloj, friend.',
     en: 'Ekko, shattering time. If things get sketchy, rewind the clock and wipe them out, {name}.'
   },
   leesin: {
-    es: 'Lee Sin... Mostrales cómo se hace un Insec legendario de verdad, choomba.',
+    es: 'Lee Sin... Mostrales cómo se hace un Insec legendario de verdad, friend.',
     en: 'Lee Sin... Show them how a real legendary Insec kick is done, {name}.'
   },
   'lee sin': {
-    es: 'Lee Sin... Mostrales cómo se hace un Insec legendario de verdad, choomba.',
+    es: 'Lee Sin... Mostrales cómo se hace un Insec legendario de verdad, friend.',
     en: 'Lee Sin... Show them how a real legendary Insec kick is done, {name}.'
   },
   viego: {
     es: 'Viego, el Rey Arruinado. Poseé a todos los rivales caídos y rompeles el nexo en la cara.',
-    en: 'Viego, the Ruined King. Possess their fallen carries and smash their Nexus to dust, choomba.'
+    en: 'Viego, the Ruined King. Possess their fallen carries and smash their Nexus to dust, friend.'
   },
   samira: {
-    es: '¡Samira! Rango S en camino. Saltá al medio de los cinco y desatá el torbellino de plomo, choomba.',
+    es: '¡Samira! Rango S en camino. Saltá al medio de los cinco y desatá el torbellino de plomo, friend.',
     en: 'Samira! S-rank incoming. Jump into all five of them and spin the lead hurricane, {name}.'
   },
   kaisa: {
-    es: '¡Kai\'Sa! Sobreviviente del Vacío. Adaptación total y ráfagas de plasma, choomba.',
+    es: '¡Kai\'Sa! Sobreviviente del Vacío. Adaptación total y ráfagas de plasma, friend.',
     en: 'Kai\'Sa! Void survivor. Total adaptation and plasma bursts, {name}.'
   },
   "kai'sa": {
-    es: '¡Kai\'Sa! Sobreviviente del Vacío. Adaptación total y ráfagas de plasma, choomba.',
+    es: '¡Kai\'Sa! Sobreviviente del Vacío. Adaptación total y ráfagas de plasma, friend.',
     en: 'Kai\'Sa! Void survivor. Total adaptation and plasma bursts, {name}.'
   },
   katarina: {
-    es: 'Katarina... Resets de habilidades y dagas volando. Hacé pedazos esa teamfight, choomba.',
+    es: 'Katarina... Resets de habilidades y dagas volando. Hacé pedazos esa teamfight, friend.',
     en: 'Katarina... Resets and flying daggers. Shred through that teamfight like butter, {name}.'
   },
   riven: {
@@ -83,8 +83,8 @@ export const CHAMPION_PICK_REACTIONS: Record<string, ChampionComment> = {
     en: 'Riven... Chain those animation cancels perfectly, {name}. Show off your mechanics.'
   },
   thresh: {
-    es: 'Thresh... Sentencias de muerte precisas. Si tirás la linterna, rezá para que la agarren, choomba.',
-    en: 'Thresh... Death sentences on point. If you drop the lantern, pray they actually click it, choomba.'
+    es: 'Thresh... Sentencias de muerte precisas. Si tirás la linterna, rezá para que la agarren, friend.',
+    en: 'Thresh... Death sentences on point. If you drop the lantern, pray they actually click it, friend.'
   },
   lux: {
     es: '¡Lux! A meter esa Chispa Final a través de todo el mapa. Que sientan el destello del láser.',
@@ -95,7 +95,7 @@ export const CHAMPION_PICK_REACTIONS: Record<string, ChampionComment> = {
     en: 'Caitlyn, sniper range and cupcakes. Keep them at bay and snipe them down with Ace in the Hole.'
   },
   aatrox: {
-    es: 'Aatrox, el Destructor de Mundos. Activá Destructor y revoleá esa espada gigante, choomba.',
+    es: 'Aatrox, el Destructor de Mundos. Activá Destructor y revoleá esa espada gigante, friend.',
     en: 'Aatrox, the World Ender. Pop World Ender and cleave them to pieces, {name}.'
   },
   vladimir: {
@@ -111,8 +111,8 @@ export const CHAMPION_PICK_REACTIONS: Record<string, ChampionComment> = {
     en: 'Vayne... Silver bolts true damage. Kite carefully, because late game you become a monster, {name}.'
   },
   darius: {
-    es: 'Darius... Cinco cargas de hemorragia y guillotinazo en la frente. No les tengas piedad, choomba.',
-    en: 'Darius... Five stacks of Hemorrhage and guillotine their heads. No mercy, choomba.'
+    es: 'Darius... Cinco cargas de hemorragia y guillotinazo en la frente. No les tengas piedad, friend.',
+    en: 'Darius... Five stacks of Hemorrhage and guillotine their heads. No mercy, friend.'
   },
   garen: {
     es: 'Garen... Por Demacia y a girar sin parar con la espada. Sencillo, efectivo y destructivo.',
@@ -123,7 +123,7 @@ export const CHAMPION_PICK_REACTIONS: Record<string, ChampionComment> = {
     en: 'Blitzcrank! One rocket grab and their carry is deleted. Land those hooks, {name}!'
   },
   mordekaiser: {
-    es: 'Mordekaiser... Mandá a su carry directo al Reino de las Sombras y aplastalo con la maza, choomba.',
+    es: 'Mordekaiser... Mandá a su carry directo al Reino de las Sombras y aplastalo con la maza, friend.',
     en: 'Mordekaiser... Drag their carry to the Death Realm and smash them with your mace, {name}.'
   },
   ashe: {
@@ -151,6 +151,6 @@ export function getChampionPickComment(championName: string, lang: 'es' | 'en' =
   }
 
   return lang === 'es'
-    ? `¡Excelente elección con ${championName}, choomba! Vamos a stompear esa grieta con furia cibernética.`
+    ? `¡Excelente elección con ${championName}, friend! Vamos a stompear esa grieta con furia cibernética.`
     : `Solid pick with ${championName}, {name}! Let's dominate the Rift and claim that victory!`
 }

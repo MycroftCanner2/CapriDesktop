@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { Check, Download, X, ChevronRight, ChevronLeft, Mic, Film, Cpu, Brain, Sparkles } from 'lucide-react'
 import type { SetupStatus } from '../../../preload/index.d'
+import { TallowStatusPanel } from '../components/TallowStatusPanel'
 import { LlmProviderForm, LlmProviderFormHandle } from '../components/LlmProviderForm'
 import { MessageKey, toUiLang, translator, UI_LANGUAGES, UiLang } from '../i18n'
 
@@ -70,7 +71,7 @@ export const OnboardingView: React.FC = () => {
       if (p.hasName) setName((typed) => typed || p.name)
     }).catch(() => {})
   }, [])
-  const [provider, setProvider] = useState<'local' | 'cloud'>('cloud')
+  const [provider, setProvider] = useState<'tallow' | 'local' | 'cloud'>('tallow')
   const [status, setStatus] = useState<SetupStatus | null>(null)
   const [running, setRunning] = useState<StepId | null>(null)
   const [moving, setMoving] = useState(false)
@@ -81,7 +82,7 @@ export const OnboardingView: React.FC = () => {
   const logRef = useRef<HTMLDivElement>(null)
   const brainRef = useRef<LlmProviderFormHandle>(null)
   const t = useMemo(() => translator(lang), [lang])
-  const order = provider === 'cloud' ? CLOUD_ORDER : LOCAL_ORDER
+  const order = provider === 'local' ? LOCAL_ORDER : CLOUD_ORDER
 
   useEffect(() => {
     window.api.setup.getStatus().then(setStatus).catch(() => {})
@@ -166,14 +167,14 @@ export const OnboardingView: React.FC = () => {
 
   const allReady = order.every((s) => isReady(s, status))
   const readyCount = order.filter((s) => isReady(s, status)).length
-  const displayName = name.trim() || 'choom'
+  const displayName = name.trim() || 'friend'
 
   return (
     <div className="cp-vars cp-root w-screen h-screen overflow-hidden flex flex-col select-none">
       {/* Top bar (window drag area) */}
       <div className="h-11 shrink-0 flex items-center justify-between px-6" style={{ WebkitAppRegion: 'drag' } as React.CSSProperties}>
         <div className="flex items-baseline gap-3">
-          <span className="cp-title text-[17px] text-[var(--cp-red)]">Capri</span>
+          <span className="cp-title text-[17px] text-[var(--cp-red)]">Tallow</span>
           <span className="cp-label">// setup</span>
         </div>
         <div className="flex items-center gap-3">
@@ -287,7 +288,9 @@ export const OnboardingView: React.FC = () => {
                 </div>
               </div>
             )}
-            <PageHead index={3} tag={t(PAGE_TAGS[3])} title={t('ob_setupTitle')} sub={provider === 'cloud' ? t('ob_setupSubCloud') : t('ob_setupSub')} />
+            <PageHead index={3} tag={t(PAGE_TAGS[3])} title={t('ob_setupTitle')} sub={provider === 'local' ? t('ob_setupSub') : t('ob_setupSubCloud')} />
+
+            {provider === 'tallow' && <TallowStatusPanel compact autoStart />}
 
             <div className="flex items-center gap-3">
               <span className="cp-label shrink-0">
@@ -347,7 +350,7 @@ export const OnboardingView: React.FC = () => {
             )}
 
             {log.length > 0 && (
-              <div className="cp-frame" style={{ ['--fill' as string]: '#070405' }}>
+              <div className="cp-frame" style={{ ['--fill' as string]: '#060605' }}>
                 <div ref={logRef} className="cp-scroll cp-mono h-32 overflow-y-auto p-3 text-[10.5px] leading-snug text-[var(--cp-red-dim)] select-text">
                   {log.map((l, i) => (
                     <div key={i} className={l.startsWith('──') ? 'text-[var(--cp-yellow)] mt-1 uppercase tracking-wider' : ''}>

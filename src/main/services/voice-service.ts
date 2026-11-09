@@ -1,6 +1,6 @@
 import { storageDir } from './storage-location'
 import { detectLanguage } from './language-detect'
-import { isCloudMode, llmFetch } from './llm-gateway'
+import { llmFetch, usesOllama } from './llm-gateway'
 import { envFilePath, localFfmpegPath, pythonPath, scriptPath, voiceDataDir } from './app-paths'
 import { spawn, ChildProcess } from 'child_process'
 import { stripLookTags } from './script/look-tags'
@@ -329,7 +329,7 @@ export class VoiceService {
   }
 
   /**
-   * Synthesizes text into Capri's voice with exact acoustic profile and zero latency
+   * Synthesizes text into Tallow's voice with exact acoustic profile and zero latency
    */
   public async synthesize(text: string, langOverride?: string, opts: { silent?: boolean } = {}): Promise<SynthesizeResult> {
     // Strip all emoji characters and pictorial symbols so TTS does not read them out loud
@@ -353,7 +353,7 @@ export class VoiceService {
     const isKorean = /[\uAC00-\uD7AF\u1100-\u11FF]/.test(cleanText)
     const isCyrillic = /[\u0400-\u04FF]/.test(cleanText)
 
-    // Strictly English function words that never appear in authentic Spanish sentences (NOTE: 'choomba' is neutral slang)
+    // Strictly English function words that never appear in authentic Spanish sentences (NOTE: 'friend' is neutral slang)
     const hasEnglishMarkers = /\b(the|what|doing|are|you|your|with|this|that|have|from|systems|online|jacked|neural|link|ready|catch|side|blackwall|construct|standing|powering|offline|reboot|shutdown|cupcake|boo|easy|desktop|homework|got\s+it|next\s+time|look|see|stop|dat|hack|hacking)\b/i.test(cleanText)
 
     const hasPortugueseUnique = /[ãõêôçà]/i.test(cleanText)
@@ -390,7 +390,7 @@ export class VoiceService {
       else targetLang = 'en'
     }
 
-    // Spoken language from the settings: if Capri wrote the line in another language,
+    // Spoken language from the settings: if Tallow wrote the line in another language,
     // translate it (emotion tags preserved) and speak it in the chosen language
     let spokenText = cleanText
     const speechLang = consciousnessService.getLanguageSettings().speechLang
@@ -528,7 +528,7 @@ export class VoiceService {
 
   /** Loads the translation model into VRAM ahead of time (a cold load can take ~40s on this PC). */
   public warmTranslator(): void {
-    if (this.translatorWarm || isCloudMode()) return
+    if (this.translatorWarm || !usesOllama()) return
     this.translatorWarm = true
     this.pickTranslatorModel()
       .then((model) => {
@@ -575,7 +575,7 @@ export class VoiceService {
           messages: [
             {
               role: 'system',
-              content: `Translate the user's text to ${names[lang] || lang}. Keep every [bracket tag] exactly as written and in the same position. Keep names, slang like "choom"/"choomba", and the casual tone. Output ONLY the translation.`
+              content: `Translate the user's text to ${names[lang] || lang}. Keep every [bracket tag] exactly as written and in the same position. Keep names, slang like "friend"/"friend", and the casual tone. Output ONLY the translation.`
             },
             { role: 'user', content: text }
           ]

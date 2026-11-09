@@ -69,7 +69,7 @@ export class CyberpunkAdapter extends EventEmitter implements GameAdapter {
 
     try {
       if (app && app.getPath) {
-        dirs.push(path.join(app.getPath('documents'), 'Capri'))
+        dirs.push(path.join(app.getPath('documents'), 'Tallow'))
       }
     } catch {}
 
@@ -151,7 +151,7 @@ export class CyberpunkAdapter extends EventEmitter implements GameAdapter {
     // Emit Night City entrance event
     const isEs = consciousnessService.getPreferredLanguage() === 'es'
     const entranceGreeting = isEs
-      ? '¡Conectada a la red de Night City, choomba! Cuidado con las corporaciones y los ciberpsicópatas.'
+      ? '¡Conectada a la red de Night City, friend! Cuidado con las corporaciones y los ciberpsicópatas.'
       : 'Jacking into the Night City subnet, {name}! Watch out for corps and cyberpsychos.'
 
     this.emitGameEvent('match_started', 'high', {
@@ -209,7 +209,7 @@ export class CyberpunkAdapter extends EventEmitter implements GameAdapter {
 
     const isEs = consciousnessService.getPreferredLanguage() === 'es'
     const departurePhrase = isEs
-      ? 'Desconectando del enlace de Night City. Buen descanso para el ciberware, choomba.'
+      ? 'Desconectando del enlace de Night City. Buen descanso para el ciberware, friend.'
       : 'Disconnecting from Night City net. Rest up your chrome, {name}.'
 
     this.emitGameEvent('match_ended', 'high', {
@@ -517,7 +517,7 @@ export class CyberpunkAdapter extends EventEmitter implements GameAdapter {
 
   /**
    * Ask the CET mod to pin the closest known icon of a category and wait for its answer,
-   * so Capri only says something is on the map when it really is.
+   * so Tallow only says something is on the map when it really is.
    */
   public async markClosest(target: string): Promise<{ status: 'marked' | 'not_found' | 'no_answer' }> {
     return new Promise(async (resolve) => {
@@ -578,7 +578,7 @@ export class CyberpunkAdapter extends EventEmitter implements GameAdapter {
           JSON.stringify({
             status: 'online',
             adapter: 'cyberpunk',
-            companion: 'Capri Netrunner',
+            companion: 'Tallow Netrunner',
             active: this.isGameRunning,
             timestamp: Date.now()
           })
@@ -631,7 +631,7 @@ export class CyberpunkAdapter extends EventEmitter implements GameAdapter {
   }
 
   /**
-   * Puts Capri's mod in every copy of the game that has Cyber Engine Tweaks, and keeps it up to date.
+   * Puts Tallow's mod in every copy of the game that has Cyber Engine Tweaks, and keeps it up to date.
    * It runs when she starts, because the game only loads its mods when it opens.
    */
   public installCetMod(): void {

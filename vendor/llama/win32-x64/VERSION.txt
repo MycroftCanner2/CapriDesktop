@@ -1,0 +1,1 @@
+llama.cpp 12e9084dc1c88fe73bdd2886723b4b8b7d790be8 (ggml-org/llama.cpp), built with scripts/crow/build-llama-server-win.sh

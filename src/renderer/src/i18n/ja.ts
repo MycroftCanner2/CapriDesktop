@@ -170,6 +170,24 @@ export const ja: Messages = {
   ob_personaDesc: 'あなた向けの「capri」モデル',
 
   llm_title: 'カプリ // 頭脳',
+  llm_tallow: 'Tallow (local crow)',
+  llm_tallowDesc: 'Default. A tiny crow brain from Hugging Face (digi-the-robot/Tallow, about 60 MB) that runs on this PC with llama.cpp. Free, private, offline after the first download. He speaks crow, not code.',
+  tallow_title: 'Tallow\'s brain',
+  tallow_phase_idle: 'Resting. He wakes up when you talk to him.',
+  tallow_phase_downloading: 'Fetching Tallow from Hugging Face… {pct}%',
+  tallow_phase_converting: 'Preening the feathers (preparing the model)…',
+  tallow_phase_starting: 'Starting the local llama server…',
+  tallow_phase_ready: 'Tallow is awake (local, port {port}).',
+  tallow_phase_needsToken: 'Hugging Face asked for a token to download Tallow.',
+  tallow_phase_error: 'Tallow could not wake up: {error}',
+  tallow_phase_stopped: 'Tallow is asleep.',
+  tallow_tokenHelp: 'Paste a Hugging Face access token (HF_TOKEN, read access). It is only kept in memory for this download and never saved to disk.',
+  tallow_tokenPlaceholder: 'hf_…',
+  tallow_tokenSubmit: 'Download Tallow',
+  tallow_retry: 'Try again',
+  tallow_openData: 'Open the nest (data folder)',
+  tallow_forget: 'Forget the conversation',
+  tallow_note: 'Tallow is a crow: he answers in caws, moods and little actions. Deck tools that write code or browse need an advanced provider.',
   llm_local: 'このPCで',
   llm_localDesc: 'Ollamaで無料かつプライベート。高性能なPCと約6 GBが必要です。',
   llm_cloud: 'クラウドモデル (API)',
@@ -311,7 +329,7 @@ export const ja: Messages = {
 
   ob_moveFree: "移動先の空き",
 
-  ob_moveNote: "先にコピーし、古いファイルは最後に削除します。Python はそのままです。Capri 本体を移動するには、インストーラーをもう一度実行して別のフォルダーを選んでください。",
+  ob_moveNote: "先にコピーし、古いファイルは最後に削除します。Python はそのままです。Tallow 本体を移動するには、インストーラーをもう一度実行して別のフォルダーを選んでください。",
 
   ob_moveNoSpace: "そのディスクの空き容量が足りません。",
 

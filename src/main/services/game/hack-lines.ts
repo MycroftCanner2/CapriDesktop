@@ -1,5 +1,5 @@
 /**
- * Quickhack voice lines (V hacking someone / an enemy netrunner hacking V).
+ * Quickhack voice lines (V hacking someone / an enemy crow hacking V).
  * Kept as fixed lists so they can be pre-synthesized with the selected TTS voice
  * and play instantly in combat.
  */
@@ -12,11 +12,11 @@ export const PLAYER_QUICKHACK_LINES: Record<string, string[]> = {
   overheat: [
     'Overheat uploading! Their chrome is cooking from the inside out, {name}!',
     'Thermal surge sent! Let them burn in their own cyberware!',
-    'Overheat cooking their heatsinks! They cannot vent that fire, choom!'
+    'Overheat cooking their heatsinks! They cannot vent that fire, friend!'
   ],
   contagion: [
     'Contagion daemon injected! Spreading through their neural subnet!',
-    'Contagion viral packet deployed! Watch it jump to the next choomba!',
+    'Contagion viral packet deployed! Watch it jump to the next friend!',
     'Toxic loop running! The whole squad is catching that virus, {name}!'
   ],
   cyberware_malfunction: [
@@ -27,7 +27,7 @@ export const PLAYER_QUICKHACK_LINES: Record<string, string[]> = {
   synapse_burnout: [
     'Synapse Burnout uploaded! Clean brain fry, beautiful hack {name}!',
     'Synapse Burnout tearing through their frontal lobe! Lights out!',
-    'Neural overload! Fried their brainstem clean through, choom!'
+    'Neural overload! Fried their brainstem clean through, friend!'
   ],
   system_collapse: [
     'System Collapse initiated! Dropped them like a sack of scrap!',
@@ -37,7 +37,7 @@ export const PLAYER_QUICKHACK_LINES: Record<string, string[]> = {
   reboot_optics: [
     'Reboot Optics uploaded! They are shooting completely blind, {name}!',
     'Optic feed corrupted! They cannot see you, take your shot!',
-    'Blind as a bat! Optics rebooting, carve them up, choomba!'
+    'Blind as a bat! Optics rebooting, carve them up, friend!'
   ],
   weapon_glitch: [
     'Weapon Glitch deployed! Their triggers are jammed tight!',
@@ -46,7 +46,7 @@ export const PLAYER_QUICKHACK_LINES: Record<string, string[]> = {
   ],
   memory_wipe: [
     'Memory Wipe active! Combat loop reset, they lost track of us!',
-    'Memory Wipe sent! They do not even remember who shot at them, choom.',
+    'Memory Wipe sent! They do not even remember who shot at them, friend.',
     'Mind wiped clean! Sneak right past or execute, your call {name}.'
   ],
   cyberpsychosis: [
@@ -75,39 +75,39 @@ export const PLAYER_QUICKHACK_LINES: Record<string, string[]> = {
     'Boom! Popped the grenade on their belt, nasty one {name}!'
   ],
   distract: [
-    'Distraction sent! Now they are looking the other way, sneak in, choom.',
+    'Distraction sent! Now they are looking the other way, sneak in, friend.',
     'Distract Enemies uploaded! Perfect window to slip past them.'
   ],
   generic: [
     'ICE breached! Daemon uploaded clean into their cyberdeck, {name}!',
-    'Neural link penetrated! Their implants are completely scrambled, choomba.',
+    'Neural link penetrated! Their implants are completely scrambled, friend.',
     'Uploaded the daemon straight to their neural core! Preem netrunning!'
   ]
 }
 
 export const BEING_HACKED_LINES: Record<string, string[]> = {
   overheat: [
-    'Warning! Enemy netrunner uploading Overheat to your chrome! Find cover and cool down, {name}!',
-    'They are cooking us with Overheat! Break line of sight before we roast, choom!'
+    'Warning! Enemy crow uploading Overheat to your chrome! Find cover and cool down, {name}!',
+    'They are cooking us with Overheat! Break line of sight before we roast, friend!'
   ],
   contagion: [
-    'ICE breach! Contagion packet spreading through our rig! Kill that netrunner fast!',
+    'ICE breach! Contagion packet spreading through our rig! Kill that crow fast!',
     'Viral Contagion in our system! Flatline the runner before it eats our health, {name}!'
   ],
   cyberware_malfunction: [
-    'Enemy netrunner jamming our cyberware! Counter-hack or flatline that runner now!',
-    'Cyberware Malfunction incoming! Our implants are going offline, choom!'
+    'Enemy crow jamming our cyberware! Counter-hack or flatline that runner now!',
+    'Cyberware Malfunction incoming! Our implants are going offline, friend!'
   ],
   reboot_optics: [
-    'Optic feed glitching! Enemy netrunner is rebooting our optics, watch out {name}!',
+    'Optic feed glitching! Enemy crow is rebooting our optics, watch out {name}!',
     'We are going blind! Reboot Optics uploaded, get to cover now!'
   ],
   weapon_glitch: [
     'They are hacking our weapon smartlink! Clear the breach before the trigger locks!',
-    'Weapon Glitch on us! Switch guns or go melee, choom!'
+    'Weapon Glitch on us! Switch guns or go melee, friend!'
   ],
   locomotion_malfunction: [
-    'Our legs are locking up! Cripple Movement uploaded, kill that netrunner!',
+    'Our legs are locking up! Cripple Movement uploaded, kill that crow!',
     'Locomotion hack on us! We are a sitting duck, {name}, find that runner!'
   ],
   short_circuit: [
@@ -116,17 +116,17 @@ export const BEING_HACKED_LINES: Record<string, string[]> = {
   ],
   synapse_burnout: [
     'Synapse Burnout on our brain! That one hurts, flatline that runner NOW!',
-    'They are melting our synapses, choom! Break the link!'
+    'They are melting our synapses, friend! Break the link!'
   ],
   system_collapse: ['System Collapse uploading on us! Interrupt it or we are going down, {name}!'],
   trace: [
-    'Someone is tracing us! An enemy netrunner is locking onto our position, choom!',
-    'Netrunner trace in progress! Find them before they finish the upload, {name}!'
+    'Someone is tracing us! An enemy crow is locking onto our position, friend!',
+    'Crow trace in progress! Find them before they finish the upload, {name}!'
   ],
   generic: [
     'Incoming quickhack on our ICE! Break line of sight or zero that runner now!',
-    'Enemy netrunner locked onto our subnet! Trace their signal and drop them, {name}!',
-    'ICE under attack! Disconnect their uplink or flatline that netrunner now!'
+    'Enemy crow locked onto our subnet! Trace their signal and drop them, {name}!',
+    'ICE under attack! Disconnect their uplink or flatline that crow now!'
   ]
 }
 

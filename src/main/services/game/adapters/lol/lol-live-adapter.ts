@@ -201,20 +201,20 @@ export class LolLiveAdapter extends EventEmitter implements GameAdapter {
   public getTacticalAdvice(lang: 'es' | 'en' = 'es'): string {
     if (!this.running || this.enemyChampions.length === 0) {
       return lang === 'es'
-        ? 'No detecto ninguna partida de LoL en curso ahora mismo, choomba. Apenas entres a la Grieta avisame y te paso las contramedidas tácticas.'
+        ? 'No detecto ninguna partida de LoL en curso ahora mismo, friend. Apenas entres a la Grieta avisame y te paso las contramedidas tácticas.'
         : 'I do not detect an active League match right now, {name}. Ask me again once you load into the Rift!'
     }
 
     const adviceList = itemAdvisor.analyzeRoster(this.enemyChampions, this.activePlayerChampion || undefined, lang)
     if (adviceList.length > 0) {
       const prefix = lang === 'es'
-        ? 'Te paso las contramedidas tácticas contra su escuadrón, choomba: '
+        ? 'Te paso las contramedidas tácticas contra su escuadrón, friend: '
         : 'Here are my tactical counter-build recommendations, {name}: '
       return prefix + adviceList.join(' ')
     }
 
     return lang === 'es'
-      ? 'No veo ninguna composición extrema en el equipo enemigo, choomba. Seguí con tu build habitual de daño o aguante.'
+      ? 'No veo ninguna composición extrema en el equipo enemigo, friend. Seguí con tu build habitual de daño o aguante.'
       : 'No extreme team composition detected on the enemy squad, {name}. Stick to your core build.'
   }
 
@@ -425,16 +425,16 @@ export class LolLiveAdapter extends EventEmitter implements GameAdapter {
       if (currentDeaths >= 3 && currentDeaths >= (currentKills * 2)) {
         if (lang === 'es') {
           const roastDeathPhrases = [
-            `¡Otra vez al piso, {name}! Vas ${currentKills}/${currentDeaths}... aflojale a la donación de oro choomba jajaja.`,
-            `¡Uff, ${currentKills}/${currentDeaths}! Te están haciendo focus mal, choomba... abrazate a la torre y que no te vean ni la sombra.`,
-            `¡No te puedo creer, otra muerte! Vas ${currentKills}/${currentDeaths}, choom... concentrate que se nos va la partida.`,
+            `¡Otra vez al piso, {name}! Vas ${currentKills}/${currentDeaths}... aflojale a la donación de oro friend jajaja.`,
+            `¡Uff, ${currentKills}/${currentDeaths}! Te están haciendo focus mal, friend... abrazate a la torre y que no te vean ni la sombra.`,
+            `¡No te puedo creer, otra muerte! Vas ${currentKills}/${currentDeaths}, friend... concentrate que se nos va la partida.`,
             `¡Al desarmadero de nuevo! ${currentKills}/${currentDeaths}, pará un poco de respawnear para morir directo jajaja.`
           ]
           deathPhrase = roastDeathPhrases[Math.floor(Math.random() * roastDeathPhrases.length)]
         } else {
           const roastDeathPhrases = [
             `Down in the dirt again, {name}! Sitting at ${currentKills}/${currentDeaths}... ease off the gold charity haha!`,
-            `Oof, ${currentKills}/${currentDeaths}! They are hard-focusing you, choom... hug that turret and stay safe!`,
+            `Oof, ${currentKills}/${currentDeaths}! They are hard-focusing you, friend... hug that turret and stay safe!`,
             `I can't believe it, down again! ${currentKills}/${currentDeaths}, {name}... lock in before this match slips away.`,
             `Back to the fountain! ${currentKills}/${currentDeaths}, stop respawning just to feed them direct haha!`
           ]
@@ -461,7 +461,7 @@ export class LolLiveAdapter extends EventEmitter implements GameAdapter {
 
     {
       const intro = lang === 'es'
-        ? 'Escaneé la composición enemiga, choomba. '
+        ? 'Escaneé la composición enemiga, friend. '
         : 'Enemy team composition scanned, {name}. '
       const fallbackTip = lang === 'es'
         ? `Jugá tu build de siempre con ${this.activePlayerChampion || 'tu campeón'} y fijate quién de ellos se fedea primero.`
@@ -512,12 +512,12 @@ export class LolLiveAdapter extends EventEmitter implements GameAdapter {
         const phrases = lang === 'es'
           ? [
               `¡${k}/${d}! ¿Pero qué comiste hoy, {name}? ¡Sos un raid boss en persona, qué bestia total!`,
-              `¡${k} kills ya, choomba! ¡Eso no es habilidad humana, es puro ciberware de élite de Night City!`,
+              `¡${k} kills ya, friend! ¡Eso no es habilidad humana, es puro ciberware de élite de the rookery!`,
               `¡Partida histórica, {name}! ${k}/${d}, los borraste a los cinco de la Grieta, qué locura.`
             ]
           : [
               `What an absolute beast, {name}! ${k}/${d}, you are a raid boss in the flesh!`,
-              `${k} kills already, choomba! That is pure elite Night City chrome!`,
+              `${k} kills already, friend! That is pure elite the rookery chrome!`,
               `Historic match, {name}! ${k}/${d}, wiped all five of them off the Rift!`
             ]
         const customPhrase = phrases[Math.floor(Math.random() * phrases.length)]
@@ -529,12 +529,12 @@ export class LolLiveAdapter extends EventEmitter implements GameAdapter {
         localMilestones.add('praise_tier1')
         const phrases = lang === 'es'
           ? [
-              `¡Mirá ese KDA choomba! ${k}/${d}, sos una máquina de matar cromada, ni Faker te frena.`,
+              `¡Mirá ese KDA friend! ${k}/${d}, sos una máquina de matar cromada, ni Faker te frena.`,
               `¡Qué bestia, {name}! ${k}/${d}, estás carreando a estos cuatro conos vos solo jajaja.`,
-              `¡Imparable choom! ${k}/${d}, andá pidiéndole perdón al rival que lo borraste del mapa.`
+              `¡Imparable friend! ${k}/${d}, andá pidiéndole perdón al rival que lo borraste del mapa.`
             ]
           : [
-              `Look at that KDA, choom! ${k}/${d}, you are a lethal chrome machine today, nothing stops you!`,
+              `Look at that KDA, friend! ${k}/${d}, you are a lethal chrome machine today, nothing stops you!`,
               `Huge score, {name}! ${k}/${d}, carrying these four bots all on your own haha!`,
               `Unstoppable! ${k}/${d}, apologize to their team because you deleted them from the map!`
             ]
@@ -546,12 +546,12 @@ export class LolLiveAdapter extends EventEmitter implements GameAdapter {
         localMilestones.add('praise_tier1')
         const phrases = lang === 'es'
           ? [
-              `¡Qué lindo KDA metiste, {name}! ${k}/${d}, arrancaste la partida prendido fuego choomba.`,
-              `¡Hermoso score, choom! ${k}/${d}, los tenés corriendo en círculos a estos giles.`
+              `¡Qué lindo KDA metiste, {name}! ${k}/${d}, arrancaste la partida prendido fuego friend.`,
+              `¡Hermoso score, friend! ${k}/${d}, los tenés corriendo en círculos a estos giles.`
             ]
           : [
-              `Clean KDA, {name}! ${k}/${d}, starting this match completely on fire, choom!`,
-              `Great score, choom! ${k}/${d}, they are running in circles around you.`
+              `Clean KDA, {name}! ${k}/${d}, starting this match completely on fire, friend!`,
+              `Great score, friend! ${k}/${d}, they are running in circles around you.`
             ]
         const customPhrase = phrases[Math.floor(Math.random() * phrases.length)]
         this.lastKdaCommentTime = now
@@ -567,12 +567,12 @@ export class LolLiveAdapter extends EventEmitter implements GameAdapter {
         const phrases = lang === 'es'
           ? [
               `¡${k}/${d}! Oficialmente desbloqueaste el powerspike de las 10 muertes, {name}. Ahora sí que ganamos... o no jajaja.`,
-              `¡10 muertes choomba! Ya te conocen más en la base de ellos que en la nuestra jajaja.`,
+              `¡10 muertes friend! Ya te conocen más en la base de ellos que en la nuestra jajaja.`,
               `Uff {name}, ${k}/${d}... estás jugando en modo donación internacional de oro. ¡Apretemos los dientes!`
             ]
           : [
               `${k}/${d}! You officially unlocked the 10-death powerspike, {name}. Now we win for sure... or not haha!`,
-              `10 deaths, choomba! They know you better in their fountain than in ours haha!`,
+              `10 deaths, friend! They know you better in their fountain than in ours haha!`,
               `Oof {name}, ${k}/${d}... playing in international gold charity mode. Let us lock in!`
             ]
         const customPhrase = phrases[Math.floor(Math.random() * phrases.length)]
@@ -584,14 +584,14 @@ export class LolLiveAdapter extends EventEmitter implements GameAdapter {
         localMilestones.add('roast_tier1')
         const phrases = lang === 'es'
           ? [
-              `Uff {name}, ${k}/${d}... ¿le estás donando oro a la caridad de la Grieta o qué? Ponete las pilas choomba jajaja.`,
-              `¡${k}/${d}! Che, ¿el rival te paga comisión por cada muerte? Quedate abajo de la torre un rato choomba.`,
-              `Che choomba, ${k}/${d}... te están cazando como a un borg en Arasaka Tower jajaja.`
+              `Uff {name}, ${k}/${d}... ¿le estás donando oro a la caridad de la Grieta o qué? Ponete las pilas friend jajaja.`,
+              `¡${k}/${d}! Che, ¿el rival te paga comisión por cada muerte? Quedate abajo de la torre un rato friend.`,
+              `Che friend, ${k}/${d}... te están cazando como a un borg en the hawks Tower jajaja.`
             ]
           : [
-              `Oof {name}, ${k}/${d}... are you donating gold to Rift charity or what? Lock in, choom! Haha.`,
-              `${k}/${d}! Are they paying you a commission per death? Hug that turret for a bit, choom!`,
-              `Hey choomba, ${k}/${d}... they are hunting you down like an Arasaka borg haha!`
+              `Oof {name}, ${k}/${d}... are you donating gold to Rift charity or what? Lock in, friend! Haha.`,
+              `${k}/${d}! Are they paying you a commission per death? Hug that turret for a bit, friend!`,
+              `Hey friend, ${k}/${d}... they are hunting you down like an the hawks borg haha!`
             ]
         const customPhrase = phrases[Math.floor(Math.random() * phrases.length)]
         this.lastKdaCommentTime = now
@@ -602,13 +602,13 @@ export class LolLiveAdapter extends EventEmitter implements GameAdapter {
         const phrases = lang === 'es'
           ? [
               `Pará un poco de respawnear para morir directo, {name}, que se te van a gastar los cromos jajaja. Vas ${k}/${d}.`,
-              `Che choomba, vas ${k}/${d}... se nos complicó la línea parece. A concentrarse antes de que se arme bola de nieve.`,
-              `Uff {name}, ${k}/${d}... ¿el rival te paga comisión por cada muerte? Quedate abajo de la torre un rato choomba.`
+              `Che friend, vas ${k}/${d}... se nos complicó la línea parece. A concentrarse antes de que se arme bola de nieve.`,
+              `Uff {name}, ${k}/${d}... ¿el rival te paga comisión por cada muerte? Quedate abajo de la torre un rato friend.`
             ]
           : [
               `Stop respawning just to feed them direct, {name}! You are sitting at ${k}/${d} haha!`,
-              `Hey choom, you are ${k}/${d}... rough lane it seems. Let us focus before this snowballs out of hand.`,
-              `Oof {name}, ${k}/${d}... are they paying you a commission per death? Hug that turret for a bit, choom!`
+              `Hey friend, you are ${k}/${d}... rough lane it seems. Let us focus before this snowballs out of hand.`,
+              `Oof {name}, ${k}/${d}... are they paying you a commission per death? Hug that turret for a bit, friend!`
             ]
         const customPhrase = phrases[Math.floor(Math.random() * phrases.length)]
         this.lastKdaCommentTime = now
@@ -726,15 +726,15 @@ export class LolLiveAdapter extends EventEmitter implements GameAdapter {
           } else if (isJungler && !isAlly) {
             phrase = `Ese jungla rival va ${pk}/${pd}, está re perdido en su propia jungla... ¡vamos a invadirlo y farmearlo a él!`
           } else if (posUpper === 'UTILITY' && isAlly) {
-            phrase = `Tu soporte (${champ}) va ${pk}/${pd}... ¿está jugando con la pantalla apagada o qué? Cero visión en el mapa choomba.`
+            phrase = `Tu soporte (${champ}) va ${pk}/${pd}... ¿está jugando con la pantalla apagada o qué? Cero visión en el mapa friend.`
           } else if (posUpper === 'TOP' && isAlly) {
-            phrase = `Tu top (${champ}) va ${pk}/${pd}... le regaló dos torres al rival y sigue pusheando sin visión, qué porfiado choomba.`
+            phrase = `Tu top (${champ}) va ${pk}/${pd}... le regaló dos torres al rival y sigue pusheando sin visión, qué porfiado friend.`
           } else if (posUpper === 'MIDDLE' && isAlly) {
-            phrase = `Tu mid (${champ}) va ${pk}/${pd}... lo solokillearon 5 veces seguidas, está tiltiadísimo choom.`
+            phrase = `Tu mid (${champ}) va ${pk}/${pd}... lo solokillearon 5 veces seguidas, está tiltiadísimo friend.`
           } else if (posUpper === 'BOTTOM' && isAlly) {
-            phrase = `Tu ADC (${champ}) va ${pk}/${pd}... tiene menos posicionamiento que un cono en la vereda choomba.`
+            phrase = `Tu ADC (${champ}) va ${pk}/${pd}... tiene menos posicionamiento que un cono en la vereda friend.`
           } else if (isAlly) {
-            phrase = `${roleLabelEs} va ${pk}/${pd}... menos mal que estás vos en la partida para intentar remarla, choomba.`
+            phrase = `${roleLabelEs} va ${pk}/${pd}... menos mal que estás vos en la partida para intentar remarla, friend.`
           } else {
             phrase = `Mirá a ${roleLabelEs}, va ${pk}/${pd}... ya está tiltiadísimo pidiendo surrend al 15.`
           }
@@ -744,13 +744,13 @@ export class LolLiveAdapter extends EventEmitter implements GameAdapter {
           } else if (isJungler && !isAlly) {
             phrase = `Their jungler is ${pk}/${pd}, totally lost in their own jungle... let us invade and farm them!`
           } else if (posUpper === 'UTILITY' && isAlly) {
-            phrase = `Your support (${champ}) is ${pk}/${pd}... are they playing with monitor off? Zero map vision, choomba.`
+            phrase = `Your support (${champ}) is ${pk}/${pd}... are they playing with monitor off? Zero map vision, friend.`
           } else if (posUpper === 'TOP' && isAlly) {
             phrase = `Your top (${champ}) is ${pk}/${pd}... gave away two turrets and still pushes with zero vision, pure stubbornness!`
           } else if (posUpper === 'MIDDLE' && isAlly) {
-            phrase = `Your mid (${champ}) is ${pk}/${pd}... got solo-killed multiple times in a row, completely tilted choom.`
+            phrase = `Your mid (${champ}) is ${pk}/${pd}... got solo-killed multiple times in a row, completely tilted friend.`
           } else if (posUpper === 'BOTTOM' && isAlly) {
-            phrase = `Your ADC (${champ}) is ${pk}/${pd}... positioning like a training dummy, completely lost choom.`
+            phrase = `Your ADC (${champ}) is ${pk}/${pd}... positioning like a training dummy, completely lost friend.`
           } else if (isAlly) {
             phrase = `${roleLabelEn} is ${pk}/${pd}... thank chrome you are here to carry this squad, {name}.`
           } else {
@@ -800,7 +800,7 @@ export class LolLiveAdapter extends EventEmitter implements GameAdapter {
           pMilestones.add('enemy_fed_tier2')
           pMilestones.add('enemy_fed_tier1')
           const phrase = lang === 'es'
-            ? `¡Ese ${champ} enemigo es literalmente un raid boss, va ${pk}/${pd}! Está gigafedeado choomba... ¡un paso en falso y nos borra!`
+            ? `¡Ese ${champ} enemigo es literalmente un raid boss, va ${pk}/${pd}! Está gigafedeado friend... ¡un paso en falso y nos borra!`
             : `That enemy ${champ} is an absolute raid boss at ${pk}/${pd}! Gigafed out of their mind... 5-man collapse or it is over.`
 
           this.lastOthersCommentTime = now
@@ -819,7 +819,7 @@ export class LolLiveAdapter extends EventEmitter implements GameAdapter {
             if (posUpper === 'TOP') {
               phrase = `Ojo {name}, el toplaner enemigo (${champ}) va ${pk}/${pd} y ya sacó ventaja en línea. Respetale el daño.`
             } else if (posUpper === 'MIDDLE' || posUpper === 'MID') {
-              phrase = `Che choomba, el mid enemigo (${champ}) va ${pk}/${pd} y ya está fedeado. Cuidado con sus roams.`
+              phrase = `Che friend, el mid enemigo (${champ}) va ${pk}/${pd} y ya está fedeado. Cuidado con sus roams.`
             } else if (posUpper === 'UTILITY') {
               phrase = `Ojo con el soporte rival (${champ}), va ${pk}/${pd} y está ganando toda la visión del mapa.`
             } else {
@@ -829,7 +829,7 @@ export class LolLiveAdapter extends EventEmitter implements GameAdapter {
             if (posUpper === 'TOP') {
               phrase = `Heads up {name}, the enemy toplaner (${champ}) is ${pk}/${pd} and winning lane. Respect their trades.`
             } else if (posUpper === 'MIDDLE' || posUpper === 'MID') {
-              phrase = `Watch out choomba, enemy mid (${champ}) is ${pk}/${pd} and getting fed. Track their roams!`
+              phrase = `Watch out friend, enemy mid (${champ}) is ${pk}/${pd} and getting fed. Track their roams!`
             } else if (posUpper === 'UTILITY') {
               phrase = `Watch out for their support (${champ}), ${pk}/${pd} and securing deep map vision.`
             } else {
@@ -954,12 +954,12 @@ export class LolLiveAdapter extends EventEmitter implements GameAdapter {
         const lang = consciousnessService.getPreferredLanguage() === 'es' ? 'es' : 'en'
         const startLinesEs = [
           '¡Partida en marcha en la Grieta del Invocador! A farmear bien y reventar ese nexo, {name}.',
-          '¡Bienvenidos a la Grieta! Conectada a tu HUD, choomba. Vamos a ganar esta partida.',
-          '¡Sistemas en línea para la Grieta! A ganar esa línea y stompear el mapa, choom.'
+          '¡Bienvenidos a la Grieta! Conectada a tu HUD, friend. Vamos a ganar esta partida.',
+          '¡Sistemas en línea para la Grieta! A ganar esa línea y stompear el mapa, friend.'
         ]
         const startLinesEn = [
           'Match started on Summoner\'s Rift! Farm clean and shatter that nexus, {name}!',
-          'Welcome to the Rift! HUD synchronized, choomba. Let us take this win!',
+          'Welcome to the Rift! HUD synchronized, friend. Let us take this win!',
           'Systems live on Summoner\'s Rift! Win that lane and stomp the map, {name}.'
         ]
         const phrase = lang === 'es'
@@ -998,7 +998,7 @@ export class LolLiveAdapter extends EventEmitter implements GameAdapter {
                 : [
                     '¡Te gankearon entre dos con el jungla rival! Qué jungla diff, ni un counter-gank nos tiraron.',
                     'Nos cayó el jungla enemigo a la línea... qué jungla diff, no tenemos presencia en el mapa.',
-                    'Te cayó el jungla rival de la nada... jungla diff cantado choomba.'
+                    'Te cayó el jungla rival de la nada... jungla diff cantado friend.'
                   ]
               gankDiffPhrase = diffLines[Math.floor(Math.random() * diffLines.length)]
             } else {
@@ -1011,7 +1011,7 @@ export class LolLiveAdapter extends EventEmitter implements GameAdapter {
                 : [
                     '2v1 gank with the enemy jungler! Massive jungle diff, zero counter-gank from our squad.',
                     'Enemy jungler showed up to seal the kill... pure jungle diff in full effect, {name}.',
-                    'Ganked by their jungler! Complete jungle diff on the Rift today, choom.'
+                    'Ganked by their jungler! Complete jungle diff on the Rift today, friend.'
                   ]
               gankDiffPhrase = diffLines[Math.floor(Math.random() * diffLines.length)]
             }
@@ -1089,14 +1089,14 @@ export class LolLiveAdapter extends EventEmitter implements GameAdapter {
           if (lang === 'es') {
             if (isPlayerJg) {
               const lines = [
-                `¡Uff {name}, nos robaron el ${objName}! A guardar ese smite con más cariño para la próxima choomba.`,
-                `¡Nos ganaron el smite en el ${objName}, choomba! No pasa nada, a defender con todo ahora.`
+                `¡Uff {name}, nos robaron el ${objName}! A guardar ese smite con más cariño para la próxima friend.`,
+                `¡Nos ganaron el smite en el ${objName}, friend! No pasa nada, a defender con todo ahora.`
               ]
               phrase = lines[Math.floor(Math.random() * lines.length)]
             } else {
               const lines = [
                 `¡Nos robaron el ${objName}! Qué jungla diff por favor, ni apareció con el smite.`,
-                `El rival se llevó el ${objName}... jungla diff total choomba, qué desastre.`,
+                `El rival se llevó el ${objName}... jungla diff total friend, qué desastre.`,
                 `¡Se llevaron el ${objName} los rivales! Tremendo jungla diff, nos están regalando los objetivos.`,
                 `Perdimos el ${objName}... qué jungla diff, no metió ni las manos.`
               ]
@@ -1105,14 +1105,14 @@ export class LolLiveAdapter extends EventEmitter implements GameAdapter {
           } else {
             if (isPlayerJg) {
               const lines = [
-                `Oof {name}, they stole the ${objName}! Save that smite timing for next time, choomba.`,
+                `Oof {name}, they stole the ${objName}! Save that smite timing for next time, friend.`,
                 `Out-smited on the ${objName}! Shake it off {name}, fall back and hold!`
               ]
               phrase = lines[Math.floor(Math.random() * lines.length)]
             } else {
               const lines = [
                 `Enemy secured the ${objName}! Absolute jungle diff, didn't even contest with smite!`,
-                `They stole the ${objName}... huge jungle diff on display, choomba.`,
+                `They stole the ${objName}... huge jungle diff on display, friend.`,
                 `Lost the ${objName}! Massive jungle diff, completely out-smited.`
               ]
               phrase = lines[Math.floor(Math.random() * lines.length)]
@@ -1130,14 +1130,14 @@ export class LolLiveAdapter extends EventEmitter implements GameAdapter {
         } else {
           // ally secured the objective. Celebrate
           const phrasesEs = [
-            `¡${objName} asegurado para el equipo! Ventaja táctica nuestra, choomba.`,
+            `¡${objName} asegurado para el equipo! Ventaja táctica nuestra, friend.`,
             `¡Gran objetivo capturado! Se siente el dominio en el mapa, {name}.`,
-            `¡${objName} para casa! Impecable control de mapa choom.`
+            `¡${objName} para casa! Impecable control de mapa friend.`
           ]
           const phrasesEn = [
-            `${objName} secured! Tactical advantage is ours, choomba.`,
+            `${objName} secured! Tactical advantage is ours, friend.`,
             `Major objective taken! Clean control on the Rift, {name}.`,
-            `${objName} secured for our team! Huge play, choom.`
+            `${objName} secured for our team! Huge play, friend.`
           ]
           const phrase = lang === 'es'
             ? phrasesEs[Math.floor(Math.random() * phrasesEs.length)]
@@ -1162,8 +1162,8 @@ export class LolLiveAdapter extends EventEmitter implements GameAdapter {
 
         if (isAlly) {
           const phrase = lang === 'es'
-            ? (isTurret ? '¡Torre enemiga destruida! Seguimos abriendo el mapa, choomba.' : '¡Inhibidor enemigo caído! Superminions marchando a su nexo, {name}.')
-            : (isTurret ? 'Enemy turret destroyed! Cracking open their base, choomba.' : 'Enemy inhibitor down! Super minions marching into their nexus, {name}.')
+            ? (isTurret ? '¡Torre enemiga destruida! Seguimos abriendo el mapa, friend.' : '¡Inhibidor enemigo caído! Superminions marchando a su nexo, {name}.')
+            : (isTurret ? 'Enemy turret destroyed! Cracking open their base, friend.' : 'Enemy inhibitor down! Super minions marching into their nexus, {name}.')
           this.emitGameEvent('objective_taken', 'normal', {
             objective: isTurret ? 'Torre' : 'Inhibidor',
             killer: ev.KillerName,
@@ -1171,8 +1171,8 @@ export class LolLiveAdapter extends EventEmitter implements GameAdapter {
           })
         } else {
           const phrase = lang === 'es'
-            ? (isTurret ? 'Nos tiraron una torre... a replegarse y limpiar las oleadas, choomba.' : '¡Nos rompieron el inhibidor! A defender el nexo con la vida, {name}.')
-            : (isTurret ? 'We lost a turret... fall back and clear the waves, choomba.' : 'Our inhibitor is down! Defend the nexus with everything, {name}.')
+            ? (isTurret ? 'Nos tiraron una torre... a replegarse y limpiar las oleadas, friend.' : '¡Nos rompieron el inhibidor! A defender el nexo con la vida, {name}.')
+            : (isTurret ? 'We lost a turret... fall back and clear the waves, friend.' : 'Our inhibitor is down! Defend the nexus with everything, {name}.')
           this.emitGameEvent('objective_lost', 'high', {
             objective: isTurret ? 'Torre' : 'Inhibidor',
             killer: ev.KillerName,
@@ -1190,26 +1190,26 @@ export class LolLiveAdapter extends EventEmitter implements GameAdapter {
         let phrase = ''
         if (isWin) {
           const winPhrasesEs = [
-            '¡Victoria épica, choomba! Destruimos ese nexo y ganamos la partida. ¡Excelente trabajo en equipo, {name}!',
-            '¡GG choomba, partida ganada! Explotó el nexo rival, sos una máquina letal {name}.',
-            '¡Victoria para nosotros! Partidaza en la Grieta, nos llevamos esos puntos de liga bien merecidos choom.'
+            '¡Victoria épica, friend! Destruimos ese nexo y ganamos la partida. ¡Excelente trabajo en equipo, {name}!',
+            '¡GG friend, partida ganada! Explotó el nexo rival, sos una máquina letal {name}.',
+            '¡Victoria para nosotros! Partidaza en la Grieta, nos llevamos esos puntos de liga bien merecidos friend.'
           ]
           const winPhrasesEn = [
-            'Victory, choomba! Enemy nexus shattered into pieces! Fantastic match, {name}!',
+            'Victory, friend! Enemy nexus shattered into pieces! Fantastic match, {name}!',
             'GG, victory is ours! We smashed their nexus clean, lethal performance {name}!',
-            'We won! Absolute domination on Summoner\'s Rift today, enjoy those league points choom!'
+            'We won! Absolute domination on Summoner\'s Rift today, enjoy those league points friend!'
           ]
           phrase = lang === 'es'
             ? winPhrasesEs[Math.floor(Math.random() * winPhrasesEs.length)]
             : winPhrasesEn[Math.floor(Math.random() * winPhrasesEn.length)]
         } else {
           const losePhrasesEs = [
-            'Derrota, choomba... Nos rompieron el nexo. No pasa nada, a enfriar el ciberware y remontamos en la próxima.',
-            'Partida perdida, choom... Se nos fue de las manos al final. A resetear la cabeza y a ganar la que viene.',
+            'Derrota, friend... Nos rompieron el nexo. No pasa nada, a enfriar el ciberware y remontamos en la próxima.',
+            'Partida perdida, friend... Se nos fue de las manos al final. A resetear la cabeza y a ganar la que viene.',
             'Cayó nuestro nexo, {name}... Derrota amarga pero buen intento. ¡La próxima nos cobramos venganza!'
           ]
           const losePhrasesEn = [
-            'Defeat, choomba... They shattered our nexus. Shake it off, cool your chrome and we run it back next game!',
+            'Defeat, friend... They shattered our nexus. Shake it off, cool your chrome and we run it back next game!',
             'Tough loss, {name}... Slipped away from us in the late game. Clear your head and let\'s queue up again.',
             'Nexus destroyed, defeat this time... Shake the dust off {name}, revenge is on the menu next match!'
           ]

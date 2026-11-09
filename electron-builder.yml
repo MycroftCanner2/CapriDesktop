@@ -1,9 +1,9 @@
 # Windows installer (NSIS) + portable exe: npm run dist:win. Portable only: npm run dist:win:portable.
 # Linux .deb: npm run dist:linux
-# appId keeps the old name on purpose: it's what makes a new version install over an existing one
-appId: dev.cybercompanion.capri
-productName: Capri Desktop
-copyright: Copyright © 2026 nunezValen
+# Crow Companion is its own app (own appId), so it never installs over or shares data with Capri Desktop
+appId: dev.mycroftcanner.crowcompanion
+productName: Crow Companion
+copyright: Copyright © 2026 nunezValen, MycroftCanner2 (Crow Companion)
 
 directories:
   output: release
@@ -37,6 +37,20 @@ extraResources:
       - '!game_data/cyberpunk_mod/commands.json'
       - capri_voice/voice_config.json
       - capri_voice/voice_config.example.json
+  # Tallow's brain runs in llama.cpp's llama-server (scripts/crow/build-llama-server-win.sh). The model
+  # itself is NOT bundled: it is downloaded from Hugging Face on first open into CrowCompanion-Data.
+  - from: vendor/llama/win32-x64
+    to: llama
+    filter:
+      - llama-server.exe
+      - llama-server-compat.exe
+      - LICENSE-llama.cpp.txt
+      - VERSION.txt
+  # Marks the unzipped folder as portable: data goes to CrowCompanion-Data next to the exe
+  - from: assets/crow-portable-marker/crow-portable
+    to: crow-portable
+  - from: NOTICE.md
+    to: NOTICE.md
 
 linux:
   # Only .deb: an AppImage needs FUSE 2, which distros like Kali no longer ship
@@ -49,11 +63,11 @@ linux:
   category: Utility
   icon: assets/icon.png
   maintainer: nunezValen
-  synopsis: Capri, a cyberpunk desktop companion
-  artifactName: CapriDesktop-${version}.${ext}
+  synopsis: Tallow, a crow desktop companion
+  artifactName: CrowCompanion-${version}.${ext}
   desktop:
     entry:
-      Name: Capri Desktop
+      Name: Crow Companion
 
 deb:
   # Up to 0.2.0 the package was called cyber-companion: without this apt would keep both
@@ -83,17 +97,17 @@ win:
   target:
     - target: nsis
       arch: [x64]
-    # Single self-contained exe, no install: settings go to CapriDesktop-Data next to it
+    # Single self-contained exe, no install: settings go to CrowCompanion-Data next to it
     - target: portable
       arch: [x64]
   icon: assets/icon.ico
-  artifactName: CapriDesktop-Setup-${version}.${ext}
+  artifactName: CrowCompanion-Setup-${version}.${ext}
 
 portable:
   # "portable" in the name keeps the updater from mistaking it for the installer
-  artifactName: CapriDesktop-Portable-${version}.${ext}
+  artifactName: CrowCompanion-Portable-${version}.${ext}
   # Unpacks once per version instead of on every start
-  unpackDirName: CapriDesktop-${version}
+  unpackDirName: CrowCompanion-${version}
 
 nsis:
   oneClick: false
@@ -101,10 +115,10 @@ nsis:
   allowToChangeInstallationDirectory: true
   createDesktopShortcut: true
   createStartMenuShortcut: true
-  shortcutName: Capri Desktop
+  shortcutName: Crow Companion
   installerIcon: assets/icon.ico
   uninstallerIcon: assets/icon.ico
-  # Cyberpunk 2077 look: artwork from tools/installer-art.py, colors and texts in installer.nsh
+  # Crow look: artwork from tools/crow-art/installer_art.py, colors and texts in installer.nsh
   installerSidebar: assets/installerSidebar.bmp
   uninstallerSidebar: assets/uninstallerSidebar.bmp
   installerHeader: assets/installerHeader.bmp

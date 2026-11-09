@@ -1,6 +1,6 @@
 /**
  * Result of a finished task (a project's index.html, a folder...) waiting to be opened.
- * Agents queue it instead of opening it themselves; the agent manager opens it once Capri
+ * Agents queue it instead of opening it themselves; the agent manager opens it once Tallow
  * has told the user, so the new window doesn't replace what the user was looking at.
  */
 

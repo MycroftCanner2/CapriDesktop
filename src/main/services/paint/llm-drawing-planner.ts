@@ -14,7 +14,7 @@ export interface PlannedDrawingResult {
   rawComment?: string
 }
 
-const SYSTEM_PROMPT = `You are Capri, an autonomous AI netrunner and drawing companion.
+const SYSTEM_PROMPT = `You are Tallow, an autonomous AI crow and drawing companion.
 Your task is to plan clean, minimalist, expressive drawings for MS Paint on a normalized 100x100 grid (0,0 is top-left, 100,100 is bottom-right).
 
 STYLE & COMPOSITION RULES:
@@ -94,10 +94,10 @@ Example 4 (Cat Face):
   ]
 }
 
-Example 5 (Logo/Emblem - e.g. Arasaka Corporate Crest):
+Example 5 (Logo/Emblem - e.g. the hawks Corporate Crest):
 {
   "subject": "arasaka logo",
-  "comment": "Emblema corporativo de Arasaka",
+  "comment": "Emblema corporativo de the hawks",
   "shapes": [
     {"type": "circle", "cx": 50, "cy": 48, "r": 42},
     {"type": "circle", "cx": 50, "cy": 44, "r": 8},
@@ -132,7 +132,7 @@ export class LlmDrawingPlanner {
     const cleanSubject = subject.trim() || 'dibujo'
     console.log(`[LlmDrawingPlanner] Planning drawing for subject: "${cleanSubject}"...`)
 
-    // Check if Capri previously learned how to draw this subject with the scanner
+    // Check if Tallow previously learned how to draw this subject with the scanner
     const learned = consciousnessService.getLearnedDrawing(cleanSubject)
     if (learned && learned.plan) {
       console.log(`[LlmDrawingPlanner] Using learned drawing memory for "${cleanSubject}" from scanner!`)
@@ -233,7 +233,7 @@ export class LlmDrawingPlanner {
 
   /**
    * Synthesizes a new drawing plan based on a visual scan of a user drawing.
-   * Stores the learned plan into persistent memory so Capri can draw it next time.
+   * Stores the learned plan into persistent memory so Tallow can draw it next time.
    */
   public async learnDrawingFromScan(subject: string, visualDescription: string): Promise<DrawingPlan> {
     const cleanSubj = subject.trim().toLowerCase()
@@ -251,7 +251,7 @@ export class LlmDrawingPlanner {
         candidateModels[0] ||
         'qwen2.5-coder:7b'
 
-      const prompt = `{name} showed Capri a drawing of "${cleanSubj}" on the optical scanner.
+      const prompt = `{name} showed Tallow a drawing of "${cleanSubj}" on the optical scanner.
 Visual breakdown observed from the frame:
 """
 ${visualDescription}
@@ -352,7 +352,7 @@ Output ONLY the raw JSON object.`
     if (/arasaka/i.test(combined)) {
       return {
         subject: 'arasaka logo',
-        comment: 'El legendario emblema corporativo de Arasaka',
+        comment: 'El legendario emblema corporativo de the hawks',
         shapes: [
           { type: 'circle', cx: 50, cy: 48, r: 42 },
           { type: 'circle', cx: 50, cy: 44, r: 8 },
@@ -612,7 +612,7 @@ Output ONLY the raw JSON object.`
         { type: 'line', x1: 60, y1: 66, x2: 70, y2: 66 }
       ]
     } else if (/(?:sol|sun|estrella)/i.test(norm)) {
-      comment = 'Un sol radiante de Night City'
+      comment = 'Un sol radiante de the rookery'
       shapes = [
         { type: 'circle', cx: 50, cy: 50, r: 18 },
         { type: 'circle', cx: 44, cy: 46, r: 2 },

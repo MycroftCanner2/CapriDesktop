@@ -14,17 +14,17 @@
 
 :root {
   color-scheme: dark;
-  --bg-terminal: #090a0f;
-  --bg-surface: #0e1017;
-  --bg-surface-elevated: #141722;
-  --border-subtle: #1e2230;
-  --border-active: #32384e;
-  --text-primary: #e6edf3;
+  --bg-terminal: #0d0c0b;
+  --bg-surface: #141311;
+  --bg-surface-elevated: #1e1b18;
+  --border-subtle: #2b2723;
+  --border-active: #46403a;
+  --text-primary: #eae0cc;
   --text-secondary: #8b949e;
   --text-muted: #484f58;
-  --accent-cyan: #38bdf8;
-  --accent-amber: #f59e0b;
-  --accent-emerald: #10b981;
+  --accent-cyan: #d6c29a;
+  --accent-amber: #db9225;
+  --accent-emerald: #82ab54;
 }
 
 body {
@@ -48,20 +48,20 @@ body {
   height: 5px;
 }
 ::-webkit-scrollbar-track {
-  background: #090a0f;
+  background: #0d0c0b;
 }
 ::-webkit-scrollbar-thumb {
-  background: #222634;
+  background: #2f2b27;
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #3b4259;
+  background: #504a44;
 }
 
 /* Terminal CLI Button */
 .terminal-btn {
-  background: #12151e;
-  border: 1px solid #242938;
+  background: #1b1815;
+  border: 1px solid #322e2a;
   color: #c9d1d9;
   font-family: monospace;
   font-size: 11px;
@@ -75,8 +75,8 @@ body {
 }
 
 .terminal-btn:hover {
-  background: #1a1e2b;
-  border-color: #3f4760;
+  background: #26231f;
+  border-color: #565049;
   color: #ffffff;
 }
 
@@ -85,16 +85,16 @@ body {
 }
 
 .terminal-btn-active {
-  background: #1e2638;
-  border-color: #38bdf8;
-  color: #38bdf8;
+  background: #302b26;
+  border-color: #d6c29a;
+  color: #d6c29a;
   font-weight: 600;
 }
 
 /* Backward compatibility for cyber-btn */
 .cyber-btn {
-  background: #12151e;
-  border: 1px solid #242938;
+  background: #1b1815;
+  border: 1px solid #322e2a;
   color: #c9d1d9;
   font-family: monospace;
   font-size: 11px;
@@ -108,15 +108,15 @@ body {
 }
 
 .cyber-btn:hover {
-  background: #1a1e2b;
-  border-color: #38bdf8;
+  background: #26231f;
+  border-color: #d6c29a;
   color: #ffffff;
 }
 
 /* CLI Text Box */
 .terminal-box {
-  background: #090a0f;
-  border: 1px solid #1e2230;
+  background: #0d0c0b;
+  border: 1px solid #2b2723;
   border-radius: 6px;
 }
 
@@ -127,15 +127,15 @@ body {
 /* Dark Form Controls Baseline */
 input, select, textarea {
   color-scheme: dark !important;
-  background-color: #0c0e17;
+  background-color: #14120f;
   color: #f1f5f9;
 }
 
 /* Cyberpunk Input Box */
 .cyber-input {
-  background-color: #0c0e17 !important;
+  background-color: #14120f !important;
   color: #f1f5f9 !important;
-  border: 1px solid #283046 !important;
+  border: 1px solid #3d3731 !important;
   border-radius: 4px;
   padding: 6px 10px;
   outline: none;
@@ -145,8 +145,8 @@ input, select, textarea {
 }
 
 .cyber-input:focus {
-  border-color: #ec4899 !important;
-  box-shadow: 0 0 10px rgba(236, 72, 153, 0.25) !important;
+  border-color: #dda757 !important;
+  box-shadow: 0 0 10px rgba(221, 167, 87, 0.25) !important;
 }
 
 .cyber-input::placeholder {
@@ -156,31 +156,31 @@ input, select, textarea {
 /* Native Select & Dropdowns Dark Mode */
 select {
   color-scheme: dark !important;
-  background-color: #0e111a !important;
-  color: #e2e8f0 !important;
-  border: 1px solid #242938 !important;
+  background-color: #171411 !important;
+  color: #eae0cc !important;
+  border: 1px solid #322e2a !important;
 }
 
 select:focus {
-  border-color: #ec4899 !important;
+  border-color: #dda757 !important;
 }
 
 /* Categories (optgroup) in Select */
 optgroup {
   color-scheme: dark !important;
-  background-color: #161b28 !important;
-  color: #f472b6 !important;
+  background-color: #231f1b !important;
+  color: #e0af67 !important;
   font-weight: 700 !important;
   font-size: 11px !important;
   padding: 6px 8px !important;
-  border-bottom: 1px solid #242a3a !important;
+  border-bottom: 1px solid #342f2a !important;
 }
 
 /* Options in Select */
 option {
   color-scheme: dark !important;
-  background-color: #0c0e17 !important;
-  color: #e2e8f0 !important;
+  background-color: #14120f !important;
+  color: #eae0cc !important;
   font-size: 11px !important;
   padding: 6px 10px !important;
 }
@@ -188,8 +188,8 @@ option {
 option:hover,
 option:focus,
 option:checked {
-  background-color: #242d42 !important;
-  color: #38bdf8 !important;
+  background-color: #39332d !important;
+  color: #d6c29a !important;
 }
 
 /* =========================================================================
@@ -261,25 +261,25 @@ option:checked {
   0% {
     clip-path: polygon(0 4%, 100% 4%, 100% 26%, 0 26%, 0 50%, 100% 50%, 100% 76%, 0 76%);
     transform: translate(-34px, 0) skewX(-9deg);
-    filter: drop-shadow(-12px 0 0 #ff003c) drop-shadow(-22px 0 6px rgba(255, 0, 60, 0.95)) saturate(400%) contrast(180%);
+    filter: drop-shadow(-12px 0 0 #d4532b) drop-shadow(-22px 0 6px rgba(212, 83, 43, 0.95)) saturate(400%) contrast(180%);
     opacity: 0.95;
   }
   25% {
     clip-path: polygon(0 22%, 100% 22%, 100% 50%, 0 50%, 0 70%, 100% 70%, 100% 96%, 0 96%);
     transform: translate(36px, 0) skewX(10deg);
-    filter: drop-shadow(14px 0 0 #ff003c) drop-shadow(24px 0 8px rgba(255, 0, 80, 0.9));
+    filter: drop-shadow(14px 0 0 #d4532b) drop-shadow(24px 0 8px rgba(212, 144, 43, 0.9));
     opacity: 0.9;
   }
   50% {
     clip-path: polygon(0 0%, 100% 0%, 100% 20%, 0 20%, 0 44%, 100% 44%, 100% 68%, 0 68%);
     transform: translate(-22px, 0) skewX(-6deg);
-    filter: drop-shadow(-10px 0 0 #ff003c);
+    filter: drop-shadow(-10px 0 0 #d4532b);
     opacity: 0.85;
   }
   75% {
     clip-path: polygon(0 12%, 100% 12%, 100% 34%, 0 34%, 0 60%, 100% 60%, 100% 82%, 0 82%);
     transform: translate(12px, 0) skewX(3deg);
-    filter: drop-shadow(5px 0 0 #ff003c);
+    filter: drop-shadow(5px 0 0 #d4532b);
     opacity: 0.6;
   }
   100% {
@@ -294,25 +294,25 @@ option:checked {
   0% {
     clip-path: polygon(0 26%, 100% 26%, 100% 52%, 0 52%, 0 74%, 100% 74%, 100% 100%, 0 100%);
     transform: translate(34px, 0) skewX(9deg);
-    filter: drop-shadow(12px 0 0 #00ff55) drop-shadow(22px 0 6px rgba(0, 255, 85, 0.95)) saturate(400%) contrast(180%);
+    filter: drop-shadow(12px 0 0 #82ab54) drop-shadow(22px 0 6px rgba(130, 171, 84, 0.95)) saturate(400%) contrast(180%);
     opacity: 0.95;
   }
   25% {
     clip-path: polygon(0 0%, 100% 0%, 100% 22%, 0 22%, 0 46%, 100% 46%, 100% 70%, 0 70%);
     transform: translate(-36px, 0) skewX(-10deg);
-    filter: drop-shadow(-14px 0 0 #00ff55) drop-shadow(-24px 0 8px rgba(0, 255, 120, 0.9));
+    filter: drop-shadow(-14px 0 0 #82ab54) drop-shadow(-24px 0 8px rgba(130, 171, 84, 0.9));
     opacity: 0.9;
   }
   50% {
     clip-path: polygon(0 18%, 100% 18%, 100% 46%, 0 46%, 0 68%, 100% 68%, 100% 100%, 0 100%);
     transform: translate(22px, 0) skewX(6deg);
-    filter: drop-shadow(10px 0 0 #00ff55);
+    filter: drop-shadow(10px 0 0 #82ab54);
     opacity: 0.85;
   }
   75% {
     clip-path: polygon(0 32%, 100% 32%, 100% 58%, 0 58%, 0 78%, 100% 78%, 100% 96%, 0 96%);
     transform: translate(-12px, 0) skewX(-3deg);
-    filter: drop-shadow(-5px 0 0 #00ff55);
+    filter: drop-shadow(-5px 0 0 #82ab54);
     opacity: 0.6;
   }
   100% {
@@ -393,10 +393,10 @@ option:checked {
   left: -3px;
   width: 14px;
   height: 14px;
-  border-top: 3px solid #00f0ff;
-  border-left: 3px solid #00f0ff;
+  border-top: 3px solid #d6c29a;
+  border-left: 3px solid #d6c29a;
   pointer-events: none;
-  filter: drop-shadow(0 0 4px #00f0ff);
+  filter: drop-shadow(0 0 4px #d6c29a);
 }
 
 .hud-bracket-tr {
@@ -405,10 +405,10 @@ option:checked {
   right: -3px;
   width: 14px;
   height: 14px;
-  border-top: 3px solid #00f0ff;
-  border-right: 3px solid #00f0ff;
+  border-top: 3px solid #d6c29a;
+  border-right: 3px solid #d6c29a;
   pointer-events: none;
-  filter: drop-shadow(0 0 4px #00f0ff);
+  filter: drop-shadow(0 0 4px #d6c29a);
 }
 
 .hud-bracket-bl {
@@ -417,10 +417,10 @@ option:checked {
   left: -3px;
   width: 14px;
   height: 14px;
-  border-bottom: 3px solid #00f0ff;
-  border-left: 3px solid #00f0ff;
+  border-bottom: 3px solid #d6c29a;
+  border-left: 3px solid #d6c29a;
   pointer-events: none;
-  filter: drop-shadow(0 0 4px #00f0ff);
+  filter: drop-shadow(0 0 4px #d6c29a);
 }
 
 .hud-bracket-br {
@@ -429,10 +429,10 @@ option:checked {
   right: -3px;
   width: 14px;
   height: 14px;
-  border-bottom: 3px solid #00f0ff;
-  border-right: 3px solid #00f0ff;
+  border-bottom: 3px solid #d6c29a;
+  border-right: 3px solid #d6c29a;
   pointer-events: none;
-  filter: drop-shadow(0 0 4px #00f0ff);
+  filter: drop-shadow(0 0 4px #d6c29a);
 }
 
 /* CRT Scanlines Overlay */
@@ -442,9 +442,9 @@ option:checked {
     rgba(0, 0, 0, 0.32) 50%
   ), linear-gradient(
     90deg,
-    rgba(255, 0, 60, 0.04),
-    rgba(0, 255, 100, 0.02),
-    rgba(0, 240, 255, 0.04)
+    rgba(212, 83, 43, 0.04),
+    rgba(130, 171, 84, 0.02),
+    rgba(214, 194, 154, 0.04)
   );
   background-size: 100% 3px, 6px 100%;
   pointer-events: none;
@@ -505,3 +505,14 @@ option:checked {
 }
 
 
+
+/* Crow Companion: a small hop when Tallow changes pose */
+@keyframes crow-pose-change {
+  0% { transform: translateY(0) scale(1, 1); }
+  35% { transform: translateY(-6px) scale(0.97, 1.04); }
+  70% { transform: translateY(1px) scale(1.03, 0.97); }
+  100% { transform: translateY(0) scale(1, 1); }
+}
+.crow-pose-change {
+  animation: crow-pose-change 0.32s ease-out;
+}

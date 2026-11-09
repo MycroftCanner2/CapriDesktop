@@ -1,5 +1,5 @@
 /**
- * Comments about any game the user has open. Capri can't see what happens in the match, so she
+ * Comments about any game the user has open. Tallow can't see what happens in the match, so she
  * only talks about what the game is: its genre, its mechanics, its reputation. What she knows comes
  * from a web search the first time the game shows up.
  */
@@ -107,7 +107,7 @@ export async function generateGameComment(game: string, notes: string, lang: str
   if (!model) return null
   const language = LANGUAGE_NAMES[lang] || LANGUAGE_NAMES.en
   const prompt = [
-    `You are Capri, a playful netrunner companion hanging out with {name} on their desktop. {name} is playing the game "${game}" right now.`,
+    `You are Tallow, a playful crow companion hanging out with {name} on their desktop. {name} is playing the game "${game}" right now.`,
     `Say ONE casual remark about this game to {name}, in ${language}, one or two short sentences, spoken out loud.`,
     'Talk about what the game is: its genre, its mechanics, what people do in it, its reputation.',
     'You CANNOT see the match: never claim to know what is happening right now, the score, the level or how they are doing.',
@@ -140,6 +140,6 @@ export async function generateGameComment(game: string, notes: string, lang: str
 /** Used when no model is available: true whatever the game is */
 export function fallbackGameComment(game: string, lang: string): string {
   return lang === 'es'
-    ? `Seguí dándole a ${game}, choom. Yo te hago el aguante desde acá.`
-    : `Keep at it with ${game}, choom. I've got your back from over here.`
+    ? `Seguí dándole a ${game}, friend. Yo te hago el aguante desde acá.`
+    : `Keep at it with ${game}, friend. I've got your back from over here.`
 }

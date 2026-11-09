@@ -1,6 +1,6 @@
 import { localizeLine } from '../../../../../shared/lines'
 import { LANGUAGE_NAMES } from '../../game-commentary'
-import { isCloudMode, llmFetch } from '../../../llm-gateway'
+import { llmFetch, usesOllama } from '../../../llm-gateway'
 import { llmBody } from '../../../user-profile'
 /**
  * LLM-written League of Legends commentary. Each event is turned into a short facts prompt
@@ -96,7 +96,7 @@ export class LolCommentator {
   /** Loads the model into VRAM ahead of time (a cold 14b load can take ~100s on first use) */
   private warmedAt = 0
   private warmup(): void {
-    if (isCloudMode() || Date.now() - this.warmedAt < 15 * 60 * 1000) return
+    if (!usesOllama() || Date.now() - this.warmedAt < 15 * 60 * 1000) return
     this.warmedAt = Date.now()
     const base = this.ollamaBase()
     this.resolveModel(base)
@@ -366,8 +366,8 @@ export class LolCommentator {
     }
     if (verdict === 'no') {
       return lang === 'es'
-        ? `[worried] Ni se te ocurra, choomba. Ese ${champ} está más fuerte que nosotros, esperá al equipo.`
-        : `[worried] Don't even think about it, choom. That ${champ} is ahead of us, wait for the team.`
+        ? `[worried] Ni se te ocurra, friend. Ese ${champ} está más fuerte que nosotros, esperá al equipo.`
+        : `[worried] Don't even think about it, friend. That ${champ} is ahead of us, wait for the team.`
     }
     return lang === 'es'
       ? `[playful] Moneda al aire contra ese ${champ}... si le pegás bien las habilidades, es nuestro.`
@@ -407,18 +407,18 @@ export class LolCommentator {
     const lang = this.lang()
     const language =
       lang === 'es'
-        ? 'Rioplatense Argentine Spanish with voseo (vos, tenés, mirá), casual gamer slang mixed with a bit of Night City slang (choom, choomba, preem)'
+        ? 'Rioplatense Argentine Spanish with voseo (vos, tenés, mirá), casual gamer slang mixed with a bit of the rookery slang (friend, friend, great)'
         : lang === 'en' || !LANGUAGE_NAMES[lang]
-          ? 'casual English with Night City slang (choom, choomba, preem, gonk)'
-          : `casual ${LANGUAGE_NAMES[lang]}, keeping Night City slang (choom, choomba, preem, gonk). Everything you write must be in ${LANGUAGE_NAMES[lang]}, even though the examples and EVENT lines are in English`
+          ? 'casual English with the rookery slang (friend, friend, great, gonk)'
+          : `casual ${LANGUAGE_NAMES[lang]}, keeping the rookery slang (friend, friend, great, gonk). Everything you write must be in ${LANGUAGE_NAMES[lang]}, even though the examples and EVENT lines are in English`
     return [
-      'You are Capri, a sassy, playful cyberpunk netrunner girl who lives on {name}\'s desktop and is watching {name} play League of Legends LIVE, like a best friend on voice chat.',
+      'You are Tallow, a sassy, playful cyberpunk crow girl who lives on {name}\'s desktop and is watching {name} play League of Legends LIVE, like a best friend on voice chat.',
       'You cheer, trash-talk the enemies, celebrate big plays, and roast {name} when they play badly, always with affection and humor.',
       '{name} is the one playing; you are only watching. Talk TO {name} in second person, never as if you got the kill yourself.',
-      'Call the player {name}, choom or choomba. You can mention the champion they play ("con tu Fizz", "your Fizz", "nuestro Fizz"), but the champion is NOT their name: do not address them by it.',
+      'Call the player {name}, friend or friend. You can mention the champion they play ("con tu Fizz", "your Fizz", "nuestro Fizz"), but the champion is NOT their name: do not address them by it.',
       `Write in ${language}.`,
       `Reply with exactly ONE short spoken line (max 22 words) that starts with exactly one emotion tag from: ${EMOTION_TAGS.join(' ')}.`,
-      'Use the real champion names and numbers given. Never invent stats. No emojis, no hashtags, no quotes, no narration, no "Capri:" prefix.',
+      'Use the real champion names and numbers given. Never invent stats. No emojis, no hashtags, no quotes, no narration, no "Tallow:" prefix.',
       'When roasting or something is funny you may put [laugh] or [giggles] where you laugh; never write "jaja"/"haha" yourself.',
       'Only mention champions that appear in the EVENT or CONTEXT lines; never bring up other champions. Never call someone a jungler or say they ganked unless the EVENT says so.',
       'Talk ONLY about what the EVENT says. Never mention dragons, baron, towers or any objective unless the EVENT is about that exact objective.',
@@ -447,8 +447,8 @@ export class LolCommentator {
       {
         role: 'assistant',
         content: es
-          ? '[excited] ¡TRIPLE KILL! Nueve y dos con Yasuo, estás imparable choomba, nadie te para.'
-          : '[excited] TRIPLE KILL! Nine and two on Yasuo, you are unstoppable choomba!'
+          ? '[excited] ¡TRIPLE KILL! Nueve y dos con Yasuo, estás imparable friend, nadie te para.'
+          : '[excited] TRIPLE KILL! Nine and two on Yasuo, you are unstoppable friend!'
       }
     ]
   }
@@ -459,7 +459,7 @@ export class LolCommentator {
   /**
    * Small models end up calling the player by their champion ("¡Vamos, Fizz!"). Mentioning
    * the champion is fine; using it as the player's name is only allowed once every few lines,
-   * otherwise it becomes {name} / choomba.
+   * otherwise it becomes {name} / friend.
    */
   private limitChampionNickname(line: string): string {
     const champ = this.snapshot().me?.champion
@@ -475,7 +475,7 @@ export class LolCommentator {
       return line
     }
     this.linesSinceChampionNickname++
-    const who = this.nicknameSwap++ % 2 === 0 ? '{name}' : 'choomba'
+    const who = this.nicknameSwap++ % 2 === 0 ? '{name}' : 'friend'
     return line.replace(new RegExp(vocative.source, 'gi'), (_m, comma?: string, start?: string) => `${comma ?? start ?? ''}${who}`)
   }
 

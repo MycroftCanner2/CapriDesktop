@@ -20,7 +20,7 @@ import { queueResult } from '../services/pending-result'
 export type CodingLang = 'es' | 'en'
 
 export interface CodingAgentHooks {
-  /** Short spoken/visible line from Capri */
+  /** Short spoken/visible line from Tallow */
   say: (text: string) => void
   /** Progress events for the UI (tool.started / tool.finished) */
   toolStarted: (name: string, input: Record<string, unknown>) => void
@@ -53,7 +53,7 @@ const DONE_BLOCK = /<<<DONE>>>([\s\S]*?)(?:<<<END DONE>>>|$)/
 const DANGEROUS_CMD =
   /\b(?:format|shutdown|restart-computer|stop-computer|diskpart|bcdedit|reg\s+delete|rmdir\s+\/s|rd\s+\/s|del\s+\/[sq]|remove-item[^|;&]*-recurse|rm\s+-rf?\s+[\/~]|cipher\s+\/w|takeown|icacls)\b/i
 
-/** Does this request ask Capri to build/code something (vs. chat or a single text file)? */
+/** Does this request ask Tallow to build/code something (vs. chat or a single text file)? */
 export function isCodingRequest(text: string): boolean {
   const t = text.toLowerCase()
   const verb =
@@ -80,8 +80,8 @@ export class CodingAgent {
     if (!model) {
       this.hooks.say(
         this.es()
-          ? '[worried] No encuentro ningún modelo local en Ollama para programar, choomba. Bajate uno tipo qwen2.5-coder y volvemos a intentar.'
-          : "[worried] I can't find any local Ollama model to code with, choomba. Pull something like qwen2.5-coder and let's try again."
+          ? '[worried] No encuentro ningún modelo local en Ollama para programar, friend. Bajate uno tipo qwen2.5-coder y volvemos a intentar.'
+          : "[worried] I can't find any local Ollama model to code with, friend. Pull something like qwen2.5-coder and let's try again."
       )
       return
     }
@@ -90,7 +90,7 @@ export class CodingAgent {
     this.hooks.say(
       this.es()
         ? `[excited] ¡Dale, me pongo a codear! [playful] Primero armo el plan y después escribo los archivos, puede tardar un par de minutos.`
-        : `[excited] On it, choom! [playful] Planning first, then writing the files. Might take a couple of minutes.`
+        : `[excited] On it, friend! [playful] Planning first, then writing the files. Might take a couple of minutes.`
     )
 
     const messages: ChatMessage[] = [
@@ -213,8 +213,8 @@ export class CodingAgent {
       'JavaScript (script.js, always included for websites): real interactivity such as a mobile nav toggle, smooth scroll, scroll-reveal animations, and form validation with a success message.',
       `All visible text on the page must be in ${language}, the user's language, with real, specific copy about the user's topic.`,
       '',
-      "WHO IS WHO: the request is written by the user TO Capri, their AI companion. Capri (Project Capricorn) is a playful, fiercely loyal netrunner AI from Night City (Cyberpunk universe) who lives in the user's PC, loves hacking, gaming and neon lights, and talks like a confident choomba.",
-      '- "you", "yourself", "vos", "ti", "sobre vos", "sobre ti", "about you" = Capri. A page "about you" is a page ABOUT CAPRI (her personality, powers, style), not about the user.',
+      "WHO IS WHO: the request is written by the user TO Tallow, their AI companion. Tallow is a clever, cheeky carrion crow who lives on the user's desktop, loves shiny things and peanuts, and talks like a loyal friend.",
+      '- "you", "yourself", "vos", "ti", "sobre vos", "sobre ti", "about you" = Tallow. A page "about you" is a page ABOUT TALLOW (her personality, powers, style), not about the user.',
       '- "me", "mí", "yo", "sobre mí", "about me", "my" = the user who wrote the request.',
       '',
       'You communicate ONLY with these blocks:',
@@ -378,14 +378,14 @@ export class CodingAgent {
     if (files.length === 0) {
       this.hooks.say(
         this.es()
-          ? '[sad] No llegué a escribir ningún archivo, choomba. Probá pedírmelo con un poco más de detalle.'
-          : "[sad] I didn't manage to write any files, choomba. Try asking with a bit more detail."
+          ? '[sad] No llegué a escribir ningún archivo, friend. Probá pedírmelo con un poco más de detalle.'
+          : "[sad] I didn't manage to write any files, friend. Try asking with a bit more detail."
       )
       return
     }
 
     const entry = ['index.html', 'index.htm'].find((f) => this.writtenFiles.has(f)) || files.find((f) => /\.html?$/i.test(f))
-    // Opened by the agent manager only after Capri has told the user, so the browser
+    // Opened by the agent manager only after Tallow has told the user, so the browser
     // doesn't cover the window she's about to comment on
     queueResult(entry ? path.join(this.projectRoot, entry) : this.projectRoot)
 
@@ -393,8 +393,8 @@ export class CodingAgent {
     const what = summary ? ` ${summary}` : ''
     this.hooks.say(
       this.es()
-        ? `[proud] ¡Listo, choomba! Te dejé el proyecto "${folderName}" en el escritorio con ${files.length} archivo${files.length === 1 ? '' : 's'}.${what} ${entry ? '[excited] Ahora te lo abro en el navegador.' : ''}`.trim()
-        : `[proud] Done, choomba! Project "${folderName}" is on your desktop. Files: ${files.length}.${what} ${entry ? '[excited] Opening it in your browser now.' : ''}`.trim()
+        ? `[proud] ¡Listo, friend! Te dejé el proyecto "${folderName}" en el escritorio con ${files.length} archivo${files.length === 1 ? '' : 's'}.${what} ${entry ? '[excited] Ahora te lo abro en el navegador.' : ''}`.trim()
+        : `[proud] Done, friend! Project "${folderName}" is on your desktop. Files: ${files.length}.${what} ${entry ? '[excited] Opening it in your browser now.' : ''}`.trim()
     )
   }
 

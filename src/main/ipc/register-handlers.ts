@@ -1,6 +1,7 @@
 import { getStorageRoot } from '../services/storage-location'
 import { scriptPlayer } from '../services/script/script-player'
-import { getLlmSettings, listCloudModels, setLlmSettings, testCloudConnection, type LlmAuthMode, type LlmSettingsUpdate } from '../services/llm-gateway'
+import { tallowService } from '../tallow/tallow-service'
+import { getLlmSettings, isTallowMode, listCloudModels, setLlmSettings, testCloudConnection, type LlmAuthMode, type LlmSettingsUpdate } from '../services/llm-gateway'
 import { cancelXaiLogin, getXaiAuthStatus, xaiSignIn, xaiSignOut, type XaiLoginMethod } from '../services/xai-oauth'
 import { setupService, SetupStep } from '../services/setup-service'
 import * as os from 'os'
@@ -86,7 +87,7 @@ export function registerIpcHandlers(): void {
     return roamingManager.getStatus()
   })
 
-  // Mini-game Catch Capri
+  // Mini-game Catch Tallow
   ipcMain.handle(IPC_CHANNELS.GAME_CATCH_START, () => {
     roamingManager.startCatchGame()
     return true
@@ -149,7 +150,7 @@ export function registerIpcHandlers(): void {
     }
   )
 
-  // Always-listening gate: was this utterance addressed to Capri?
+  // Always-listening gate: was this utterance addressed to Tallow?
   ipcMain.handle(IPC_CHANNELS.VOICE_WAKE_CHECK, async (_event, text: string) => checkAddressed(text))
 
   ipcMain.handle(
@@ -164,7 +165,7 @@ export function registerIpcHandlers(): void {
     return windowManager.isGamingModeActive()
   })
 
-  // Shift + Drag move Capri across screen
+  // Shift + Drag move Tallow across screen
   ipcMain.handle(
     IPC_CHANNELS.COMPANION_MOVE_BY,
     (_event, payload: { dx: number; dy: number }) => {
@@ -260,7 +261,7 @@ export function registerIpcHandlers(): void {
     const firstTime = !consciousnessService.isOnboardingDone()
     consciousnessService.setOnboardingDone(true)
     windowManager.finishOnboarding()
-    // First install: Capri introduces herself once the setup window is gone
+    // First install: Tallow introduces herself once the setup window is gone
     if (firstTime) {
       const s = consciousnessService.getLanguageSettings()
       const lang = s.textLang && s.textLang !== 'auto' ? s.textLang : consciousnessService.getPreferredLanguage()
@@ -272,7 +273,7 @@ export function registerIpcHandlers(): void {
     return true
   })
 
-  // How Capri calls the user (set during onboarding, editable later)
+  // How Tallow calls the user (set during onboarding, editable later)
   ipcMain.handle(IPC_CHANNELS.COMPANION_GET_USER_PROFILE, () => ({
     name: getUserName(),
     hasName: !!consciousnessService.getUserName(),
@@ -319,8 +320,33 @@ export function registerIpcHandlers(): void {
     return agentManager.setConfig(config)
   })
 
+  // Tallow: first-open download from Hugging Face, local llama-server, optional HF token
+  ipcMain.handle(IPC_CHANNELS.TALLOW_GET_STATUS, () => tallowService.getStatus())
+  ipcMain.handle(IPC_CHANNELS.TALLOW_START, async () => {
+    await tallowService.ensureStarted(true)
+    return tallowService.getStatus()
+  })
+  ipcMain.handle(IPC_CHANNELS.TALLOW_SET_TOKEN, (_event, token: string) => tallowService.provideToken(String(token || '')))
+  ipcMain.handle(IPC_CHANNELS.TALLOW_FORGET, () => {
+    tallowService.forget()
+    return true
+  })
+  ipcMain.handle(IPC_CHANNELS.TALLOW_OPEN_DATA, () => shell.openPath(tallowService.dataDir()))
+  tallowService.on('status', (status) => {
+    try {
+      windowManager.broadcast(IPC_CHANNELS.TALLOW_STATUS, status)
+    } catch {
+      // windows not ready yet
+    }
+  })
+
   ipcMain.handle(IPC_CHANNELS.LLM_GET_SETTINGS, () => getLlmSettings())
-  ipcMain.handle(IPC_CHANNELS.LLM_SET_SETTINGS, (_event, update: LlmSettingsUpdate) => setLlmSettings(update))
+  ipcMain.handle(IPC_CHANNELS.LLM_SET_SETTINGS, (_event, update: LlmSettingsUpdate) => {
+    const result = setLlmSettings(update)
+    // Back to the crow: make sure he is downloaded and on the fence
+    if (result.success && isTallowMode()) tallowService.ensureStarted().catch(() => {})
+    return result
+  })
   ipcMain.handle(IPC_CHANNELS.LLM_LIST_MODELS, (_event, baseUrl: string, apiKey?: string, authMode?: LlmAuthMode) =>
     listCloudModels(baseUrl, apiKey, authMode)
   )
@@ -377,7 +403,7 @@ export function registerIpcHandlers(): void {
     const parentWin = (deckWin && !deckWin.isDestroyed() && deckWin.isVisible()) ? deckWin : undefined
     const result = await dialog.showOpenDialog(parentWin as any, {
       properties: ['openDirectory'],
-      title: 'Select Project Workspace Folder // Capricorn Dev Deck'
+      title: 'Select Project Workspace Folder // Crow Companion Dev Deck'
     })
 
     if (!result.canceled && result.filePaths.length > 0) {

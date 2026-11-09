@@ -37,8 +37,7 @@ import {
   PanelRightOpen,
   Code2
 } from 'lucide-react'
-import ojos2Video from '../assets/ojos2.mp4'
-import ojosWebp from '../assets/capri/ojos/ojos.webp'
+import ojosWebp from '../assets/crow/ojos/ojos.webp'
 import { speakDevVoice, speakDevAck, stopDevVoice } from '../utils/devVoice'
 import { MicButton } from './MicButton'
 
@@ -98,12 +97,12 @@ const LANGUAGE_LABEL: Record<string, string> = {
 const BINARY = new Set(['png', 'jpg', 'jpeg', 'gif', 'webp', 'ico', 'mp3', 'mp4', 'wav', 'webm', 'pt', 'zip', 'exe', 'dll', 'pdf', 'sqlite3', 'db'])
 
 const editorTheme = Prec.highest(EditorView.theme({
-  '&': { height: '100%', fontSize: '12.5px', backgroundColor: '#0b0708' },
-  '.cm-content': { backgroundColor: '#0b0708' },
+  '&': { height: '100%', fontSize: '12.5px', backgroundColor: '#0a0908' },
+  '.cm-content': { backgroundColor: '#0a0908' },
   '.cm-scroller': { fontFamily: '"JetBrains Mono", "Cascadia Code", Consolas, monospace', lineHeight: '1.6' },
-  '.cm-gutters': { backgroundColor: '#110a0b', borderRight: '1px solid #3a1a1a', color: '#4b5263' },
-  '.cm-activeLine': { backgroundColor: '#1c0e0f' },
-  '.cm-activeLineGutter': { backgroundColor: '#1c0e0f', color: '#a1a1aa' }
+  '.cm-gutters': { backgroundColor: '#0f0e0c', borderRight: '1px solid #312a23', color: '#4b5263' },
+  '.cm-activeLine': { backgroundColor: '#181512' },
+  '.cm-activeLineGutter': { backgroundColor: '#181512', color: '#a1a1aa' }
 }, { dark: true }))
 
 // File tree
@@ -124,7 +123,7 @@ const TreeNode: React.FC<{
       <button
         onClick={() => (entry.isDir ? onToggle(entry.path) : onOpen(entry.path))}
         className={`cp-plain w-full flex items-center gap-1.5 pr-2 py-[3px] text-left text-[14px] rounded-none cursor-pointer transition-colors ${
-          isActive ? 'bg-[#35191a] text-stone-100' : 'text-stone-400 hover:bg-[#271212] hover:text-stone-200'
+          isActive ? 'bg-[#2d2721] text-stone-100' : 'text-stone-400 hover:bg-[#211d18] hover:text-stone-200'
         }`}
         style={{ paddingLeft: 6 + depth * 14 }}
         title={entry.path}
@@ -144,7 +143,7 @@ const TreeNode: React.FC<{
       </button>
       {isOpen && (
         <div className="relative">
-          <span className="absolute top-0 bottom-0 border-l border-[#391b1c]" style={{ left: 12 + depth * 14 }} />
+          <span className="absolute top-0 bottom-0 border-l border-[#302a24]" style={{ left: 12 + depth * 14 }} />
           {(childrenOf[entry.path] || []).map((child) => (
             <TreeNode
               key={child.path}
@@ -187,7 +186,7 @@ export const CodeEditorView: React.FC = () => {
   const activeTab = tabs.find((t) => t.path === activePath) || null
   const [copied, setCopied] = useState(false)
 
-  // Capri side panel
+  // Tallow side panel
   const [showCapri, setShowCapri] = useState(true)
   const [inputPrompt, setInputPrompt] = useState('')
   const [messages, setMessages] = useState<ChatMessage[]>([])
@@ -303,7 +302,7 @@ export const CodeEditorView: React.FC = () => {
     setTimeout(() => setCopied(false), 1500)
   }
 
-  // Capri assistant (code-aware chat)
+  // Tallow assistant (code-aware chat)
 
   useEffect(() => {
     if (!window.api?.agent?.onEvent) return
@@ -356,7 +355,7 @@ export const CodeEditorView: React.FC = () => {
       bugs: `Review ${name} for bugs, edge cases, null checks, race conditions and security issues.`,
       refactor: `Refactor ${name} to be cleaner and more modern, and show the improved version.`
     }
-    // Capri answers in the language she's asked in
+    // Tallow answers in the language she's asked in
     handleSendMessage(localizeLine(prompts[type], getLineLanguage()))
   }
 
@@ -366,9 +365,9 @@ export const CodeEditorView: React.FC = () => {
   const isDirty = !!activeTab && activeTab.content !== activeTab.saved
 
   return (
-    <div className="flex-1 flex w-full h-full bg-[#120808] overflow-hidden select-none divide-x divide-[#311718]">
-      <aside className="w-60 bg-[#15090a] flex flex-col shrink-0 overflow-hidden">
-        <div className="h-9 px-3 flex items-center justify-between border-b border-[#311718]">
+    <div className="flex-1 flex w-full h-full bg-[#0f0d0b] overflow-hidden select-none divide-x divide-[#29241f]">
+      <aside className="w-60 bg-[#120f0c] flex flex-col shrink-0 overflow-hidden">
+        <div className="h-9 px-3 flex items-center justify-between border-b border-[#29241f]">
           <button
             onClick={handleSelectProject}
             className="flex items-center gap-1.5 text-[13px] font-semibold text-stone-300 hover:text-white uppercase tracking-wider truncate cursor-pointer"
@@ -379,7 +378,7 @@ export const CodeEditorView: React.FC = () => {
           </button>
           <button
             onClick={refreshTree}
-            className="p-1 text-stone-500 hover:text-stone-200 rounded-none hover:bg-[#2a1314] cursor-pointer"
+            className="p-1 text-stone-500 hover:text-stone-200 rounded-none hover:bg-[#231f1a] cursor-pointer"
             title={tr('ed_refresh')}
           >
             <RotateCw size={12} className={isLoadingTree ? 'animate-spin' : ''} />
@@ -421,7 +420,7 @@ export const CodeEditorView: React.FC = () => {
 
       <section className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Tabs */}
-        <div className="h-9 bg-[#15090a] border-b border-[#311718] flex items-stretch overflow-x-auto shrink-0">
+        <div className="h-9 bg-[#120f0c] border-b border-[#29241f] flex items-stretch overflow-x-auto shrink-0">
           {tabs.map((t) => {
             const active = t.path === activePath
             const dirty = t.content !== t.saved
@@ -430,8 +429,8 @@ export const CodeEditorView: React.FC = () => {
                 key={t.path}
                 onClick={() => setActivePath(t.path)}
                 onMouseDown={(e) => e.button === 1 && closeTab(t.path)}
-                className={`group flex items-center gap-1.5 pl-3 pr-1.5 text-[14px] border-r border-[#311718] cursor-pointer whitespace-nowrap ${
-                  active ? 'bg-[#120808] text-stone-100 border-t-2 border-t-cp-500' : 'text-stone-500 hover:text-stone-300 border-t-2 border-t-transparent'
+                className={`group flex items-center gap-1.5 pl-3 pr-1.5 text-[14px] border-r border-[#29241f] cursor-pointer whitespace-nowrap ${
+                  active ? 'bg-[#0f0d0b] text-stone-100 border-t-2 border-t-cp-500' : 'text-stone-500 hover:text-stone-300 border-t-2 border-t-transparent'
                 }`}
                 title={t.path}
               >
@@ -442,7 +441,7 @@ export const CodeEditorView: React.FC = () => {
                     e.stopPropagation()
                     closeTab(t.path)
                   }}
-                  className="cp-plain w-4 h-4 flex items-center justify-center rounded-none hover:bg-[#391b1c] cursor-pointer"
+                  className="cp-plain w-4 h-4 flex items-center justify-center rounded-none hover:bg-[#302a24] cursor-pointer"
                   title={tr('close')}
                 >
                   {dirty ? (
@@ -460,7 +459,7 @@ export const CodeEditorView: React.FC = () => {
                 <button
                   onClick={handleSave}
                   disabled={!isDirty}
-                  className="flex items-center gap-1 text-[13px] px-2 py-1 rounded-none text-stone-400 hover:text-white hover:bg-[#2a1314] disabled:opacity-40 disabled:hover:bg-transparent cursor-pointer"
+                  className="flex items-center gap-1 text-[13px] px-2 py-1 rounded-none text-stone-400 hover:text-white hover:bg-[#231f1a] disabled:opacity-40 disabled:hover:bg-transparent cursor-pointer"
                   title={tr('ed_saveTitle')}
                 >
                   <Save size={12} />
@@ -468,7 +467,7 @@ export const CodeEditorView: React.FC = () => {
                 </button>
                 <button
                   onClick={handleCopy}
-                  className="flex items-center gap-1 text-[13px] px-2 py-1 rounded-none text-stone-400 hover:text-white hover:bg-[#2a1314] cursor-pointer"
+                  className="flex items-center gap-1 text-[13px] px-2 py-1 rounded-none text-stone-400 hover:text-white hover:bg-[#231f1a] cursor-pointer"
                   title={tr('ed_copy')}
                 >
                   {copied ? <CheckCircle size={12} className="text-cyan-400" /> : <Copy size={12} />}
@@ -477,7 +476,7 @@ export const CodeEditorView: React.FC = () => {
             )}
             <button
               onClick={() => setShowCapri(!showCapri)}
-              className="p-1 rounded-none text-stone-400 hover:text-white hover:bg-[#2a1314] cursor-pointer"
+              className="p-1 rounded-none text-stone-400 hover:text-white hover:bg-[#231f1a] cursor-pointer"
               title={showCapri ? tr('ed_hidePanel') : tr('ed_showPanel')}
             >
               {showCapri ? <PanelRightClose size={14} /> : <PanelRightOpen size={14} />}
@@ -487,7 +486,7 @@ export const CodeEditorView: React.FC = () => {
 
         {/* Breadcrumb */}
         {activeTab && (
-          <div className="h-6 px-3 flex items-center gap-1 text-[13px] text-stone-500 border-b border-[#251112] shrink-0 truncate">
+          <div className="h-6 px-3 flex items-center gap-1 text-[13px] text-stone-500 border-b border-[#1f1b17] shrink-0 truncate">
             {activeTab.path.split('/').map((part, i, arr) => (
               <React.Fragment key={i}>
                 <span className={i === arr.length - 1 ? 'text-stone-300' : ''}>{part}</span>
@@ -521,7 +520,7 @@ export const CodeEditorView: React.FC = () => {
         </div>
 
         {/* Status bar */}
-        <div className="h-6 bg-[#15090a] border-t border-[#311718] px-3 flex items-center justify-between text-[12px] text-stone-500 shrink-0">
+        <div className="h-6 bg-[#120f0c] border-t border-[#29241f] px-3 flex items-center justify-between text-[12px] text-stone-500 shrink-0">
           <span className="truncate">{root}</span>
           {activeTab && (
             <span className="flex items-center gap-3 shrink-0">
@@ -534,11 +533,11 @@ export const CodeEditorView: React.FC = () => {
       </section>
 
       {showCapri && (
-        <aside className="w-80 bg-[#15090a] flex flex-col shrink-0 overflow-hidden">
-          <div className="relative h-32 shrink-0 overflow-hidden border-b border-[#311718]">
-            <video src={ojos2Video} poster={ojosWebp} autoPlay loop muted playsInline className="w-full h-full object-cover" />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#15090a] via-transparent to-transparent" />
-            <span className="absolute bottom-2 left-3 text-[13px] font-semibold text-stone-200">Capri</span>
+        <aside className="w-80 bg-[#120f0c] flex flex-col shrink-0 overflow-hidden">
+          <div className="relative h-32 shrink-0 overflow-hidden border-b border-[#29241f]">
+            <img src={ojosWebp} alt="Tallow" draggable={false} className="w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#120f0c] via-transparent to-transparent" />
+            <span className="absolute bottom-2 left-3 text-[13px] font-semibold text-stone-200">Tallow</span>
           </div>
 
           <div className="flex-1 overflow-y-auto p-3 space-y-2 text-[14px]">
@@ -551,7 +550,7 @@ export const CodeEditorView: React.FC = () => {
               <div
                 key={m.id}
                 className={`px-2.5 py-2 rounded-none leading-relaxed whitespace-pre-wrap select-text ${
-                  m.role === 'user' ? 'bg-[#2b1415] border border-cp-500/20 text-cp-100 ml-6' : 'bg-[#200f0f] border border-[#391b1c] text-stone-300 mr-2'
+                  m.role === 'user' ? 'bg-[#24201b] border border-cp-500/20 text-cp-100 ml-6' : 'bg-[#1b1814] border border-[#302a24] text-stone-300 mr-2'
                 }`}
               >
                 {m.content || (isRunning ? tr('ed_thinking') : '')}
@@ -560,7 +559,7 @@ export const CodeEditorView: React.FC = () => {
             <div ref={messagesEndRef} />
           </div>
 
-          <div className="px-3 pt-2 flex gap-1.5 border-t border-[#311718]">
+          <div className="px-3 pt-2 flex gap-1.5 border-t border-[#29241f]">
             {(
               [
                 ['explain', tr('ed_explain'), <Lightbulb size={11} key="i" />],
@@ -572,7 +571,7 @@ export const CodeEditorView: React.FC = () => {
                 key={key}
                 onClick={() => quickAction(key)}
                 disabled={isRunning || !activeTab}
-                className="flex items-center gap-1 px-2 py-1 rounded-none bg-[#271212] hover:bg-[#36191a] border border-[#411f20] text-[13px] text-stone-300 disabled:opacity-40 cursor-pointer"
+                className="flex items-center gap-1 px-2 py-1 rounded-none bg-[#211d18] hover:bg-[#2e2821] border border-[#373029] text-[13px] text-stone-300 disabled:opacity-40 cursor-pointer"
                 title={activeTab ? `${label} ${activeTab.path}` : tr('ed_openFirst')}
               >
                 {icon}
@@ -582,7 +581,7 @@ export const CodeEditorView: React.FC = () => {
           </div>
 
           <div className="p-3">
-            <div className="flex items-center gap-1 bg-[#210f10] border border-[#3c1c1d] rounded-none px-2 py-1.5 focus-within:border-cp-500 transition-colors">
+            <div className="flex items-center gap-1 bg-[#1c1814] border border-[#332c25] rounded-none px-2 py-1.5 focus-within:border-cp-500 transition-colors">
               <input
                 type="text"
                 value={inputPrompt}
@@ -599,7 +598,7 @@ export const CodeEditorView: React.FC = () => {
               />
               <MicButton
                 onText={(text) => {
-                  // Capri got busy while you were talking: keep the text in the box instead of losing it
+                  // Tallow got busy while you were talking: keep the text in the box instead of losing it
                   if (useAgentStore.getState().isRunning) setInputPrompt(text)
                   else handleSendMessage(text)
                 }}

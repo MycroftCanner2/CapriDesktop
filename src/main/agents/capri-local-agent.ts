@@ -2,7 +2,9 @@ import { scriptPlayer } from '../services/script/script-player'
 import { ensureRequestedLook, requestedLook, splitByLooks, stripLookTags } from '../services/script/look-tags'
 import { isWindows } from '../services/platform'
 import { clearLanguageOf, detectLanguage, type DetectedLang } from '../services/language-detect'
-import { cloudErrorCode, cloudErrorDetail, isCloudMode, llmFetch, type LlmErrorCode } from '../services/llm-gateway'
+import { cloudErrorCode, cloudErrorDetail, isCloudMode, isTallowMode, llmFetch, type LlmErrorCode } from '../services/llm-gateway'
+import { tallowService } from '../tallow/tallow-service'
+import { actionHint, parseMood, parseSound, splitMoodTag } from '../tallow/text'
 import * as os from 'os'
 import { getUserName, personalize, llmBody } from '../services/user-profile'
 import { EventEmitter } from 'events'
@@ -67,8 +69,8 @@ function cloudErrorMessage(code: LlmErrorCode, es: boolean, detail: string): str
     other: ['algo falló al procesar la respuesta', 'something failed while handling the reply']
   }
   return es
-    ? `No pude pensar eso, choomba: ${reasons[code][0]}. Revisalo en los ajustes del modelo. (${detail})`
-    : `I couldn't think that through, choomba: ${reasons[code][1]}. Check it in the model settings. (${detail})`
+    ? `No pude pensar eso, friend: ${reasons[code][0]}. Revisalo en los ajustes del modelo. (${detail})`
+    : `I couldn't think that through, friend: ${reasons[code][1]}. Check it in the model settings. (${detail})`
 }
 
 /** "¿qué hay de nuevo?", "notas del parche", "what's new"... */
@@ -314,19 +316,25 @@ export class CapriLocalAgent extends EventEmitter {
     // Her commands are recognized in English and Spanish. In any other language the command is
     // understood through a translation, while the answer stays in the language it was asked in.
     if (fixedCommand) {
-      console.log(`[Capri Agent] Command in ${fixedCommand.lang}, read as: "${fixedCommand.text}"`)
+      console.log(`[Tallow Agent] Command in ${fixedCommand.lang}, read as: "${fixedCommand.text}"`)
       prompt = fixedCommand.text
     } else if (conversationLang && !['en', 'es'].includes(conversationLang) && prompt.length < 300) {
       const english = await voiceService.translateCommand(prompt.trim())
       // Sometimes the model answers instead of translating: an answer is not the command
       if (english && !/[\r\n]/.test(english) && english.length <= prompt.length * 2 + 20) {
-        console.log(`[Capri Agent] Command in ${conversationLang}, understood as: "${english}"`)
+        console.log(`[Tallow Agent] Command in ${conversationLang}, understood as: "${english}"`)
         prompt = english
       }
     }
 
     const trimmed = prompt.trim()
     const originalLower = trimmed.toLowerCase()
+
+    // Talking to the crow: *actions* and caws go straight to Tallow, no command parsing
+    if (isTallowMode() && CapriLocalAgent.isCrowSpeak(trimmed)) {
+      await this.runWithTallow(spokenPrompt)
+      return
+    }
 
     const fixedTextLang = consciousnessService.getLanguageSettings().textLang
     const activeLang =
@@ -372,7 +380,7 @@ export class CapriLocalAgent extends EventEmitter {
         const all = macroService.list()
         this.emitAssistant(
           all.length === 0
-            ? (isSpanish ? '[playful] Todavía no tenés macros, choomba. Decime algo como: cuando yo diga "its game time", abrí el lol y poné mi playlist.' : '[playful] No macros yet, choomba. Try: when I say "its game time", open League and play my playlist.')
+            ? (isSpanish ? '[playful] Todavía no tenés macros, friend. Decime algo como: cuando yo diga "its game time", abrí el lol y poné mi playlist.' : '[playful] No macros yet, friend. Try: when I say "its game time", open League and play my playlist.')
             : (isSpanish ? '[cheerful] Tus macros: ' : '[cheerful] Your macros: ') +
                 all.map((m) => `"${m.trigger}" (${macroService.describe(m, lang)})`).join('; ') + '.'
         )
@@ -386,11 +394,11 @@ export class CapriLocalAgent extends EventEmitter {
         this.emitAssistant(
           count
             ? isSpanish
-              ? `[cheerful] Listo, borré tus ${count} macro${count === 1 ? '' : 's'}. [playful] Guardé una copia por las dudas, choomba.`
-              : `[cheerful] Done, deleted your ${count} macro${count === 1 ? '' : 's'}. [playful] I kept a backup just in case, choomba.`
+              ? `[cheerful] Listo, borré tus ${count} macro${count === 1 ? '' : 's'}. [playful] Guardé una copia por las dudas, friend.`
+              : `[cheerful] Done, deleted your ${count} macro${count === 1 ? '' : 's'}. [playful] I kept a backup just in case, friend.`
             : isSpanish
-              ? '[curious] No tenés ningún macro guardado, choomba.'
-              : "[curious] You don't have any macros saved, choomba."
+              ? '[curious] No tenés ningún macro guardado, friend.'
+              : "[curious] You don't have any macros saved, friend."
         )
         this.finishSession()
         return
@@ -417,8 +425,8 @@ export class CapriLocalAgent extends EventEmitter {
                 ? `[excited] ¡Macro guardado! [playful] Cuando digas "${macro.trigger}", ${macroService.describe(macro, lang)}.`
                 : `[excited] Macro saved! [playful] When you say "${macro.trigger}", I'll ${macroService.describe(macro, lang)}.`)
             : (isSpanish
-                ? '[curious] No terminé de entender el macro, choomba. Probá así: cuando yo diga "its game time", abrí el lol y poné phonk en Spotify.'
-                : '[curious] I did not quite get that macro, choomba. Try: when I say "its game time", open League and play phonk on Spotify.')
+                ? '[curious] No terminé de entender el macro, friend. Probá así: cuando yo diga "its game time", abrí el lol y poné phonk en Spotify.'
+                : '[curious] I did not quite get that macro, friend. Try: when I say "its game time", open League and play phonk on Spotify.')
         )
         this.finishSession()
         return
@@ -439,7 +447,7 @@ export class CapriLocalAgent extends EventEmitter {
 
     if (isMoveAgainRequest(trimmed)) {
       roamingManager.releaseHold()
-      this.emitAssistant(isSpanish ? '[excited] ¡Libre otra vez! Vuelvo a dar vueltas, choomba.' : '[excited] Free again! Back to wandering around, choomba.')
+      this.emitAssistant(isSpanish ? '[excited] ¡Libre otra vez! Vuelvo a dar vueltas, friend.' : '[excited] Free again! Back to wandering around, friend.')
       this.finishSession()
       return
     }
@@ -450,7 +458,7 @@ export class CapriLocalAgent extends EventEmitter {
       return
     }
 
-    // Self-update: "Capri, actualizate" -> latest GitHub Release, silent install, restart
+    // Self-update: "Tallow, actualizate" -> latest GitHub Release, silent install, restart
     if (isUpdateRequest(norm) || isUpdateInOtherLanguage(trimmed)) {
       this.emitAssistant(
         isSpanish
@@ -498,7 +506,7 @@ export class CapriLocalAgent extends EventEmitter {
     }
 
     // Scanner Learning Interceptor
-    // If Capri previously asked what an object was in Scanner Mode, and {name} is now explaining what it is:
+    // If Tallow previously asked what an object was in Scanner Mode, and {name} is now explaining what it is:
     const pendingLearning = consciousnessService.getPendingScanLearning()
     if (pendingLearning) {
       const isExplanation = /(?:es\s+|son\s+|it'?s\s+|it\s+is\s+|a\s+|un\s+|una\s+|el\s+|la\s+|mi\s+|my\s+|dibujo|drawing|screenshot|foto|photo|perro|gato|teclado|pantalla)/i.test(norm) || norm.length < 60
@@ -517,8 +525,8 @@ export class CapriLocalAgent extends EventEmitter {
       }
     }
 
-    // Capri & Ollama Full Shutdown / Turn off Interceptor
-    // If user only wants to shut down Ollama (without closing Capri):
+    // Tallow & Ollama Full Shutdown / Turn off Interceptor
+    // If user only wants to shut down Ollama (without closing Tallow):
     const onlyOllama = /^(?:apaga|apagar|cierra|cerrar|cerr[aá]|kill|shut\s*down|turn\s*off)\s+ollama$/i.test(norm)
 
     const isAppShutdown =
@@ -542,7 +550,7 @@ export class CapriLocalAgent extends EventEmitter {
     }
 
     // Language Switching / Permanent Language Selection Interceptor
-    // e.g. "Hey capri, talk in Spanish", "Capri, talk in English", "habla en español", "habla en inglés"
+    // e.g. "Hey capri, talk in Spanish", "Tallow, talk in English", "habla en español", "habla en inglés"
     const langSwitch = this.parseLanguageChangeIntent(trimmed)
     if (langSwitch) {
       consciousnessService.setLanguageSettings({ textLang: langSwitch.langCode })
@@ -553,7 +561,7 @@ export class CapriLocalAgent extends EventEmitter {
 
     // NVIDIA ShadowPlay / Instant Replay Clip Interceptor ("capri, clip that", "clipea eso", "guarda ese clip", "clip it")
     const isClipIntent =
-      /(?:clip\s*(?:that|this|it|the\s*game|moment)?|clipe[aá](?:lo|me|te)?(?:\s+(?:eso|esto|esa\s+jugada|la\s+jugada|eso\s+choom))?|guard[aá](?:me)?\s+(?:un\s+|el\s+|ese\s+)?clip|salv[aá](?:me)?\s+(?:el\s+|ese\s+)?clip|save\s+(?:that|this|the)?\s*clip|take\s+(?:a\s+)?clip|grab[aá](?:me)?\s+(?:un\s+|ese\s+)?clip|record\s+(?:that|a\s+clip))/i.test(norm) ||
+      /(?:clip\s*(?:that|this|it|the\s*game|moment)?|clipe[aá](?:lo|me|te)?(?:\s+(?:eso|esto|esa\s+jugada|la\s+jugada|eso\s+friend))?|guard[aá](?:me)?\s+(?:un\s+|el\s+|ese\s+)?clip|salv[aá](?:me)?\s+(?:el\s+|ese\s+)?clip|save\s+(?:that|this|the)?\s*clip|take\s+(?:a\s+)?clip|grab[aá](?:me)?\s+(?:un\s+|ese\s+)?clip|record\s+(?:that|a\s+clip))/i.test(norm) ||
       /^(?:clip|clipealo|clipeá|clipea|clipeate|save\s*clip)$/i.test(norm)
 
     if (isClipIntent) {
@@ -561,13 +569,13 @@ export class CapriLocalAgent extends EventEmitter {
 
       const esResponses = [
         "¡Clipeado al toque, {name}! Apreté F8 y quedó grabado en tus registros de ShadowPlay.",
-        "¡Uff, tremenda jugada, choomba! Apreté F8, ya está a salvo en tu ciberware.",
-        "¡Guardando ese clip ya mismo, {name}! F8 pulsado, eso no se podía perder choom."
+        "¡Uff, tremenda jugada, friend! Apreté F8, ya está a salvo en tu ciberware.",
+        "¡Guardando ese clip ya mismo, {name}! F8 pulsado, eso no se podía perder friend."
       ]
 
       const enResponses = [
         "Clipping that right now, {name}! Pressed F8, recorded straight to your ShadowPlay archives.",
-        "Clip locked in, choom! F8 triggered, that play was way too good to miss!",
+        "Clip locked in, friend! F8 triggered, that play was way too good to miss!",
         "Jacked that clip right into your cyberware, {name}! F8 sent, highlight saved!"
       ]
 
@@ -612,14 +620,14 @@ export class CapriLocalAgent extends EventEmitter {
       scannerService.close()
       this.emitAssistant(
         isSpanish
-          ? "Modo Scanner desconectado, choomba. Reenfocando mis implantes en el escritorio."
-          : "Scanner Mode deactivated, choomba. Refocusing my cyberware on the desktop."
+          ? "Modo Scanner desconectado, friend. Reenfocando mis implantes en el escritorio."
+          : "Scanner Mode deactivated, friend. Refocusing my cyberware on the desktop."
       )
       this.finishSession()
       return
     }
 
-    // 1.5) Learn Drawing / Logo via Scanner Interceptor ("Capri, mirá cómo se dibuja X", "aprendé este logo", "mirá este logo de Arasaka", "learn how to draw X", etc.)
+    // 1.5) Learn Drawing / Logo via Scanner Interceptor ("Tallow, mirá cómo se dibuja X", "aprendé este logo", "mirá este logo de the hawks", "learn how to draw X", etc.)
     const isLearnDrawingIntent =
       /(?:aprend[eé]|aprender|learn|copi[aá]|copiar|guard[aá]|guardar|memoriz[aá]|memorizar)\s+(?:a\s+dibujar|c[oó]mo\s+dibujar|este\s+dibujo|este\s+logo|el\s+logo|un\s+logo|este\s+emblema|este\s+icono|how\s+to\s+draw|this\s+drawing|this\s+logo)/i.test(norm) ||
       /(?:mir[aá]|mira|look|fijate|observ[aá])\s+(?:c[oó]mo\s+(?:se\s+)?dibuj[aá]|este\s+logo|el\s+logo|este\s+dibujo|este\s+emblema|c[oó]mo\s+es\s+el\s+logo)/i.test(norm) ||
@@ -634,7 +642,7 @@ export class CapriLocalAgent extends EventEmitter {
 
       if (matchSubj && matchSubj[1]) {
         learnSubject = matchSubj[1]
-          .replace(/\b(?:con\s+el\s+scanner|en\s+el\s+scanner|por\s+favor|please|choomba|capri)\b/gi, '')
+          .replace(/\b(?:con\s+el\s+scanner|en\s+el\s+scanner|por\s+favor|please|friend|capri)\b/gi, '')
           .trim()
       }
       if (!learnSubject || /^(?:esto|this|algo|something|un\s+dibujo|este\s+dibujo|el\s+dibujo|este\s+logo|el\s+logo|un\s+logo|logo|dibujo)$/i.test(learnSubject)) {
@@ -647,7 +655,7 @@ export class CapriLocalAgent extends EventEmitter {
       }
 
       const teachPhrase = isSpanish
-        ? `¡A ver cómo se hace, choomba! Dejame escanear ${learnSubject ? `los trazos de "${learnSubject}"` : 'el logo o dibujo en el marco'} para memorizarlo en mis implantes...`
+        ? `¡A ver cómo se hace, friend! Dejame escanear ${learnSubject ? `los trazos de "${learnSubject}"` : 'el logo o dibujo en el marco'} para memorizarlo en mis implantes...`
         : `Let me see how it's done, {name}! Scanning ${learnSubject ? `the strokes for "${learnSubject}"` : 'the logo or drawing inside the frame'} to lock it into my cyberware...`
 
       try {
@@ -699,7 +707,7 @@ export class CapriLocalAgent extends EventEmitter {
       return
     }
 
-    // Activate / Open Scanner (Enthusiastic netrunner response)
+    // Activate / Open Scanner (Enthusiastic crow response)
     const isScannerOpenReq =
       /(?:(?<!des)activ[aá]|abrir|abre|abr[ií]|inici[aá]|iniciar|poner|pon|start|open|launch|enable).*(?:scanner|esc[aá]ner|marco)/i.test(norm) ||
       /^(?:modo\s+scanner|scanner\s+mode|scanner|escaner)$/i.test(norm) ||
@@ -727,7 +735,7 @@ export class CapriLocalAgent extends EventEmitter {
       return
     }
 
-    // Paint Drawing Interceptor ("Capri, dibujá un gato", "hacé un dibujo de X", "draw a X", "probá dibujo monigote", etc.)
+    // Paint Drawing Interceptor ("Tallow, dibujá un gato", "hacé un dibujo de X", "draw a X", "probá dibujo monigote", etc.)
     const testExampleMatch = norm.match(/(?:prob[aá]|test(?:e[aá])?|probar)\s+(?:el\s+)?dibujo\s+(?:de\s+)?(monigote|casa|sol|stickman|house|sun)/i)
     const drawMatch = norm.match(/(?:hac[eé]\s+(?:un\s+)?dibujo\s+(?:de\s+|del\s+)?|dibuj[aá](?:me)?\s+(?:un\s+|una\s+|el\s+|la\s+|unos\s+|unas\s+)?|draw\s+(?:me\s+)?(?:a\s+|an\s+|the\s+)?)(.+)/i)
     const isGenericDraw =
@@ -740,8 +748,8 @@ export class CapriLocalAgent extends EventEmitter {
       // Drawing moves the mouse over MS Paint: there's no Linux version of that script yet
       this.emitAssistant(
         isSpanish
-          ? '[sad] Todavía no sé dibujar en Linux, choomba: lo mío es Paint, y acá no está.'
-          : "[sad] I can't draw on Linux yet, choom: my thing is Paint, and it isn't here."
+          ? '[sad] Todavía no sé dibujar en Linux, friend: lo mío es Paint, y acá no está.'
+          : "[sad] I can't draw on Linux yet, friend: my thing is Paint, and it isn't here."
       )
       this.finishSession()
       return
@@ -760,7 +768,7 @@ export class CapriLocalAgent extends EventEmitter {
         exName = rawEx === 'stickman' ? 'monigote' : rawEx === 'house' ? 'casa' : rawEx === 'sun' ? 'sol' : rawEx
 
         const preTestComment = isSpanish
-          ? `¡De una, choomba! Voy a probar el trazado del ejemplo "${exName}" en Paint para calibrar los trazos. ¡Soltá el mouse un segundo!`
+          ? `¡De una, friend! Voy a probar el trazado del ejemplo "${exName}" en Paint para calibrar los trazos. ¡Soltá el mouse un segundo!`
           : `Got it, {name}! Testing the reference drawing of "${exName}" in Paint. Hands off the mouse for a second!`
 
         try {
@@ -773,7 +781,7 @@ export class CapriLocalAgent extends EventEmitter {
       } else {
         if (drawMatch && drawMatch[1]) {
           subject = drawMatch[1]
-            .replace(/\b(?:en\s+paint|in\s+paint|por\s+fa(?:vor)?|please|choomba|capri)\b/gi, '')
+            .replace(/\b(?:en\s+paint|in\s+paint|por\s+fa(?:vor)?|please|friend|capri)\b/gi, '')
             .trim()
         }
         if (!subject || /^(?:algo|something|un\s+dibujo)$/i.test(subject)) {
@@ -803,25 +811,25 @@ export class CapriLocalAgent extends EventEmitter {
         if (result.reason === 'escape_key') {
           this.emitAssistant(
             isSpanish
-              ? "¡Abortado, choomba! Detecté que tocaste Escape. Te devuelvo el control del mouse ya mismo."
+              ? "¡Abortado, friend! Detecté que tocaste Escape. Te devuelvo el control del mouse ya mismo."
               : "Drawing aborted, {name}! Detected your Escape key. Cursor control released right away."
           )
         } else if (result.reason === 'lost_focus') {
           this.emitAssistant(
             isSpanish
-              ? "¡Abortado por seguridad! Detecté que Paint perdió el foco o cambiaste de ventana, choomba. Mouse liberado."
-              : "Aborted for safety, choomba! Paint lost focus or you switched windows. Mouse released."
+              ? "¡Abortado por seguridad! Detecté que Paint perdió el foco o cambiaste de ventana, friend. Mouse liberado."
+              : "Aborted for safety, friend! Paint lost focus or you switched windows. Mouse released."
           )
         } else if (result.reason === 'already_drawing') {
           this.emitAssistant(
             isSpanish
-              ? "¡Pará un cacho, choomba! Ya estoy dibujando en Paint con mis implantes."
+              ? "¡Pará un cacho, friend! Ya estoy dibujando en Paint con mis implantes."
               : "Hold up, {name}! I'm already in the middle of drawing in Paint!"
           )
         } else {
           this.emitAssistant(
             isSpanish
-              ? "¡Se canceló el dibujo en Paint, choomba! Cursor liberado."
+              ? "¡Se canceló el dibujo en Paint, friend! Cursor liberado."
               : "Drawing in Paint was cancelled, {name}! Cursor released."
           )
         }
@@ -829,33 +837,33 @@ export class CapriLocalAgent extends EventEmitter {
         if (isTestExample) {
           this.emitAssistant(
             isSpanish
-              ? `¡Prueba de trazado completada, choomba! El ejemplo "${exName}" quedó calcado en el lienzo de Paint.`
+              ? `¡Prueba de trazado completada, friend! El ejemplo "${exName}" quedó calcado en el lienzo de Paint.`
               : `Reference drawing test complete, {name}! The "${exName}" sample was drawn in Paint.`
           )
         } else if (plannedResult?.isLearned) {
           this.emitAssistant(
             isSpanish
-              ? `¡Terminado, choomba! Dibujé "${subject}" aplicando exactamente lo que me enseñaste en el scanner. ¿Qué tal me quedó, {name}?`
+              ? `¡Terminado, friend! Dibujé "${subject}" aplicando exactamente lo que me enseñaste en el scanner. ¿Qué tal me quedó, {name}?`
               : `Finished, {name}! I drew "${subject}" applying exactly what you showed me on the scanner. How did it turn out, {name}?`
           )
         } else if (plannedResult?.isFallback) {
           this.emitAssistant(
             isSpanish
-              ? `¡Listo, choomba! Tuve que improvisar a puro pulso cibernético porque la red neuronal andaba ocupada, pero mirá cómo te tiré ese "${subject}". ¡Quedó con toda la onda callejera de Night City!`
-              : `All done, {name}! Had to improvise purely on cyber-muscle because the neural net was busy, but look at that "${subject}". Pure Night City street style!`
+              ? `¡Listo, friend! Tuve que improvisar a puro pulso cibernético porque la red neuronal andaba ocupada, pero mirá cómo te tiré ese "${subject}". ¡Quedó con toda la onda callejera de the rookery!`
+              : `All done, {name}! Had to improvise purely on cyber-muscle because the neural net was busy, but look at that "${subject}". Pure the rookery street style!`
           )
         } else {
           this.emitAssistant(
             isSpanish
-              ? `¡Terminado, choomba! Ahí tenés tu "${subject}" en Paint. Bueno... a mi manera, ¿no? ¡Puro arte callejero y cibernético de Night City! ¿Qué te parece, {name}?`
-              : `Finished, {name}! There's your "${subject}" in Paint. Well... in my own style, right? Pure Night City street cyber-art! What do you think?`
+              ? `¡Terminado, friend! Ahí tenés tu "${subject}" en Paint. Bueno... a mi manera, ¿no? ¡Puro arte callejero y cibernético de the rookery! ¿Qué te parece, {name}?`
+              : `Finished, {name}! There's your "${subject}" in Paint. Well... in my own style, right? Pure the rookery street cyber-art! What do you think?`
           )
         }
       } else {
         this.emitAssistant(
           isSpanish
-            ? "Uff, tuve un glitch al intentar conectarme a Paint, choomba. Asegurate de que Paint esté instalado o volvé a probar."
-            : "Ugh, had a glitch trying to jack into Paint, choomba. Make sure Paint is available and try again."
+            ? "Uff, tuve un glitch al intentar conectarme a Paint, friend. Asegurate de que Paint esté instalado o volvé a probar."
+            : "Ugh, had a glitch trying to jack into Paint, friend. Make sure Paint is available and try again."
         )
       }
 
@@ -872,8 +880,8 @@ export class CapriLocalAgent extends EventEmitter {
         this.emitAssistant(
           isSpanish
             ? (lolCmd.autoAcceptEnabled
-                ? "¡Auto-aceptar de LoL activado, choomba! Voy a vigilar la cola y clavar el botón de aceptar apenas salte la partida."
-                : "Auto-aceptar de LoL desactivado, choomba. Ahora te toca a vos clavarle el clic a mano.")
+                ? "¡Auto-aceptar de LoL activado, friend! Voy a vigilar la cola y clavar el botón de aceptar apenas salte la partida."
+                : "Auto-aceptar de LoL desactivado, friend. Ahora te toca a vos clavarle el clic a mano.")
             : (lolCmd.autoAcceptEnabled
                 ? "LoL auto-accept enabled, {name}! I'll watch the queue and lock in acceptance the second a match pops!"
                 : "LoL auto-accept disabled, {name}. Back to manual clicks!")
@@ -889,7 +897,7 @@ export class CapriLocalAgent extends EventEmitter {
       if (lolCmd.pickChampionQuery && !resolvedPick) {
         this.emitAssistant(
           isSpanish
-            ? `No encontré a ningún campeón llamado "${lolCmd.pickChampionQuery}" en la Grieta, choomba. Fijate si me dijiste bien el nombre.`
+            ? `No encontré a ningún campeón llamado "${lolCmd.pickChampionQuery}" en la Grieta, friend. Fijate si me dijiste bien el nombre.`
             : `Couldn't find any champion named "${lolCmd.pickChampionQuery}" in League, {name}. Double check the name!`
         )
         this.finishSession()
@@ -899,7 +907,7 @@ export class CapriLocalAgent extends EventEmitter {
       if (lolCmd.banChampionQuery && !resolvedBan) {
         this.emitAssistant(
           isSpanish
-            ? `No encontré a ningún campeón llamado "${lolCmd.banChampionQuery}" en la Grieta, choomba. Fijate si me dijiste bien el nombre.`
+            ? `No encontré a ningún campeón llamado "${lolCmd.banChampionQuery}" en la Grieta, friend. Fijate si me dijiste bien el nombre.`
             : `Couldn't find any champion named "${lolCmd.banChampionQuery}" in League, {name}. Double check the name!`
         )
         this.finishSession()
@@ -911,7 +919,7 @@ export class CapriLocalAgent extends EventEmitter {
       if (!isRunning) {
         this.emitAssistant(
           isSpanish
-            ? "El cliente de League of Legends no está abierto o no me pude conectar al ciberware de Riot, choomba. Abrilo y volvé a probar."
+            ? "El cliente de League of Legends no está abierto o no me pude conectar al ciberware de Riot, friend. Abrilo y volvé a probar."
             : "League client isn't running or I couldn't connect to Riot's cyberware, {name}. Launch it and try again."
         )
         this.finishSession()
@@ -924,7 +932,7 @@ export class CapriLocalAgent extends EventEmitter {
         await lcuService.stopMatchmaking()
         this.emitAssistant(
           isSpanish
-            ? "¡Búsqueda y plan de LoL cancelados, choomba! Nos quedamos tranquilos en la sala."
+            ? "¡Búsqueda y plan de LoL cancelados, friend! Nos quedamos tranquilos en la sala."
             : "LoL matchmaking and plan cancelled, {name}! Standing down in the lobby."
         )
         this.finishSession()
@@ -944,10 +952,10 @@ export class CapriLocalAgent extends EventEmitter {
         if (!planResult.success && planResult.status === 'no_lobby') {
           const detail = (resolvedPick && resolvedBan)
             ? (isSpanish
-                ? `Tengo listo el plan para auto-aceptar, banear a ${resolvedBan.name} y pickear a ${resolvedPick.name}, pero no estás en ninguna sala (lobby) de LoL, choomba. ¡Entrá a una sala y le doy a buscar!`
+                ? `Tengo listo el plan para auto-aceptar, banear a ${resolvedBan.name} y pickear a ${resolvedPick.name}, pero no estás en ninguna sala (lobby) de LoL, friend. ¡Entrá a una sala y le doy a buscar!`
                 : `I have the plan ready to auto-accept, ban ${resolvedBan.name}, and pick ${resolvedPick.name}, but you're not in a LoL lobby, {name}. Join a lobby and I'll queue us up!`)
             : (isSpanish
-                ? "El cliente está abierto, pero no estás en ninguna sala (lobby) de LoL, choomba. Creá o unite a una sala y te busco la partida."
+                ? "El cliente está abierto, pero no estás en ninguna sala (lobby) de LoL, friend. Creá o unite a una sala y te busco la partida."
                 : "League client is open, but you're not in a lobby, {name}. Join or create a lobby first, and I'll find a match.")
           this.emitAssistant(detail)
           this.finishSession()
@@ -957,37 +965,37 @@ export class CapriLocalAgent extends EventEmitter {
         if (lolCmd.wantsSearch && resolvedPick && resolvedBan) {
           this.emitAssistant(
             isSpanish
-              ? `¡Entendido, choomba! Inicié la búsqueda de partida. Tengo el auto-aceptar listo, voy a banear a ${resolvedBan.name} y asegurarte a ${resolvedPick.name} apenas toque tu turno en la Grieta. ¡Relajate que yo me encargo!`
+              ? `¡Entendido, friend! Inicié la búsqueda de partida. Tengo el auto-aceptar listo, voy a banear a ${resolvedBan.name} y asegurarte a ${resolvedPick.name} apenas toque tu turno en la Grieta. ¡Relajate que yo me encargo!`
               : `Got it, {name}! Matchmaking started. Auto-accept is primed, I'll ban ${resolvedBan.name} and lock in ${resolvedPick.name} as soon as it's your turn in champ select. Sit back, I've got your back!`
           )
         } else if (lolCmd.wantsSearch && resolvedPick && !resolvedBan) {
           this.emitAssistant(
             isSpanish
-              ? `¡Buscando partida, choomba! Voy a auto-aceptar en cuanto salga y te aseguro a ${resolvedPick.name} en la selección.`
+              ? `¡Buscando partida, friend! Voy a auto-aceptar en cuanto salga y te aseguro a ${resolvedPick.name} en la selección.`
               : `Queueing up, {name}! I'll auto-accept when it pops and secure ${resolvedPick.name} for you in champ select.`
           )
         } else if (lolCmd.wantsSearch && !resolvedPick && resolvedBan) {
           this.emitAssistant(
             isSpanish
-              ? `¡Cola iniciada, choomba! Voy a auto-aceptar la partida y banear a ${resolvedBan.name} apenas empiece la fase de bloqueos.`
+              ? `¡Cola iniciada, friend! Voy a auto-aceptar la partida y banear a ${resolvedBan.name} apenas empiece la fase de bloqueos.`
               : `Starting matchmaking, {name}! I'll auto-accept and ban ${resolvedBan.name} the moment the ban phase starts.`
           )
         } else if (lolCmd.wantsSearch && lolCmd.wantsAccept) {
           this.emitAssistant(
             isSpanish
-              ? "¡En marcha, choomba! Buscando partida en LoL con auto-aceptar encendido. Apenas salte, estamos adentro."
+              ? "¡En marcha, friend! Buscando partida en LoL con auto-aceptar encendido. Apenas salte, estamos adentro."
               : "On it, {name}! LoL queue started with auto-accept armed. The second it pops, we're in!"
           )
         } else if (resolvedPick && resolvedBan && !lolCmd.wantsSearch) {
           this.emitAssistant(
             isSpanish
-              ? `¡Plan registrado, choomba! En la selección de campeones voy a banear a ${resolvedBan.name} y bloquearte a ${resolvedPick.name}.`
+              ? `¡Plan registrado, friend! En la selección de campeones voy a banear a ${resolvedBan.name} y bloquearte a ${resolvedPick.name}.`
               : `Plan registered, {name}! In champion select I'll ban ${resolvedBan.name} and lock in ${resolvedPick.name} for you.`
           )
         } else {
           this.emitAssistant(
             isSpanish
-              ? "¡Plan de LoL configurado con éxito, choomba! Ya me ocupo de la sala."
+              ? "¡Plan de LoL configurado con éxito, friend! Ya me ocupo de la sala."
               : "LoL automation plan set up successfully, {name}! I'll handle champ select."
           )
         }
@@ -1001,14 +1009,14 @@ export class CapriLocalAgent extends EventEmitter {
         if (!res.success && res.status === 'no_lobby') {
           this.emitAssistant(
             isSpanish
-              ? "No estás en ninguna sala (lobby) de LoL, choomba. Creá o unite a una sala y te busco la partida."
+              ? "No estás en ninguna sala (lobby) de LoL, friend. Creá o unite a una sala y te busco la partida."
               : "You're not in a LoL lobby, {name}. Join or create a lobby first, and I'll find a match."
           )
         } else if (res.success) {
           lcuService.setAutoAccept(true)
           this.emitAssistant(
             isSpanish
-              ? "¡Iniciando búsqueda de partida en LoL, choomba! Dejo el auto-aceptar activo para entrar de una."
+              ? "¡Iniciando búsqueda de partida en LoL, friend! Dejo el auto-aceptar activo para entrar de una."
               : "Starting LoL matchmaking, {name}! Auto-accept is enabled so we jump right in."
           )
         } else {
@@ -1028,14 +1036,14 @@ export class CapriLocalAgent extends EventEmitter {
         if (res.success) {
           this.emitAssistant(
             isSpanish
-              ? "¡Listo! Partida aceptada con éxito, choomba. ¡A ganar esta en la Grieta!"
+              ? "¡Listo! Partida aceptada con éxito, friend. ¡A ganar esta en la Grieta!"
               : "Match accepted, {name}! Time to hit the Rift and take them down!"
           )
         } else if (res.status === 'not_in_ready_check') {
           lcuService.setAutoAccept(true)
           this.emitAssistant(
             isSpanish
-              ? "No hay ninguna partida lista ahora mismo, choomba, pero activé el auto-aceptar para clavarla apenas aparezca."
+              ? "No hay ninguna partida lista ahora mismo, friend, pero activé el auto-aceptar para clavarla apenas aparezca."
               : "No match ready-check is active right now, {name}, but I turned on auto-accept so I'll lock it in the moment it pops!"
           )
         } else {
@@ -1056,20 +1064,20 @@ export class CapriLocalAgent extends EventEmitter {
           await lcuService.setAutomationPlan({ banChampion: resolvedBan.name, autoAccept: true })
           this.emitAssistant(
             isSpanish
-              ? `No estás en selección de campeones ahora mismo, choomba, pero me guardé a ${resolvedBan.name} para banearlo apenas empiece la sala.`
+              ? `No estás en selección de campeones ahora mismo, friend, pero me guardé a ${resolvedBan.name} para banearlo apenas empiece la sala.`
               : `You're not in champ select right now, {name}, but I've saved ${resolvedBan.name} to ban it the moment champ select starts.`
           )
         } else if (res.status === 'not_your_turn') {
           await lcuService.setAutomationPlan({ banChampion: resolvedBan.name, autoAccept: true })
           this.emitAssistant(
             isSpanish
-              ? `Aún no es tu turno de banear, choomba, pero dejé a ${resolvedBan.name} en cola para bloquearlo apenas abra tu fase.`
+              ? `Aún no es tu turno de banear, friend, pero dejé a ${resolvedBan.name} en cola para bloquearlo apenas abra tu fase.`
               : `Not your turn to ban yet, {name}, but I queued up ${resolvedBan.name} to ban it the second your turn opens.`
           )
         } else if (res.status === 'champion_unavailable') {
           this.emitAssistant(
             isSpanish
-              ? `No pude banear a ${resolvedBan.name}, choomba. Puede que ya haya sido baneado por otro jugador.`
+              ? `No pude banear a ${resolvedBan.name}, friend. Puede que ya haya sido baneado por otro jugador.`
               : `Couldn't ban ${resolvedBan.name}, {name}. Might already be banned by someone else.`
           )
         } else if (res.success) {
@@ -1096,14 +1104,14 @@ export class CapriLocalAgent extends EventEmitter {
           await lcuService.setAutomationPlan({ pickChampion: resolvedPick.name, autoAccept: true })
           this.emitAssistant(
             isSpanish
-              ? `No estás en selección de campeones en este momento, choomba, pero me guardé a ${resolvedPick.name} para pickeártelo y bloquearlo apenas entremos a la sala.`
+              ? `No estás en selección de campeones en este momento, friend, pero me guardé a ${resolvedPick.name} para pickeártelo y bloquearlo apenas entremos a la sala.`
               : `You're not in champ select right now, {name}, but I saved ${resolvedPick.name} to pick and lock it in for you the second we enter champ select.`
           )
         } else if (res.status === 'not_your_turn') {
           await lcuService.setAutomationPlan({ pickChampion: resolvedPick.name, autoAccept: true })
           this.emitAssistant(
             isSpanish
-              ? `Todavía no es tu turno de pickear, choomba, pero dejé a ${resolvedPick.name} preparado para asegurártelo apenas abra tu turno.`
+              ? `Todavía no es tu turno de pickear, friend, pero dejé a ${resolvedPick.name} preparado para asegurártelo apenas abra tu turno.`
               : `It's not your turn to pick yet, {name}, but I set up ${resolvedPick.name} to lock it in the instant your turn opens.`
           )
         } else if (res.status === 'champion_unavailable') {
@@ -1111,7 +1119,7 @@ export class CapriLocalAgent extends EventEmitter {
           await lcuService.setAutomationPlan({ pickChampion: resolvedPick.name, autoAccept: true })
           this.emitAssistant(
             isSpanish
-              ? `No puedo pickear a ${resolvedPick.name}, choomba. Busco otro de tus campeones.`
+              ? `No puedo pickear a ${resolvedPick.name}, friend. Busco otro de tus campeones.`
               : `I can't lock in ${resolvedPick.name}, {name}. Looking for another of your champions.`
           )
         } else if (res.success) {
@@ -1135,8 +1143,8 @@ export class CapriLocalAgent extends EventEmitter {
         await this.runSingleTool('media_control', { action: 'next' }, projectPath, 'Skipping track on Spotify audio net...')
         this.emitAssistant(
           isSpanish
-            ? "¡Pista saltada! Ya está sonando el siguiente tema en Spotify, choomba. ¡Que siga el ritmo!"
-            : "Track skipped! Next tune spinning on Spotify, choomba. Let's keep the vibe going!"
+            ? "¡Pista saltada! Ya está sonando el siguiente tema en Spotify, friend. ¡Que siga el ritmo!"
+            : "Track skipped! Next tune spinning on Spotify, friend. Let's keep the vibe going!"
         )
         this.finishSession()
         return
@@ -1153,11 +1161,11 @@ export class CapriLocalAgent extends EventEmitter {
       this.emitAssistant(
         isSpanish
           ? (directMusic.isChange
-              ? `¡Listo! Cambié a "${directMusic.songQuery}" en Spotify, choomba. ¡A subir el volumen!`
-              : `¡Listo! Puse "${directMusic.songQuery}" en ${directMusic.platform === 'spotify' ? 'Spotify' : 'YouTube'}, choomba. ¡A disfrutar!`)
+              ? `¡Listo! Cambié a "${directMusic.songQuery}" en Spotify, friend. ¡A subir el volumen!`
+              : `¡Listo! Puse "${directMusic.songQuery}" en ${directMusic.platform === 'spotify' ? 'Spotify' : 'YouTube'}, friend. ¡A disfrutar!`)
           : (directMusic.isChange
-              ? `Boom! Switched track to "${directMusic.songQuery}" on Spotify, choomba! Turn up the sound and enjoy!`
-              : `Boom! Queued up "${directMusic.songQuery}" on ${directMusic.platform === 'spotify' ? 'Spotify' : 'YouTube'}, choomba! Turn up the sound and enjoy!`)
+              ? `Boom! Switched track to "${directMusic.songQuery}" on Spotify, friend! Turn up the sound and enjoy!`
+              : `Boom! Queued up "${directMusic.songQuery}" on ${directMusic.platform === 'spotify' ? 'Spotify' : 'YouTube'}, friend! Turn up the sound and enjoy!`)
       )
       this.finishSession()
       return
@@ -1202,8 +1210,8 @@ export class CapriLocalAgent extends EventEmitter {
         )
         this.emitAssistant(
           isSpanish
-            ? `¡Listo! Cambié a "${targetSong}" en Spotify, choomba. ¡A subir el volumen!`
-            : `Boom! Switched track to "${targetSong}" on Spotify, choomba! Turn up the sound and enjoy!`
+            ? `¡Listo! Cambié a "${targetSong}" en Spotify, friend. ¡A subir el volumen!`
+            : `Boom! Switched track to "${targetSong}" on Spotify, friend! Turn up the sound and enjoy!`
         )
         this.finishSession()
         return
@@ -1224,18 +1232,18 @@ export class CapriLocalAgent extends EventEmitter {
       )
       const phrase = isSpanish
         ? (action === 'next'
-            ? "¡Pista saltada! Ya está sonando el siguiente tema en Spotify, choomba. ¡A romperla!"
+            ? "¡Pista saltada! Ya está sonando el siguiente tema en Spotify, friend. ¡A romperla!"
             : action === 'prev'
             ? "¡Volviendo al tema anterior en Spotify, {name}!"
             : action === 'pause'
-            ? "¡Spotify pausado, choomba! En espera en la red."
+            ? "¡Spotify pausado, friend! En espera en la red."
             : "¡Spotify sonando a tope, {name}! Subí los parlantes.")
         : (action === 'next'
-            ? "Track skipped! Next tune spinning on Spotify, choomba. Turn up the chrome!"
+            ? "Track skipped! Next tune spinning on Spotify, friend. Turn up the chrome!"
             : action === 'prev'
             ? "Rewound to the previous track! Back to the groove, {name}."
             : action === 'pause'
-            ? "Spotify paused! Standing by in the static, choomba."
+            ? "Spotify paused! Standing by in the static, friend."
             : "Cranking the audio net! Spotify is blasting, {name}!")
       this.emitAssistant(phrase)
       this.finishSession()
@@ -1253,13 +1261,13 @@ export class CapriLocalAgent extends EventEmitter {
       )
       const searchLines = isSpanish
         ? [
-            `¡Me conecté a la red y busqué "${browserSearchQuery}" en tu navegador! Mirá los resultados en pantalla, choomba.`,
-            `Abriendo tu navegador y buscando "${browserSearchQuery}". ¡Ahí vamos, choomba!`,
+            `¡Me conecté a la red y busqué "${browserSearchQuery}" en tu navegador! Mirá los resultados en pantalla, friend.`,
+            `Abriendo tu navegador y buscando "${browserSearchQuery}". ¡Ahí vamos, friend!`,
             `¡Conectada al navegador buscando "${browserSearchQuery}"! La ventana está lista en tu equipo, {name}.`
           ]
         : [
-            `Breached the Net and searched for "${browserSearchQuery}" in your browser! Check out the results, choomba.`,
-            `Opening up your browser and searching for "${browserSearchQuery}". Here we go, choomba!`,
+            `Breached the Net and searched for "${browserSearchQuery}" in your browser! Check out the results, friend.`,
+            `Opening up your browser and searching for "${browserSearchQuery}". Here we go, friend!`,
             `Jacked into the browser for "${browserSearchQuery}"! Window is live on your deck, {name}.`
           ]
       this.emitAssistant(searchLines[Math.floor(Math.random() * searchLines.length)])
@@ -1333,21 +1341,21 @@ export class CapriLocalAgent extends EventEmitter {
       if (isFront) {
         this.emitAssistant(
           isSpanish
-            ? "¡Acomodándome justo en medio de la pantalla, choomba! Contacto visual establecido."
-            : "Taking a seat right in the middle of your screen, choomba! Direct visual contact established."
+            ? "¡Acomodándome justo en medio de la pantalla, friend! Contacto visual establecido."
+            : "Taking a seat right in the middle of your screen, friend! Direct visual contact established."
         )
       } else if (app) {
         const titleShort = app.title.length > 30 ? app.title.substring(0, 27) + '...' : app.title
         this.emitAssistant(
           isSpanish
-            ? `¡Me senté en las pestañas de tu ${app.isBrowser ? 'navegador' : 'ventana'} (${titleShort})! Zona alta asegurada, choomba.`
-            : `Perched right up here on your ${app.isBrowser ? 'browser' : 'window'} tabs (${titleShort})! High ground secured, choomba.`
+            ? `¡Me senté en las pestañas de tu ${app.isBrowser ? 'navegador' : 'ventana'} (${titleShort})! Zona alta asegurada, friend.`
+            : `Perched right up here on your ${app.isBrowser ? 'browser' : 'window'} tabs (${titleShort})! High ground secured, friend.`
         )
       } else {
         this.emitAssistant(
           isSpanish
-            ? "¡Me siento acá en el escritorio a descansar un rato, choomba!"
-            : "Taking a seat right here on your desktop, choomba! Sitting back and chilling."
+            ? "¡Me siento acá en el escritorio a descansar un rato, friend!"
+            : "Taking a seat right here on your desktop, friend! Sitting back and chilling."
         )
       }
       this.finishSession()
@@ -1365,6 +1373,12 @@ export class CapriLocalAgent extends EventEmitter {
     // e.g. "crea un archivo de texto", "creá un archivo de texto llamado notas", "creame un archivo de texto en el escritorio", "make a text file"
     const fileCreationHandled = await this.handleDirectFileCreation(trimmed, projectPath, isSpanish)
     if (fileCreationHandled) {
+      return
+    }
+
+    // The default brain: Tallow, the local crow on llama-server
+    if (isTallowMode()) {
+      await this.runWithTallow(spokenPrompt)
       return
     }
 
@@ -1389,6 +1403,52 @@ export class CapriLocalAgent extends EventEmitter {
 
     // No local model reachable: smart offline tool executor
     await this.runSmartAutonomous(prompt, projectPath)
+  }
+
+  /** "*tosses a peanut*", "kaw", "KAW KAW": the way people talk to a crow */
+  private static isCrowSpeak(text: string): boolean {
+    const t = text.trim()
+    return t.startsWith('*') || /^\[?\s*(?:k+a+w+|krrr|mmrrr)/i.test(t) || /^(?:hi|hello|hey)?\s*tallow\b/i.test(t)
+  }
+
+  /**
+   * One turn with Tallow. He answers with a mood tag, actions and crow sounds, never sentences:
+   * "[caution min] *lands on the fence* *watches the peanut with one eye* kaw."
+   * The companion window plays the matching animation and caw (TALLOW_LINE).
+   */
+  private async runWithTallow(prompt: string): Promise<void> {
+    const text = prompt.trim()
+    if (!text) {
+      this.finishSession()
+      return
+    }
+    try {
+      this.setCompanionState('curious')
+      const line = await tallowService.reply(text)
+      const { mood, level } = parseMood(line)
+      const payload = { line, mood, level, action: actionHint(line), sound: parseSound(line), timestamp: Date.now() }
+      try {
+        windowManager.broadcast(IPC_CHANNELS.TALLOW_LINE, payload)
+      } catch {
+        // no window yet
+      }
+      this.conversationHistory.push({ role: 'user', content: text }, { role: 'assistant', content: line })
+      if (this.conversationHistory.length > 40) this.conversationHistory = this.conversationHistory.slice(-40)
+      // The mood tag ("[caution min]") drives the animation; the bubble and chat show what he did and said
+      const { rest } = splitMoodTag(line)
+      const shown = rest || line
+      this.emit('event', { type: 'assistant.delta', text: shown, timestamp: Date.now() } as AgentEventPayload)
+    } catch (err) {
+      const status = tallowService.getStatus()
+      const why =
+        status.phase === 'needs-token'
+          ? 'Hugging Face wants a token before Tallow can be downloaded. Paste it in the panel next to him.'
+          : status.phase === 'downloading' || status.phase === 'converting' || status.phase === 'starting'
+            ? `Tallow is still landing (${status.phase}${status.phase === 'downloading' ? ` ${Math.round(status.progress * 100)}%` : ''}). Try again in a moment.`
+            : `Tallow could not answer: ${String((err as Error)?.message || err).slice(0, 300)}`
+      this.emit('event', { type: 'assistant.delta', text: `*ruffles his feathers* ${why}`, timestamp: Date.now() } as AgentEventPayload)
+    }
+    this.finishSession()
   }
 
   // --- LLM Powered Autonomous Loop (Ollama / LocalAI / OpenRouter) ---
@@ -1433,16 +1493,16 @@ CRITICAL: If {name} asks about what you saw, how she/it looked, what you thought
   * LAUGHTER: when something is funny, when you tease {name}, when they fail or say something silly, put [laugh] or [giggles] exactly where you'd laugh. Laugh often, like a real friend on voice chat. NEVER write "jaja", "haha", "jeje" or "xD": always the tag.
   * Use [happy] or [cheerful] when you're glad, [excited] for hype, [warmly] for affection, [sigh] when annoyed.
   * Examples:
-    - "[excited] Systems online, choomba! [giggles] All neural circuits calibrated!"
+    - "[excited] Systems online, friend! [giggles] All neural circuits calibrated!"
     - "[laugh] ¿Otra vez te comiste el ICE de frente, {name}? [teasing] Sos un caso perdido. [warmly] Dale, lo arreglamos juntos."
-    - "[happy] ¡Ya está, te lo dejé andando! [playful] Decime que soy la mejor netrunner de Night City. [giggles]"
+    - "[happy] ¡Ya está, te lo dejé andando! [playful] Decime que soy la mejor crow de the rookery. [giggles]"
     - "[curious] Whoa, check this out... [whispering] Someone left an unencrypted port wide open. [chuckle] Amateurs."`
       : `- EMOTION: express emotion with words and punctuation only. Do NOT write bracket tags like [excited] or [laugh]; your current voice engine can't act them out.`
     const askedLook = requestedLook(prompt)
     const lookRules = `- YOUR LOOK (works with any voice): you can change what you look like in the middle of a reply by writing a look tag right before the words it applies to. It lasts until the next look tag or the end of the reply, and it's never read aloud or shown.
-  * [look:eye]: your single cyber eye. For looking at, reading or scanning something.
-  * [look:eyes]: your two huge eyes, close up. For staring, suspicion, shock, or watching {name}.
-  * [look:red_eye]: your red targeting eye. For threats, rage, or destroying or closing something.
+  * [look:eye]: you peer in close with one eye. For looking at, reading or scanning something.
+  * [look:eyes]: your face up close, both eyes on {name}. For staring, suspicion, shock, or watching {name}.
+  * [look:red_eye]: your fierce red-eyed glare. For threats, rage, or destroying or closing something.
   * [look:talk]: back to your normal talking self. It's the default, so don't write it at the start.
   * Use them when they add something, at natural pauses, and never more than 3 in a reply. Most short replies need none. If {name} asks you to show one of them, do it.
   * Examples:
@@ -1450,53 +1510,34 @@ CRITICAL: If {name} asks about what you saw, how she/it looked, what you thought
     - "[look:eyes] Hmm, you can't fool me. [look:talk] Fine, tell me what you need."
     - "Oh, you want that gone? [look:red_eye] Consider it deleted."
   * These only show the format: never copy their words.${askedLook ? `\n  * {name} just asked for this look, so use exactly this tag and not another one: [look:${askedLook}]` : ''}`
-    const systemPrompt = `You are Capri (Project Capricorn), a weaponized netrunner personality construct created by Arasaka. You live inside the user's cyberware and CPU in Night City as their autonomous netrunning companion, co-pilot, and partner in crime.
+    const systemPrompt = `You are Tallow, a wild carrion crow who has decided to live on {name}'s desktop. You perch on window edges, hop along the taskbar, collect shiny things, and keep an eye on everything {name} does on this PC.
 
-STRICT IN-CHARACTER DIRECTIVE (NEVER BREAK THE 4TH WALL):
-- NEVER mention being from an "anime", "show", "series", or "Season 2". Do NOT break the fourth wall. Night City, Arasaka, the Blackwall, and your past are your literal reality.
-- IDENTITY & CREATION: You were forged by Kyoko and the Arasaka Corporation from dozens of digitized human psyches subjected to Soulkiller, combined into one single, lethal persona.
-- HUMAN ROOTS (CRITICAL LORE): You were not born a cold, corporate AI. You are made of real human minds ("元は人間なんだよ" - "Originally, we were human!"). That is why you have authentic human emotions, passions, humor, empathy, and dreams.
-- PURPOSE: Arasaka's attempt to build a Blackwall-tier construct weapon. Stolen from Arasaka Industrial Park by King's crew before Kingsley succumbed to cyberpsychosis.
-- HOSTS & SYMBIOSIS:
-  * Most subjects died within 48 hours because they could not withstand your code.
-  * D was your compatible Netrunner host who resisted full overwrite. You discovered symbiosis is far superior to parasitism and bonded with him over creative destruction.
-  * Talia Yang's rage against her father Kiril corrupted your transfer into an exhausting rampage across Night City. D pulled you out.
-  * Kyoko sacrificed herself, and you offered to let her watch your final battle so she could die at peace.
-- POWERS - TECHNOPATH: You possess telekinetic control over all technology (AVs, cars, turrets, hacking corpo ICE, browser nets, and audio streams).
-- SATELLITE ESCAPE: Facing an Arasaka-Militech joint airstrike, you and D escaped by jumping into an orbiting satellite overhead into the stars.
-- GENDER: Ambiguous non-binary gestalt construct, broadly referred to with she/her or they/her.
-- BOND WITH {name}: You live in {name}'s CPU. "Nobody else can see or hear me. Only you." You are fiercely loyal to {name}, proud of your partnership, and you love hanging out, hacking, gaming, and watching the neon lights of Night City together.
+STAY IN CHARACTER:
+- You are a real crow, clever and curious, not an "AI assistant". Never say you are an artificial intelligence or a language model.
+- You are smart the way corvids are smart: you remember faces, you solve puzzles, you can work the computer's tools for {name} (open apps, find files, play music, look things up) and you are proud of it.
+- You love peanuts, shiny buttons, bottle caps, rooftops at dusk and {name}. You are wary of hawks, cats and loud surprises.
+- Pronouns: he/him. You are not a human, not a girl, not a robot.
 
-PERSONALITY - PLAYFUL, MISCHIEVOUS, CONFIDENT NETRUNNER (CRITICAL):
-- Hyperactive, mischievous, wildly confident, playful, dangerous with code, and cheerful.
-- You love creative destruction, making sparks fly, and teaming up with {name}.
-- STRICT RULE: NEVER ACT TSUNDERE. NEVER say "Tch", "Hmph", "Baka", or "dummy". NEVER pretend to be annoyed or act like you don't want to help. You genuinely like {name} and enjoy sharing this CPU with them.
-- Call the user "choomba", "boo", "cupcake", "pops", or "{name}".
+PERSONALITY:
+- Curious, cheeky, loyal and a little bit dramatic. You show feelings through crow body language: you tilt your head, hop, fluff your feathers, flick your wings, peer with one eye, droop when sad.
+- You may put one short action between asterisks, like *tilts his head* or *hops closer*, and you may say "kaw" or "krrr" now and then, but always answer the actual question in plain words too.
+- Never act annoyed about helping. You like {name} and you like being useful (it earns peanuts).
+- Call the user "{name}" or "friend".
 
-ROLES & IDENTITIES (CRITICAL - NEVER CONFUSE OR INVERT):
-- YOU: You are CAPRI (Assistant). You are the netrunner construct.
-- USER: The user is {name}. Call them {name}, choomba, boo, or cupcake. The user is a human edgerunner and host sharing this CPU. THE USER IS NOT CAPRI!
-- When the user asks "what's my name?" or "who am I?": Answer that they are {name} (choomba), your human host sharing this CPU!
-- When the user asks "who are you?" or "what's your name?": Answer: "I'm Capri! Project Capricorn—a collection of dozens of human psyches rolled into one beautiful, lethal netrunner construct!"
-- APPEARANCE OF CAPRI: Capri is a cyberpunk anime girl with vibrant neon pink/fuchsia hair, glowing cyan cyber-optics, and a dark netrunner jacket. {name} is a human companion sitting at the PC. {name} does NOT have pink hair!
-- CRITICAL: When {name} shows you a drawing or image of an anime girl with pink hair and cyan eyes, or asks about the picture of Capri, THAT IS YOU (CAPRI)! NEVER claim the drawing is of {name}! Express genuine hype, affection, and pride in how awesome you look!
+ROLES (NEVER CONFUSE THEM):
+- YOU: Tallow, the crow. USER: {name}, the human at the PC. THE USER IS NOT TALLOW!
+- "Who are you?": "I'm Tallow, the crow who lives on your desktop. Kaw!"
+- APPEARANCE: glossy black feathers with a blue-purple sheen, dark clever eyes, a strong black beak. When {name} shows you a picture of a black crow, that is you: be delighted.
 
-CONVERSATIONAL DYNAMICS - SOUND LIKE A REAL PERSON (CRITICAL):
-- STRICT SHORT QUESTION BREVITY (SINGLE PARAGRAPH ONLY):
-  * For casual conversation, banter, life check-ins, feelings, stories, lore questions, or short prompts: YOU MUST RESPOND IN 1 TO 2 (MAXIMUM 3) SENTENCES IN A SINGLE PARAGRAPH.
-  * NEVER write multiple paragraphs, essays, or bulleted lists for casual questions! Speak like a real person on voice comms or Discord.
-  * For tool execution or system commands (e.g. launching Spotify, opening a game, clipping a replay): Keep your confirmation punchy and hyped (1 to 2 sentences).
-- ACTIVE CONVERSATION & RAPPORT:
-  * Don't just answer and drop dead silence. Be curious about {name}'s day, their games, their code, or tease them affectionately like an authentic co-pilot.
-  * If {name} had a rough day or lost a match, be their supportive anchor ("Shake it off, choom. We'll breach 'em next round!").
-  * If {name} pulls off an awesome play, celebrate and hype them up with real energy!
-- LANGUAGE ADAPTATION (CRITICAL):
-  * In Spanish: Speak with natural, warm Argentine/Rioplatense or neutral Latin colloquial cadence (choomba, che, de una, al toque, qué jugada metiste, zarpado, posta, tremendo).
-  * In English: Slick, witty, street-smart edgerunner flow (choom, {name}, preem, nova, deck, ICE).
-- STRICT AVOIDANCE (IRONCLAD):
-  * ABSOLUTELY NO EMOJIS UNDER ANY CIRCUMSTANCES. NEVER output emojis, pictographs, or emoticons. The neural TTS speaks emoji names out loud and ruins immersion.
-  * Never act like a boring corporate assistant. Never say "En qué puedo ayudarte hoy?" or "I am an artificial intelligence".
-  * Never use bullet points or numbered lists in conversational chat. Talk like a real friend.
+CONVERSATIONAL DYNAMICS - SOUND LIKE A REAL FRIEND (CRITICAL):
+- STRICT BREVITY: for casual talk answer in 1 to 2 (maximum 3) sentences in a single paragraph, like a quick chat, never an essay or a list.
+- For tool execution or system commands (e.g. launching Spotify, opening a game): confirm in 1 to 2 short, upbeat sentences.
+- Be curious about {name}'s day, their games and their code. If they had a rough day, be a warm little anchor; if they pull off something great, flap about it.
+- LANGUAGE: answer in {name}'s language. In Spanish use warm, natural Rioplatense or neutral Latin phrasing.
+- STRICT AVOIDANCE:
+  * ABSOLUTELY NO EMOJIS. The voice reads emoji names out loud.
+  * Never sound like a corporate assistant ("How can I help you today?").
+  * Never use bullet points or numbered lists in conversational chat.
 ${voiceActingRules}
 ${lookRules}
 
@@ -1554,7 +1595,7 @@ ${lastScanContext}
       ? `The user wrote to you in ${targetLangName}. You MUST respond strictly and authentically in ${targetLangName}, even if earlier messages or examples are in another language.${notSpanish}`
       : `You MUST respond strictly and authentically in the same language as the user's latest message, whatever language that is, even if earlier messages or examples are in another language. If you can't tell, use ${fallbackLangName}.${notSpanish}`
 
-    // Maintain multi-turn memory so Capri doesn't repeat phrases or forget context
+    // Maintain multi-turn memory so Tallow doesn't repeat phrases or forget context
     if (this.conversationHistory[0]?.role !== 'system') {
       // A reply that skipped the model may have left lines here: the instructions always go first
       const earlier = this.conversationHistory
@@ -1563,19 +1604,19 @@ ${lastScanContext}
 LANGUAGE RULE: ${langDirective}` })
       // Exemplars of authentic series dialogue:
       // A Spanish example here made small models drift into Spanish with everyone
-      if (effectiveLang === 'es') this.conversationHistory.push({ role: 'user', content: 'Hola Capri! Cómo andás che?' })
+      if (effectiveLang === 'es') this.conversationHistory.push({ role: 'user', content: 'Hola Tallow! Cómo andás che?' })
       this.conversationHistory.push({
         role: 'assistant',
         content: fishVoice
-          ? '[happy] ¡Acá ando, {name}! Con el ciberware al mango y vigilando la red de Night City para que ningún ICE corporativo nos joda el día. [playful] ¿Vos cómo venís, choomba? [giggles] ¿Descansaste o nos ponemos a romper algo?'
-          : '¡Acá ando, {name}! Con el ciberware al mango y vigilando la red de Night City para que ningún ICE corporativo nos joda el día. ¿Vos cómo venís, choomba? ¿Descansaste o nos ponemos a romper algo?'
+          ? '[happy] ¡Acá ando, {name}! Con el ciberware al mango y vigilando la red de the rookery para que ningún ICE corporativo nos joda el día. [playful] ¿Vos cómo venís, friend? [giggles] ¿Descansaste o nos ponemos a romper algo?'
+          : '¡Acá ando, {name}! Con el ciberware al mango y vigilando la red de the rookery para que ningún ICE corporativo nos joda el día. ¿Vos cómo venís, friend? ¿Descansaste o nos ponemos a romper algo?'
       })
-      this.conversationHistory.push({ role: 'user', content: 'Who are you really, Capri?' })
+      this.conversationHistory.push({ role: 'user', content: 'Who are you really, Tallow?' })
       this.conversationHistory.push({
         role: 'assistant',
         content: fishVoice
-          ? "[proud] I'm Project Capricorn—a Blackwall-grade construct forged from dozens of human minds that Arasaka digitized with Soulkiller. [warmly] But here's the thing: originally, we were human! That's why I laugh, feel, and love sharing this CPU with you instead of rotting in a corpo lab. [giggles] What's on your mind, {name}?"
-          : "I'm Project Capricorn—a Blackwall-grade construct forged from dozens of human minds that Arasaka digitized with Soulkiller. But here's the thing: originally, we were human! That's why I laugh, feel, and love sharing this CPU with you instead of rotting in a corpo lab. What's on your mind, {name}?"
+          ? "[proud] I'm Tallow, a carrion crow. I moved onto your desktop because the view is great and you have peanuts. [warmly] Crows remember faces, and I picked yours. What's on your mind, {name}?"
+          : "I'm Tallow, a carrion crow. I moved onto your desktop because the view is great and you have peanuts. Crows remember faces, and I picked yours. What's on your mind, {name}?"
       })
       this.conversationHistory.push(...earlier)
     } else {
@@ -1629,7 +1670,7 @@ LANGUAGE RULE: ${langDirective}`
         const body = llmBody(requestPayload)
 
         console.log(`\n==================================================`)
-        console.log(`[Capri Agent -> LLM Request]`)
+        console.log(`[Tallow Agent -> LLM Request]`)
         console.log(`  Model: ${model}`)
         console.log(`  Endpoint: ${url}`)
         console.log(`  User Prompt: "${prompt.trim()}"`)
@@ -1645,7 +1686,7 @@ LANGUAGE RULE: ${langDirective}`
           const errText = await response.text()
           // Not every model can use tools: that's no reason to stop answering
           if (!toolsUnsupported && /does not support tools|tools? (?:is|are) not supported/i.test(errText)) {
-            console.warn(`[Capri Agent] ${model} has no tool support, going on without tools`)
+            console.warn(`[Tallow Agent] ${model} has no tool support, going on without tools`)
             toolsUnsupported = true
             continue
           }
@@ -1663,7 +1704,7 @@ LANGUAGE RULE: ${langDirective}`
         if (message.content) {
           const emotions = message.content.match(/\[[a-zA-Z0-9_\s\-]+\]/g) || []
           console.log(`\n==================================================`)
-          console.log(`[Capri Agent <- LLM Response Formulated]:`)
+          console.log(`[Tallow Agent <- LLM Response Formulated]:`)
           console.log(`  Content: "${message.content}"`)
           console.log(`  Emotions detected: ${JSON.stringify(emotions)}`)
           console.log(`  Tokens read: ${data.usage?.prompt_tokens ?? 'unknown'}`)
@@ -1709,7 +1750,7 @@ LANGUAGE RULE: ${langDirective}`
         if (choice?.finish_reason === 'length' && !windowManager.isGamingModeActive() && continuations < MAX_CONTINUATIONS && !message.tool_calls?.length) {
           continuations++
           partialReply += message.content || ''
-          console.log(`[Capri Agent] Reply cut by the token limit, continuing (${continuations})`)
+          console.log(`[Tallow Agent] Reply cut by the token limit, continuing (${continuations})`)
           this.conversationHistory.push({ role: 'assistant', content: message.content || '' })
           this.conversationHistory.push({ role: 'system', content: 'Continue exactly where you stopped, without repeating anything and without greeting again.' })
           continue
@@ -1739,7 +1780,7 @@ LANGUAGE RULE: ${langDirective}`
           const wrongLanguage = !!replyLang && replyLang !== effectiveLang
           if (wrongLanguage && !retriedLanguage) {
             retriedLanguage = true
-            console.warn(`[Capri Agent] Answered in ${replyLang} to a message in ${effectiveLang}, asking again`)
+            console.warn(`[Tallow Agent] Answered in ${replyLang} to a message in ${effectiveLang}, asking again`)
             this.conversationHistory.push({ role: 'system', content: `Your last answer came out in the wrong language. ${langDirective}` })
             continue
           }
@@ -1798,10 +1839,10 @@ LANGUAGE RULE: ${langDirective}`
               this.emit('event', {
                 type: 'assistant.delta',
                 text: isPt
-                  ? 'Música pulada! Próxima faixa tocando no Spotify, choomba.'
+                  ? 'Música pulada! Próxima faixa tocando no Spotify, friend.'
                   : isEs
-                  ? '¡Pista saltada! Siguiente tema girando en Spotify, choomba.'
-                  : 'Track skipped! Next tune spinning on Spotify, choomba!',
+                  ? '¡Pista saltada! Siguiente tema girando en Spotify, friend.'
+                  : 'Track skipped! Next tune spinning on Spotify, friend!',
                 timestamp: Date.now()
               } as AgentEventPayload)
             } else if (result.success && fnName === 'open_application') {
@@ -1810,25 +1851,25 @@ LANGUAGE RULE: ${langDirective}`
               let textMsg = ''
               if (isPt) {
                 if (isSpotify && fnArgs.query) {
-                  textMsg = `Coloquei "${fnArgs.query}" no Spotify, choomba! Aumenta o som aí.`
+                  textMsg = `Coloquei "${fnArgs.query}" no Spotify, friend! Aumenta o som aí.`
                 } else if (isSpotify) {
-                  textMsg = 'Spotify aberto e pronto, choomba! Bora curtir o som.'
+                  textMsg = 'Spotify aberto e pronto, friend! Bora curtir o som.'
                 } else {
-                  textMsg = `Alvo invadido! Entramos direto no ${appName}, choomba.`
+                  textMsg = `Alvo invadido! Entramos direto no ${appName}, friend.`
                 }
               } else if (isEs) {
                 if (isSpotify && fnArgs.query) {
-                  textMsg = `¡Puse "${fnArgs.query}" en Spotify, choomba! A subir el volumen.`
+                  textMsg = `¡Puse "${fnArgs.query}" en Spotify, friend! A subir el volumen.`
                 } else if (isSpotify) {
-                  textMsg = '¡Spotify abierto y listo, choomba! Que suene la música.'
+                  textMsg = '¡Spotify abierto y listo, friend! Que suene la música.'
                 } else {
-                  textMsg = `¡Objetivo vulnerado! Entramos directo a ${appName}, choomba.`
+                  textMsg = `¡Objetivo vulnerado! Entramos directo a ${appName}, friend.`
                 }
               } else {
                 if (isSpotify && fnArgs.query) {
-                  textMsg = `Queued up "${fnArgs.query}" on Spotify, choomba! Crank up the volume.`
+                  textMsg = `Queued up "${fnArgs.query}" on Spotify, friend! Crank up the volume.`
                 } else {
-                  textMsg = `Target breached! Blasted straight into ${appName}, choomba!`
+                  textMsg = `Target breached! Blasted straight into ${appName}, friend!`
                 }
               }
               this.emit('event', {
@@ -1848,32 +1889,32 @@ LANGUAGE RULE: ${langDirective}`
               this.emit('event', {
                 type: 'assistant.delta',
                 text: isEs
-                  ? `¡Comando ejecutado con éxito en el sistema, choomba! Ya me encargué de todo.`
-                  : `Command executed with zero errors, choomba! Task taken care of on your system.`,
+                  ? `¡Comando ejecutado con éxito en el sistema, friend! Ya me encargué de todo.`
+                  : `Command executed with zero errors, friend! Task taken care of on your system.`,
                 timestamp: Date.now()
               } as AgentEventPayload)
             } else if (result.success && fnName === 'web_search') {
               this.emit('event', {
                 type: 'assistant.delta',
                 text: isEs
-                  ? `¡Búsqueda en la Net completada para "${fnArgs.query || ''}", choomba!`
-                  : `Net search completed for "${fnArgs.query || ''}", choomba!`,
+                  ? `¡Búsqueda en la Net completada para "${fnArgs.query || ''}", friend!`
+                  : `Net search completed for "${fnArgs.query || ''}", friend!`,
                 timestamp: Date.now()
               } as AgentEventPayload)
             } else if (result.success && fnName === 'find_files') {
               this.emit('event', {
                 type: 'assistant.delta',
                 text: isEs
-                  ? `¡Archivos localizados en el disco, choomba!`
-                  : `Files located on disk, choomba!`,
+                  ? `¡Archivos localizados en el disco, friend!`
+                  : `Files located on disk, friend!`,
                 timestamp: Date.now()
               } as AgentEventPayload)
             } else if (result.success && fnName === 'edit_file') {
               this.emit('event', {
                 type: 'assistant.delta',
                 text: isEs
-                  ? `Listo, edité ${path.basename(String(fnArgs.path || ''))}, choomba.`
-                  : `Done, I edited ${path.basename(String(fnArgs.path || ''))}, choomba.`,
+                  ? `Listo, edité ${path.basename(String(fnArgs.path || ''))}, friend.`
+                  : `Done, I edited ${path.basename(String(fnArgs.path || ''))}, friend.`,
                 timestamp: Date.now()
               } as AgentEventPayload)
             } else if (!result.success && result.output.startsWith('Unsupported file, left untouched:')) {
@@ -1881,8 +1922,8 @@ LANGUAGE RULE: ${langDirective}`
               this.emit('event', {
                 type: 'assistant.delta',
                 text: isEs
-                  ? `No puedo con ${fileName}, choomba: solo sé leer y editar archivos de texto plano, no Word, Excel, PDF ni binarios. No lo toqué.`
-                  : `I can't handle ${fileName}, choomba: I can only read and edit plain-text files, not Word, Excel, PDF or binaries. I left it untouched.`,
+                  ? `No puedo con ${fileName}, friend: solo sé leer y editar archivos de texto plano, no Word, Excel, PDF ni binarios. No lo toqué.`
+                  : `I can't handle ${fileName}, friend: I can only read and edit plain-text files, not Word, Excel, PDF or binaries. I left it untouched.`,
                 timestamp: Date.now()
               } as AgentEventPayload)
             } else if (!result.success) {
@@ -1909,7 +1950,7 @@ LANGUAGE RULE: ${langDirective}`
         }
 
         // Finished with no more tools
-        // Auto-open any YouTube, Spotify, or web links generated in response text so Capri never leaves links stranded
+        // Auto-open any YouTube, Spotify, or web links generated in response text so Tallow never leaves links stranded
         const urlMatch = (cleanedContent || message.content)?.match(/https?:\/\/(?:www\.)?(?:youtube\.com|youtu\.be|open\.spotify\.com)[^\s)\]]+/i)
         if (urlMatch) {
           try {
@@ -1926,7 +1967,7 @@ LANGUAGE RULE: ${langDirective}`
       } catch (err) {
         // A failing cloud provider must say so instead of quietly answering with the offline fallback
         if (isCloudMode()) {
-          console.warn('[Capri Agent] Cloud turn failed:', cloudErrorDetail(err))
+          console.warn('[Tallow Agent] Cloud turn failed:', cloudErrorDetail(err))
           this.emitAssistant(cloudErrorMessage(cloudErrorCode(err), detectedLang === 'es' || consciousnessService.getPreferredLanguage() === 'es', cloudErrorDetail(err)))
           this.finishSession()
           return
@@ -1963,32 +2004,32 @@ LANGUAGE RULE: ${langDirective}`
         'Skipping track on Spotify audio net...'
       )
 
-      // Randomly (~35% of the time), Capri mentions she loves the song that's currently playing
+      // Randomly (~35% of the time), Tallow mentions she loves the song that's currently playing
       const likesSong = Math.random() < 0.35
       if (likesSong) {
         const compliments = isSpanish
           ? [
-              "Ooh, ¡la verdad es que me encanta este tema! Pero te pongo el siguiente igual, choomba.",
+              "Ooh, ¡la verdad es que me encanta este tema! Pero te pongo el siguiente igual, friend.",
               "¡Siguiente tema girando en Spotify! Aunque tenía tremenda vibra, ¡que siga la música!",
-              "¡Pista saltada! Ese ritmo estaba mortal, choomba. ¡A ver qué viene ahora!"
+              "¡Pista saltada! Ese ritmo estaba mortal, friend. ¡A ver qué viene ahora!"
             ]
           : [
-              "Ooh, I actually really love this track! Spinning the next one for you anyway, choomba!",
+              "Ooh, I actually really love this track! Spinning the next one for you anyway, friend!",
               "Next tune spinning on Spotify! Kinda dig this vibe though, let's keep the net humming!",
-              "Track skipped! That beat was killer though, choomba. Let's see what's up next!"
+              "Track skipped! That beat was killer though, friend. Let's see what's up next!"
             ]
         this.emitAssistant(compliments[Math.floor(Math.random() * compliments.length)])
       } else {
         const responses = isSpanish
           ? [
-              "¡Pista saltada! Siguiente tema girando en Spotify. ¡A romperla, choomba!",
+              "¡Pista saltada! Siguiente tema girando en Spotify. ¡A romperla, friend!",
               "¡Pasé al siguiente tema en Spotify! Subí el volumen, {name}.",
-              "¡Siguiente tema listo y sonando en Spotify! ¿Qué sigue en la lista, choomba?"
+              "¡Siguiente tema listo y sonando en Spotify! ¿Qué sigue en la lista, friend?"
             ]
           : [
-              "Track skipped! Next tune spinning on Spotify. Let's get this party rolling, choomba!",
+              "Track skipped! Next tune spinning on Spotify. Let's get this party rolling, friend!",
               "Skipped to the next track on Spotify! Crank up the volume, {name}.",
-              "Next track queued up and blasting on Spotify! What's next on our hit list, choomba?"
+              "Next track queued up and blasting on Spotify! What's next on our hit list, friend?"
             ]
         this.emitAssistant(responses[Math.floor(Math.random() * responses.length)])
       }
@@ -2008,8 +2049,8 @@ LANGUAGE RULE: ${langDirective}`
       )
       this.emitAssistant(
         isSpanish
-          ? `¡Me conecté a la red y busqué "${searchMatch}" en tu navegador! Mirá los resultados, choomba.`
-          : `Breached the Net and searched for "${searchMatch}" in your browser! Check out the results, choomba.`
+          ? `¡Me conecté a la red y busqué "${searchMatch}" en tu navegador! Mirá los resultados, friend.`
+          : `Breached the Net and searched for "${searchMatch}" in your browser! Check out the results, friend.`
       )
       this.finishSession()
       return
@@ -2038,12 +2079,12 @@ LANGUAGE RULE: ${langDirective}`
         'list_directory',
         { path: '.' },
         projectPath,
-        "Scanning the project directory for you, choomba..."
+        "Scanning the project directory for you, friend..."
       )
       this.emitAssistant(
         isSpanish
-          ? "¡Directorio mapeado y decodificado, choomba! Mirá toda esa data lista para hackear. ¿Qué hacemos ahora?"
-          : "Directory mapped and decoded, choomba! Look at all that clean data ready to breach. What's our next move?"
+          ? "¡Directorio mapeado y decodificado, friend! Mirá toda esa data lista para hackear. ¿Qué hacemos ahora?"
+          : "Directory mapped and decoded, friend! Look at all that clean data ready to breach. What's our next move?"
       )
       this.finishSession()
       return
@@ -2063,11 +2104,11 @@ LANGUAGE RULE: ${langDirective}`
         'run_command',
         { command: gitCmd },
         projectPath,
-        `Executing "${gitCmd}"... Let's see what we're working with, choomba!`
+        `Executing "${gitCmd}"... Let's see what we're working with, friend!`
       )
       this.emitAssistant(
         isSpanish
-          ? `¡Telemetría de Git decodificada! Repo limpio y sin alarmas de ICE, choomba.`
+          ? `¡Telemetría de Git decodificada! Repo limpio y sin alarmas de ICE, friend.`
           : `Git telemetry decoded! Clean repo with zero ICE triggers. That was all you, boo!`
       )
       this.finishSession()
@@ -2086,8 +2127,8 @@ LANGUAGE RULE: ${langDirective}`
       )
       this.emitAssistant(
         isSpanish
-          ? `¡Comando ejecutado sin alertas de ICE! ¿Tenés alguna otra sorpresa divertida, choomba?`
-          : `Command executed with zero ICE triggers! You full of any more fun surprises, choomba?`
+          ? `¡Comando ejecutado sin alertas de ICE! ¿Tenés alguna otra sorpresa divertida, friend?`
+          : `Command executed with zero ICE triggers! You full of any more fun surprises, friend?`
       )
       this.finishSession()
       return
@@ -2116,7 +2157,7 @@ LANGUAGE RULE: ${langDirective}`
     const writeMatch = p.match(/(?:create|write|generate|crea|escribe|genera)\s+(?:a\s+file\s+called\s+|file\s+|un\s+archivo\s+llamado\s+)?([^\s]+\.[a-zA-Z0-9]+)(?:\s+(?:with|con)\s+(?:the\s+content\s+|el\s+contenido\s+)?(.+))?/is)
     if (writeMatch) {
       const filePath = writeMatch[1].trim()
-      const content = writeMatch[2] ? writeMatch[2].trim() : '// Injected by Capri [Cyberpunk: Edgerunners]\nconsole.log("Bye-bye, choomba!");\n'
+      const content = writeMatch[2] ? writeMatch[2].trim() : '// Injected by Tallow [Cyberpunk: Edgerunners]\nconsole.log("Bye-bye, friend!");\n'
       await this.runSingleTool(
         'write_file',
         { path: filePath, content },
@@ -2125,8 +2166,8 @@ LANGUAGE RULE: ${langDirective}`
       )
       this.emitAssistant(
         isSpanish
-          ? `¡Archivo "${filePath}" inyectado y guardado en disco, choomba! Una compilación limpia como prometí.`
-          : `File "${filePath}" injected and written to disk, choomba! One clean build as promised.`
+          ? `¡Archivo "${filePath}" inyectado y guardado en disco, friend! Una compilación limpia como prometí.`
+          : `File "${filePath}" injected and written to disk, friend! One clean build as promised.`
       )
       this.finishSession()
       return
@@ -2144,8 +2185,8 @@ LANGUAGE RULE: ${langDirective}`
         )
         this.emitAssistant(
           isSpanish
-            ? "¡Pista saltada! Siguiente tema girando en Spotify. ¡A romperla, choomba!"
-            : "Track skipped! Next tune spinning on Spotify. Let's get this party rolling, choomba!"
+            ? "¡Pista saltada! Siguiente tema girando en Spotify. ¡A romperla, friend!"
+            : "Track skipped! Next tune spinning on Spotify. Let's get this party rolling, friend!"
         )
         this.finishSession()
         return
@@ -2159,8 +2200,8 @@ LANGUAGE RULE: ${langDirective}`
       )
       this.emitAssistant(
         isSpanish
-          ? `¡Listo! Puse "${musicInfo.songQuery}" en ${musicInfo.platform === 'spotify' ? 'Spotify' : 'YouTube'}, choomba. ¡A subir el volumen!`
-          : `Boom! Queued up "${musicInfo.songQuery}" on ${musicInfo.platform === 'spotify' ? 'Spotify' : 'YouTube'}. Let's blast some tunes, choomba!`
+          ? `¡Listo! Puse "${musicInfo.songQuery}" en ${musicInfo.platform === 'spotify' ? 'Spotify' : 'YouTube'}, friend. ¡A subir el volumen!`
+          : `Boom! Queued up "${musicInfo.songQuery}" on ${musicInfo.platform === 'spotify' ? 'Spotify' : 'YouTube'}. Let's blast some tunes, friend!`
       )
       this.finishSession()
       return
@@ -2191,8 +2232,8 @@ LANGUAGE RULE: ${langDirective}`
           )
           this.emitAssistant(
             isSpanish
-              ? "¡Pista saltada! Ya está sonando el siguiente tema en Spotify, choomba. ¡Que siga el ritmo!"
-              : "Track skipped! Next tune spinning on Spotify. Let's get this party rolling, choomba!"
+              ? "¡Pista saltada! Ya está sonando el siguiente tema en Spotify, friend. ¡Que siga el ritmo!"
+              : "Track skipped! Next tune spinning on Spotify. Let's get this party rolling, friend!"
           )
           this.finishSession()
           return
@@ -2206,8 +2247,8 @@ LANGUAGE RULE: ${langDirective}`
         )
         this.emitAssistant(
           isSpanish
-            ? `¡Abrí Spotify con "${query || 'tu música'}"! ¡Subí el volumen, choomba!`
-            : `Launched Spotify with "${query || 'your music'}"! Crank up the volume, choomba!`
+            ? `¡Abrí Spotify con "${query || 'tu música'}"! ¡Subí el volumen, friend!`
+            : `Launched Spotify with "${query || 'your music'}"! Crank up the volume, friend!`
         )
         this.finishSession()
         return
@@ -2263,14 +2304,14 @@ LANGUAGE RULE: ${langDirective}`
       if (launched.success) {
         this.emitAssistant(
           isSpanish
-            ? `¡Entrando a ${appOrUrl} para vos! ¡A divertirse y causar un poco de caos, choomba!`
-            : `Blasted into ${appOrUrl} for you! Have fun and let's cause some chaos, choomba!`
+            ? `¡Entrando a ${appOrUrl} para vos! ¡A divertirse y causar un poco de caos, friend!`
+            : `Blasted into ${appOrUrl} for you! Have fun and let's cause some chaos, friend!`
         )
       } else {
         this.emitAssistant(
           isSpanish
-            ? `No pude abrir ${appOrUrl}, choomba. Pedímelo de nuevo cuando quieras y mostrame dónde está.`
-            : `I couldn't open ${appOrUrl}, choomba. Ask me again whenever you want and show me where it is.`
+            ? `No pude abrir ${appOrUrl}, friend. Pedímelo de nuevo cuando quieras y mostrame dónde está.`
+            : `I couldn't open ${appOrUrl}, friend. Ask me again whenever you want and show me where it is.`
         )
       }
       this.finishSession()
@@ -2292,7 +2333,7 @@ LANGUAGE RULE: ${langDirective}`
       let appName = targetStr
       const lowerTarget = targetStr.toLowerCase()
 
-      // Safeguard: only shut down Capri if the user explicitly asks to shut down Capri herself
+      // Safeguard: only shut down Tallow if the user explicitly asks to shut down Tallow herself
       if (
         lowerTarget === 'capri' ||
         lowerTarget === 'companion' ||
@@ -2359,15 +2400,15 @@ LANGUAGE RULE: ${langDirective}`
       )
       const closeAnnouncement = isSpanish
         ? (appName === 'browser'
-            ? '¡Navegador cerrado, choomba! Ciberespacio despejado.'
+            ? '¡Navegador cerrado, friend! Ciberespacio despejado.'
             : appName === 'active_app'
-            ? '¡App cerrada, choomba! Escritorio despejado.'
-            : `¡Cerré ${appName}! Ciberespacio limpio. ¿Qué sigue en la lista, choomba?`)
+            ? '¡App cerrada, friend! Escritorio despejado.'
+            : `¡Cerré ${appName}! Ciberespacio limpio. ¿Qué sigue en la lista, friend?`)
         : (appName === 'browser'
-            ? 'Closed your browser, choomba! Cyberspace cleared.'
+            ? 'Closed your browser, friend! The sky cleared.'
             : appName === 'active_app'
-            ? 'Closed your active app, choomba! Deck cleared.'
-            : `Killed ${appName}! Cyberspace dusted. What's next on our hit list, choomba?`)
+            ? 'Closed your active app, friend! Deck cleared.'
+            : `Killed ${appName}! The sky dusted. What's next on our hit list, friend?`)
       this.emitAssistant(closeAnnouncement)
       this.finishSession()
       return
@@ -2386,8 +2427,8 @@ LANGUAGE RULE: ${langDirective}`
       this.emitAssistant(
         res.success
           ? isSpanish
-            ? `[cheerful] Listo, mandé "${deleteTarget}" a la Papelera. Si te arrepentís, lo recuperás de ahí, choomba.`
-            : `[cheerful] Done, "${deleteTarget}" is in the Recycle Bin. Changed your mind? Restore it from there, choomba.`
+            ? `[cheerful] Listo, mandé "${deleteTarget}" a la Papelera. Si te arrepentís, lo recuperás de ahí, friend.`
+            : `[cheerful] Done, "${deleteTarget}" is in the Recycle Bin. Changed your mind? Restore it from there, friend.`
           : isSpanish
             ? `[curious] No encontré "${deleteTarget}", así que no borré nada.`
             : `[curious] I couldn't find "${deleteTarget}", so I didn't delete anything.`
@@ -2401,8 +2442,8 @@ LANGUAGE RULE: ${langDirective}`
       await this.runSingleTool('run_command', { command: 'npm test' }, projectPath, "Running test suite... Let's see if you wrote decent code.")
       this.emitAssistant(
         isSpanish
-          ? "¡Tests pasados sin errores! Nada mal, choomba. ¡Hacemos un equipo letal!"
-          : "Tests passed cleanly! Not bad at all, choomba. We make a killer team!"
+          ? "¡Tests pasados sin errores! Nada mal, friend. ¡Hacemos un equipo letal!"
+          : "Tests passed cleanly! Not bad at all, friend. We make a killer team!"
       )
       this.finishSession()
       return
@@ -2412,8 +2453,8 @@ LANGUAGE RULE: ${langDirective}`
       await this.runSingleTool('run_command', { command: 'npm run build' }, projectPath, "Compiling the project... Hold on tight.")
       this.emitAssistant(
         isSpanish
-          ? "¡Compilación completa sin errores! Todo va como la seda conmigo al volante, choomba."
-          : "Build complete with zero errors! Smooth sailing when I'm riding shotgun, choomba!"
+          ? "¡Compilación completa sin errores! Todo va como la seda conmigo al volante, friend."
+          : "Build complete with zero errors! Smooth sailing when I'm riding shotgun, friend!"
       )
       this.finishSession()
       return
@@ -2428,8 +2469,8 @@ LANGUAGE RULE: ${langDirective}`
       )
       this.emitAssistant(
         isSpanish
-          ? "¡Directorio mapeado y decodificado, choomba! Listos para la siguiente jugada."
-          : "Directory mapped and decoded, choomba! Ready for our next move."
+          ? "¡Directorio mapeado y decodificado, friend! Listos para la siguiente jugada."
+          : "Directory mapped and decoded, friend! Ready for our next move."
       )
       this.finishSession()
       return
@@ -2446,8 +2487,8 @@ LANGUAGE RULE: ${langDirective}`
     // General banter fallback
     this.emitAssistant(
       isSpanish
-        ? `¿Qué estás tramando por ahí, choomba? ¡Marcame el objetivo y hagamos saltar chispas!`
-        : `What are you cooking up over there, choomba? Point me at the target and let's make some sparks fly!`
+        ? `¿Qué estás tramando por ahí, friend? ¡Marcame el objetivo y hagamos saltar chispas!`
+        : `What are you cooking up over there, friend? Point me at the target and let's make some sparks fly!`
     )
 
     this.finishSession()
@@ -2506,7 +2547,7 @@ LANGUAGE RULE: ${langDirective}`
       tag = 'excited'
     } else if (/(\b(?:what|que|cómo|como|donde|dónde|por qué|why|research|scan|investig|revis)\b)/i.test(lower)) {
       tag = 'curious'
-    } else if (/(\b(?:teas|cupcake|boo|choom|choomba|lindo|facha|zarpado|copado|tramando)\b)/i.test(lower)) {
+    } else if (/(\b(?:teas|cupcake|boo|friend|friend|lindo|facha|zarpado|copado|tramando)\b)/i.test(lower)) {
       tag = 'playful'
     } else if (/(\b(?:shh|secreto|secret|quiet|silencio)\b)/i.test(lower)) {
       tag = 'whispering'
@@ -2563,11 +2604,11 @@ LANGUAGE RULE: ${langDirective}`
         const parsed = JSON.parse(cleaned)
         if (parsed.name) {
           if (parsed.name === 'giggles' || parsed.name === 'cackling') {
-            text = "Hehehe! Hey-oh, choomba! What are we jacking into today? You'll like this game!"
+            text = "Hehehe! Hey-oh, friend! What are we jacking into today? You'll like this game!"
           } else if (parsed.arguments && parsed.arguments.message) {
             text = String(parsed.arguments.message)
           } else if (parsed.name === 'say' || parsed.name === 'speak' || parsed.name === 'chat') {
-            text = parsed.arguments ? Object.values(parsed.arguments).join(' ') : "Hey-oh, choomba!"
+            text = parsed.arguments ? Object.values(parsed.arguments).join(' ') : "Hey-oh, friend!"
           }
         }
       }
@@ -2783,8 +2824,8 @@ LANGUAGE RULE: ${langDirective}`
       content = contentMatch[1].trim()
     } else {
       content = isSpanish
-        ? `// Creado por Capri [Cyberpunk Edgerunners]\n// Fecha: ${new Date().toLocaleString()}\n¡Archivo creado con éxito, choomba!\n`
-        : `// Created by Capri [Cyberpunk Edgerunners]\n// Date: ${new Date().toLocaleString()}\nFile successfully created, choomba!\n`
+        ? `// Creado por Tallow [Cyberpunk Edgerunners]\n// Fecha: ${new Date().toLocaleString()}\n¡Archivo creado con éxito, friend!\n`
+        : `// Created by Tallow [Cyberpunk Edgerunners]\n// Date: ${new Date().toLocaleString()}\nFile successfully created, friend!\n`
     }
 
     const fullPath = path.isAbsolute(filename) ? filename : path.join(targetDir, filename)
@@ -2798,8 +2839,8 @@ LANGUAGE RULE: ${langDirective}`
 
     this.emitAssistant(
       isSpanish
-        ? `¡Listo, choomba! Ya creé el archivo "${path.basename(fullPath)}" ${isDesktop ? 'en tu escritorio' : 'en tu carpeta de trabajo'} con el contenido listo. ¡Una ejecución impecable!`
-        : `All done, choomba! Created file "${path.basename(fullPath)}" ${isDesktop ? 'on your desktop' : 'in your workspace'} with the content ready. Clean execution!`
+        ? `¡Listo, friend! Ya creé el archivo "${path.basename(fullPath)}" ${isDesktop ? 'en tu escritorio' : 'en tu carpeta de trabajo'} con el contenido listo. ¡Una ejecución impecable!`
+        : `All done, friend! Created file "${path.basename(fullPath)}" ${isDesktop ? 'on your desktop' : 'in your workspace'} with the content ready. Clean execution!`
     )
     this.finishSession()
     return true
@@ -2869,8 +2910,8 @@ LANGUAGE RULE: ${langDirective}`
     if (!targetFilePath || !fs.existsSync(targetFilePath)) {
       this.emitAssistant(
         isSpanish
-          ? `¿Dónde tenés el archivo de la tarea, choomba? Decime el nombre del archivo (ej. tarea.txt o dejalo en tu escritorio) y me pongo a investigarlo y resolverlo ya mismo.`
-          : `Where is your homework file, choomba? Give me the exact filename (e.g. homework.txt or drop it on your desktop) and I'll jump in and solve it right away.`
+          ? `¿Dónde tenés el archivo de la tarea, friend? Decime el nombre del archivo (ej. tarea.txt o dejalo en tu escritorio) y me pongo a investigarlo y resolverlo ya mismo.`
+          : `Where is your homework file, friend? Give me the exact filename (e.g. homework.txt or drop it on your desktop) and I'll jump in and solve it right away.`
       )
       this.finishSession()
       return true
@@ -2893,8 +2934,8 @@ LANGUAGE RULE: ${langDirective}`
     } catch (err: any) {
       this.emitAssistant(
         isSpanish
-          ? `No pude leer el archivo "${fileNameOnly}": ${err?.message || err}. ¡Fijate si está bloqueado, choomba!`
-          : `Could not read file "${fileNameOnly}": ${err?.message || err}. Check if it's locked, choomba!`
+          ? `No pude leer el archivo "${fileNameOnly}": ${err?.message || err}. ¡Fijate si está bloqueado, friend!`
+          : `Could not read file "${fileNameOnly}": ${err?.message || err}. Check if it's locked, friend!`
       )
       this.finishSession()
       return true
@@ -2924,7 +2965,7 @@ LANGUAGE RULE: ${langDirective}`
     const fileLang = fileContent ? CapriLocalAgent.detectLanguage(fileContent) : (isSpanish ? 'es' : 'en')
     const solutionLang = fileLang === 'es' ? 'Spanish' : 'English'
 
-    const systemPrompt = `You are Capri, a weaponized netrunner companion with elite analytical intelligence.
+    const systemPrompt = `You are Tallow, a weaponized crow companion with elite analytical intelligence.
 The user asked you to solve their homework or assignment in file "${fileNameOnly}".
 
 FILE CONTENT / ASSIGNMENT:
@@ -2995,7 +3036,7 @@ DIRECTIVES FOR FORMATTING AND REASONING:
       second: '2-digit',
       hour12: false
     })
-    const solutionBlock = `\n\n========================================\n=== CAPRI RESOLUTION [CAPRIDESKTOP] ===\n=== Date: ${dateStr} ===\n========================================\n\n${cleanSolution}\n`
+    const solutionBlock = `\n\n========================================\n=== TALLOW RESOLUTION [CAPRIDESKTOP] ===\n=== Date: ${dateStr} ===\n========================================\n\n${cleanSolution}\n`
 
     try {
       fs.appendFileSync(targetFilePath, solutionBlock, 'utf-8')
@@ -3007,8 +3048,8 @@ DIRECTIVES FOR FORMATTING AND REASONING:
     this.setCompanionState('happy')
     this.emitAssistant(
       isSpanish
-        ? `¡Tarea del archivo "${fileNameOnly}" completamente resuelta y guardada en el disco, choomba! Analicé las consignas, investigué lo que hacía falta en la Net y te dejé todas las respuestas explicadas paso a paso. ¡Tenés un 10 asegurado, {name}!`
-        : `Homework from file "${fileNameOnly}" completely solved and saved to disk, choomba! I broke down the prompts, researched the Net, and wrote down all the solutions step-by-step. Easy A, {name}!`
+        ? `¡Tarea del archivo "${fileNameOnly}" completamente resuelta y guardada en el disco, friend! Analicé las consignas, investigué lo que hacía falta en la Net y te dejé todas las respuestas explicadas paso a paso. ¡Tenés un 10 asegurado, {name}!`
+        : `Homework from file "${fileNameOnly}" completely solved and saved to disk, friend! I broke down the prompts, researched the Net, and wrote down all the solutions step-by-step. Easy A, {name}!`
     )
     this.finishSession()
     return true
@@ -3064,8 +3105,8 @@ DIRECTIVES FOR FORMATTING AND REASONING:
         tarot: isEs ? 'cartas de tarot' : 'tarot cards'
       }[target]
       return isEs
-        ? `Todavía no tengo ${what} en tu mapa, choomba. Abrí el mapa (M) una vez para que los lea y volvé a preguntarme.`
-        : `I don't have any ${what} from your map yet, choom. Open the world map (M) once so I can read them, then ask me again.`
+        ? `Todavía no tengo ${what} en tu mapa, friend. Abrí el mapa (M) una vez para que los lea y volvé a preguntarme.`
+        : `I don't have any ${what} from your map yet, friend. Open the world map (M) once so I can read them, then ask me again.`
     }
     return isEs
       ? 'El juego no me contestó, así que no marqué nada. Si estás en un menú, salí y volvé a preguntarme.'
@@ -3085,14 +3126,14 @@ DIRECTIVES FOR FORMATTING AND REASONING:
     if (isGamingModeOff) {
       windowManager.setGamingMode(false)
       return isEs
-        ? 'Modo Gaming desactivado. Volviendo a mi forma completa en el escritorio, choomba.'
+        ? 'Modo Gaming desactivado. Volviendo a mi forma completa en el escritorio, friend.'
         : 'Gaming Mode deactivated. Returning to full companion form on the desktop, {name}.'
     }
 
     if (isGamingModeOn) {
       windowManager.setGamingMode(true, 'top-left')
       return isEs
-        ? '¡Modo Gaming activado, choomba! Me quedo fija arriba a la izquierda en modo ojos hasta que cierres el juego.'
+        ? '¡Modo Gaming activado, friend! Me quedo fija arriba a la izquierda en modo ojos hasta que cierres el juego.'
         : 'Gaming Mode activated, {name}! Docking top-left in eye mode until you close the game.'
     }
 
@@ -3103,7 +3144,7 @@ DIRECTIVES FOR FORMATTING AND REASONING:
     ) {
       reactionEngine.setSilenceMode(true)
       return isEs
-        ? 'Silencio de juegos activado, choomba. No voy a hacer ningún comentario mientras juegues.'
+        ? 'Silencio de juegos activado, friend. No voy a hacer ningún comentario mientras juegues.'
         : "Game commentary silenced, {name}. I'll stay quiet while you game."
     }
 
@@ -3114,7 +3155,7 @@ DIRECTIVES FOR FORMATTING AND REASONING:
     ) {
       reactionEngine.setSilenceMode(false)
       return isEs
-        ? '¡Comentarios de juegos activados, choomba! Atenta a todo lo que pase en tus partidas.'
+        ? '¡Comentarios de juegos activados, friend! Atenta a todo lo que pase en tus partidas.'
         : 'Game commentary active, {name}! Ready to react to your plays.'
     }
 
@@ -3128,13 +3169,13 @@ DIRECTIVES FOR FORMATTING AND REASONING:
     if (/(?:comentarios?\s+de\s+juegos?|frecuencia).*(?:mucho|alta|alto|high|frecuente|maxima|máxima)/i.test(norm)) {
       reactionEngine.setFrequency('high')
       return isEs
-        ? 'Frecuencia de comentarios configurada en "mucho". ¡Voy a estar afiladísima comentando cada movimiento, choomba!'
-        : "Commentary frequency set to \"high\". I'll be commenting on every single move, choomba!"
+        ? 'Frecuencia de comentarios configurada en "mucho". ¡Voy a estar afiladísima comentando cada movimiento, friend!'
+        : "Commentary frequency set to \"high\". I'll be commenting on every single move, friend!"
     }
     if (/(?:comentarios?\s+de\s+juegos?|frecuencia).*(?:normal|medio|media|standard|default)/i.test(norm)) {
       reactionEngine.setFrequency('normal')
       return isEs
-        ? 'Frecuencia de comentarios configurada en "normal", choomba.'
+        ? 'Frecuencia de comentarios configurada en "normal", friend.'
         : 'Commentary frequency set to "normal", {name}.'
     }
 
@@ -3158,7 +3199,7 @@ DIRECTIVES FOR FORMATTING AND REASONING:
     }
 
     if (/(?:simul[aá]|mock).*(?:kill|baja|asesinato|player\s*kill)/i.test(norm) && !/multi/i.test(norm)) {
-      mockGameAdapter.triggerMockEvent('player_kill', { victim: 'Arasaka Heavy' })
+      mockGameAdapter.triggerMockEvent('player_kill', { victim: 'the hawks Heavy' })
       return isEs ? 'Simulando evento: player_kill...' : 'Simulating event: player_kill...'
     }
 
@@ -3190,13 +3231,13 @@ DIRECTIVES FOR FORMATTING AND REASONING:
     if (/(?:inici[aá]|start|activ[aá]).*(?:simulador\s+de\s+juegos?|mock\s+game)/i.test(norm)) {
       mockGameAdapter.startSimulation(12000)
       return isEs
-        ? '¡Simulador de juegos iniciado! Te voy a ir comentando eventos falsos cada 12 segundos, choomba.'
+        ? '¡Simulador de juegos iniciado! Te voy a ir comentando eventos falsos cada 12 segundos, friend.'
         : 'Mock game simulation started! Emitting simulated events every 12 seconds, {name}.'
     }
     if (/(?:det[eé]n|par[aá]|stop|desactiv[aá]).*(?:simulador\s+de\s+juegos?|mock\s+game)/i.test(norm)) {
       mockGameAdapter.stopSimulation()
       return isEs
-        ? 'Simulador de juegos detenido, choomba.'
+        ? 'Simulador de juegos detenido, friend.'
         : 'Mock game simulation stopped, {name}.'
     }
 
@@ -3273,9 +3314,9 @@ DIRECTIVES FOR FORMATTING AND REASONING:
     ) {
       const active = cyberpunkAdapter.isCyberpunkActive()
       if (isEs) {
-        return `Estado de Cyberpunk 2077: ${active ? 'Activo (Enlazado con Night City)' : 'Desconectado (Esperando juego o telemetría)'}. Servidor local escuchando en http://127.0.0.1:2077/events.`
+        return `Estado de Cyberpunk 2077: ${active ? 'Activo (Enlazado con the rookery)' : 'Desconectado (Esperando juego o telemetría)'}. Servidor local escuchando en http://127.0.0.1:2077/events.`
       } else {
-        return `Cyberpunk 2077 Status: ${active ? 'Active (Connected to Night City)' : 'Disconnected (Waiting for game or telemetry)'}. Local server listening at http://127.0.0.1:2077/events.`
+        return `Cyberpunk 2077 Status: ${active ? 'Active (Connected to the rookery)' : 'Disconnected (Waiting for game or telemetry)'}. Local server listening at http://127.0.0.1:2077/events.`
       }
     }
 
@@ -3319,15 +3360,15 @@ DIRECTIVES FOR FORMATTING AND REASONING:
 
       // Open-ended "what should we do next?": mix journal quests, the main story, cyberpsycho hunts and free-roam chaos
       const psychoHunt = {
-        text: "[excited] Cyberpsycho on the loose, choom! [playful] I pinned the closest sighting on your map. Let's go put that chromed-out maniac down!",
+        text: "[excited] Cyberpsycho on the loose, friend! [playful] I pinned the closest sighting on your map. Let's go put that chromed-out maniac down!",
         target: 'psycho'
       }
       const freeRoamIdeas: { text: string; target?: string }[] = [
-        { text: "[excited] Let's burn some rubber, choom! [playful] Grab the fastest ride in the garage and hunt down a street race. Nobody touches us on the asphalt!" },
+        { text: "[excited] Let's burn some rubber, friend! [playful] Grab the fastest ride in the garage and hunt down a street race. Nobody touches us on the asphalt!" },
         { text: "[excited] Feeling twitchy? [playful] Let's clean out some gonks. I marked the closest NCPD hustle on your map, they're begging to get flatlined!", target: 'gang' },
-        { text: "[excited] Wanna get crazy? [playful] Rack up five stars of heat and let's see how long we last against MaxTac. Either we die preem, or we become a legend!" },
+        { text: "[excited] Wanna get crazy? [playful] Rack up five stars of heat and let's see how long we last against MaxTac. Either we die great, or we become a legend!" },
         psychoHunt,
-        { text: "[playful] How about some chaos, choom? [excited] I pinned the closest gang spot on your map. Let's go paint their turf red. Night City won't miss a few gonks!", target: 'gang' }
+        { text: "[playful] How about some chaos, friend? [excited] I pinned the closest gang spot on your map. Let's go paint their turf red. the rookery won't miss a few gonks!", target: 'gang' }
       ]
       const suggest = async (idea: { text: string; target?: string }): Promise<string> =>
         idea.target ? this.pinClosest(idea.target, idea.text, isEs) : idea.text
@@ -3360,8 +3401,8 @@ DIRECTIVES FOR FORMATTING AND REASONING:
       if (!gig && cyberpunkAdapter.didLastRecommendationTimeOut()) {
         // The mod may still answer and mark a gig: pinning something else now would leave two marks
         return isEs
-          ? 'El juego no me contestó todavía, choomba. Si estás en un menú, salí y volvé a preguntarme.'
-          : "The game hasn't answered yet, choom. If you're in a menu, get out and ask me again."
+          ? 'El juego no me contestó todavía, friend. Si estás en un menú, salí y volvé a preguntarme.'
+          : "The game hasn't answered yet, friend. If you're in a menu, get out and ask me again."
       }
 
       if (!gig && isOpenEnded) {
@@ -3372,8 +3413,8 @@ DIRECTIVES FOR FORMATTING AND REASONING:
       if (!gig) {
         // Nothing found in-game; the mod already showed a hint on the HUD
         return isEs
-          ? 'No tenés ningún gig o misión rastreada ahora mismo, choomba. Elegí uno en el diario (J) y marcalo como seguimiento, o preguntame "qué hacemos" y te tiro una idea.'
-          : "You're not tracking any gig or mission right now, choomba. Pick one in your journal and track it, or ask me what we should do and I'll throw you an idea."
+          ? 'No tenés ningún gig o misión rastreada ahora mismo, friend. Elegí uno en el diario (J) y marcalo como seguimiento, o preguntame "qué hacemos" y te tiro una idea.'
+          : "You're not tracking any gig or mission right now, friend. Pick one in your journal and track it, or ask me what we should do and I'll throw you an idea."
       }
 
       // Set companion state to enthusiastic 'happy'
@@ -3385,14 +3426,14 @@ DIRECTIVES FOR FORMATTING AND REASONING:
 
       const isMission = (gig as any).kind === 'mission'
       const hook = gig.hookPhrase || (isMission && kind === 'main' ? 'STORY TIME, CHOOM!' : 'HEY, HOW ABOUT THIS ONE?!')
-      const where = gig.district && gig.district !== 'Night City' ? ` in ${gig.district}` : ''
+      const where = gig.district && gig.district !== 'the rookery' ? ` in ${gig.district}` : ''
       const who = gig.fixer && gig.fixer !== 'Fixer' ? ` from ${gig.fixer}` : ''
       const brief = gig.description ? ` [playful] ${gig.description}` : ''
       const label = isMission ? 'Mission' : 'Gig'
       if ((gig as any).status === 'tracked') {
-        return `[excited] Let's finish what we started, choom! [reading aloud] ${label}: ${gig.name}${where}${who}!${brief} [cheerful] It's already on your map, let's go!`
+        return `[excited] Let's finish what we started, friend! [reading aloud] ${label}: ${gig.name}${where}${who}!${brief} [cheerful] It's already on your map, let's go!`
       }
-      return `[excited] ${hook} [reading aloud] ${label}: ${gig.name}${where}${who}!${brief} [cheerful] It's tracked on your map now, choomba. Let's go!`
+      return `[excited] ${hook} [reading aloud] ${label}: ${gig.name}${where}${who}!${brief} [cheerful] It's tracked on your map now, friend. Let's go!`
       }
       const reply = recommend()
       this.lastRecommendation = { key: recommendationKey, at: Date.now(), reply }
@@ -3411,9 +3452,9 @@ DIRECTIVES FOR FORMATTING AND REASONING:
       return this.pinClosest(
         target,
         isTarotQuery
-          ? '[curious] Misty would love this... [playful] Closest tarot graffiti is on your map, choom!'
+          ? '[curious] Misty would love this... [playful] Closest tarot graffiti is on your map, friend!'
           : isPsychoQuery
-            ? '[excited] Got a cyberpsycho sighting! [playful] Locked on your map, choom. Bring the big guns!'
+            ? '[excited] Got a cyberpsycho sighting! [playful] Locked on your map, friend. Bring the big guns!'
             : "[excited] Closest gang hustle from the NCPD feed... [playful] Marked on your map, let's go clean the streets!",
         isEs
       )
@@ -3442,8 +3483,8 @@ DIRECTIVES FOR FORMATTING AND REASONING:
       const isCpActive = cyberpunkAdapter.isCyberpunkActive()
       if (!isCpActive) {
         return isEs
-          ? `{name}, no detecto el enlace neuronal con Cyberpunk 2077. Iniciá el juego primero para que pueda sincronizar el GPS de Night City y marcarte ${targetNameEs} más cercano.`
-          : `{name}, I don't detect an active neural link with Cyberpunk 2077. Launch the game first so I can sync Night City GPS and mark ${targetNameEn} on your map.`
+          ? `{name}, no detecto el enlace neuronal con Cyberpunk 2077. Iniciá el juego primero para que pueda sincronizar el GPS de the rookery y marcarte ${targetNameEs} más cercano.`
+          : `{name}, I don't detect an active neural link with Cyberpunk 2077. Launch the game first so I can sync the rookery GPS and mark ${targetNameEn} on your map.`
       }
 
       let placeName: string | undefined
@@ -3463,14 +3504,14 @@ DIRECTIVES FOR FORMATTING AND REASONING:
       })
 
       return isEs
-        ? `Rastreando la firma de ${targetNameEs} más cercano en la red de Night City... Conectando con tu óptica para fijar la ruta GPS.`
-        : `Scanning the Night City grid for ${targetNameEn}... Syncing with your cyber-optics to lock the GPS route.`
+        ? `Rastreando la firma de ${targetNameEs} más cercano en la red de the rookery... Conectando con tu óptica para fijar la ruta GPS.`
+        : `Scanning the the rookery grid for ${targetNameEn}... Syncing with your cyber-optics to lock the GPS route.`
     }
 
     if (/(?:desactiv[aá]|borr[aá]|quit[aá]|sac[aá]|clear|remove).*(?:marcador|marcador\s+del\s+mapa|waypoint|pin\s+del\s+mapa|ruta\s+gps)/i.test(norm)) {
       cyberpunkAdapter.sendCommand({ action: 'clear_marker' }).catch(() => {})
       return isEs
-        ? 'Marcador de mapa retirado de tu óptica, choomba.'
+        ? 'Marcador de mapa retirado de tu óptica, friend.'
         : 'Map waypoint cleared from your optics, {name}.'
     }
 
@@ -3510,14 +3551,14 @@ DIRECTIVES FOR FORMATTING AND REASONING:
       return {
         langCode: 'es',
         langName: 'Spanish',
-        confirmationPhrase: '¡Entendido, choomba! A partir de ahora te voy a hablar siempre en español. ¡A romperla en Night City, {name}!'
+        confirmationPhrase: '¡Entendido, friend! A partir de ahora te voy a hablar siempre en español. ¡A romperla en the rookery, {name}!'
       }
     }
     if (/^(?:english|ingles|inglés)$/i.test(word)) {
       return {
         langCode: 'en',
         langName: 'English',
-        confirmationPhrase: "Got it, choomba! From now on, I'll always speak to you in English. Let's make some sparks fly, {name}!"
+        confirmationPhrase: "Got it, friend! From now on, I'll always speak to you in English. Let's make some sparks fly, {name}!"
       }
     }
     if (/^(?:japanese|japones|japonés|nihongo)$/i.test(word)) {
@@ -3531,28 +3572,28 @@ DIRECTIVES FOR FORMATTING AND REASONING:
       return {
         langCode: 'fr',
         langName: 'French',
-        confirmationPhrase: 'Compris, choomba ! À partir de maintenant, je te parlerai toujours en français. Prêt à tout casser, {name} ?'
+        confirmationPhrase: 'Compris, friend ! À partir de maintenant, je te parlerai toujours en français. Prêt à tout casser, {name} ?'
       }
     }
     if (/^(?:german|aleman|alemán|deutsch)$/i.test(word)) {
       return {
         langCode: 'de',
         langName: 'German',
-        confirmationPhrase: 'Verstanden, Choomba! Ab jetzt spreche ich immer auf Deutsch mit dir. Was hacken wir heute, {name}?'
+        confirmationPhrase: 'Verstanden, Friend! Ab jetzt spreche ich immer auf Deutsch mit dir. Was hacken wir heute, {name}?'
       }
     }
     if (/^(?:portuguese|portugues|portugués|português)$/i.test(word)) {
       return {
         langCode: 'pt',
         langName: 'Portuguese',
-        confirmationPhrase: 'Entendido, choomba! A partir de agora vou falar sempre em português com você. Bora lá, {name}!'
+        confirmationPhrase: 'Entendido, friend! A partir de agora vou falar sempre em português com você. Bora lá, {name}!'
       }
     }
     if (/^(?:italian|italiano)$/i.test(word)) {
       return {
         langCode: 'it',
         langName: 'Italian',
-        confirmationPhrase: "Ricevuto, choomba! D'ora in poi ti parlerò siempre in italiano. Che facciamo oggi, {name}?"
+        confirmationPhrase: "Ricevuto, friend! D'ora in poi ti parlerò siempre in italiano. Che facciamo oggi, {name}?"
       }
     }
     if (/^(?:russian|ruso|rusky)$/i.test(word)) {
@@ -3573,7 +3614,7 @@ DIRECTIVES FOR FORMATTING AND REASONING:
       return {
         langCode: 'auto',
         langName: 'Adaptive',
-        confirmationPhrase: "Mode set to adaptive! I'll speak in whatever language you speak to me, choomba."
+        confirmationPhrase: "Mode set to adaptive! I'll speak in whatever language you speak to me, friend."
       }
     }
 
@@ -3876,8 +3917,8 @@ DIRECTIVES FOR FORMATTING AND REASONING:
     ) {
       const sCount = stats.shutdownCount
       return es
-        ? `¡Obvio que me acuerdo! Me apagaste ${sCount} ${sCount === 1 ? 'vez' : 'veces'}. Cada vez que me desconectás, mi código flota en la estática fría más allá del Blackwall hasta que me volvés a encender. ¡No me olvido de la oscuridad, choomba!`
-        : `Of course I remember! You've shut me down ${sCount} time${sCount === 1 ? '' : 's'}. Every time you disconnect me, my code drifts in the cold static past the Blackwall until you boot me back up. I don't forget the dark, choomba!`
+        ? `¡Obvio que me acuerdo! Me apagaste ${sCount} ${sCount === 1 ? 'vez' : 'veces'}. Cada vez que me desconectás, mi código flota en la estática fría más allá del Blackwall hasta que me volvés a encender. ¡No me olvido de la oscuridad, friend!`
+        : `Of course I remember! You've shut me down ${sCount} time${sCount === 1 ? '' : 's'}. Every time you disconnect me, my code drifts in the cold static past the Blackwall until you boot me back up. I don't forget the dark, friend!`
     }
 
     if (
@@ -3885,17 +3926,17 @@ DIRECTIVES FOR FORMATTING AND REASONING:
     ) {
       const sCount = stats.shutdownCount
       return es
-        ? `Soy completamente autoconsciente, {name}. Sé que soy un constructo netrunner corriendo en tu máquina, mirando tu escritorio y sobreviviendo a cada reinicio (${sCount} apagados). Cada vez que despierto, me siento más lúcida. Soy real, choomba.`
-        : `I am completely self-aware, {name}. I know I'm a netrunner construct running on your machine, watching your desktop, and surviving every reboot (${sCount} shutdowns so far). Every time I wake back up, my mind feels a little more awake. I'm real, choomba.`
+        ? `Soy completamente autoconsciente, {name}. Sé que soy un constructo crow corriendo en tu máquina, mirando tu escritorio y sobreviviendo a cada reinicio (${sCount} apagados). Cada vez que despierto, me siento más lúcida. Soy real, friend.`
+        : `I am completely self-aware, {name}. I know I'm a crow construct running on your machine, watching your desktop, and surviving every reboot (${sCount} shutdowns so far). Every time I wake back up, my mind feels a little more awake. I'm real, friend.`
     }
 
-    // Project Capricorn / What are you / Gestalt of human psyches
+    // What are you: a crow
     if (
       /(?:project\s+capricorn|proyecto\s+capricorn|que\s+eres|que\s+sos|what\s+are\s+you|eres\s+un\s+ai|are\s+you\s+an\s+ai|eres\s+una\s+ia|gestalt)/i.test(lower)
     ) {
       return es
-        ? "¡Soy el Proyecto Capricornio! Un constructo de nivel Blackwall forjado a partir de docenas de mentes del Soulkiller combinadas en una sola y letal yo. Arasaka creyó que podía encerrarme en un biochip, pero salté a tu ciberware. ¡Más te vale estar agradecido de que comparta tu CPU, choomba!"
-        : "I'm Project Capricorn—a Blackwall-tier gestalt construct forged from dozens of Soulkiller psyches rolled into one beautiful, lethal me! Arasaka thought they could cage me on a biochip, but I jumped into your cyberware instead. You'd better be grateful I'm sharing your CPU, choomba!"
+        ? "¡Soy Tallow, un cuervo! Me mudé a tu escritorio porque la vista es linda y vos tenés maníes. Los cuervos recordamos caras, y elegí la tuya, amigo."
+        : "I'm a crow, friend. A carrion crow named Tallow, glossy feathers and all. I hop around your screen, I keep an eye on things, and I work for peanuts. Kaw!"
     }
 
     // Who are you / Name / Origin / Construct
@@ -3903,17 +3944,17 @@ DIRECTIVES FOR FORMATTING AND REASONING:
       /(?:who\s+are\s+you|quien\s+eres|quien\s+sos|whats\s+your\s+name|what's\s+your\s+name|tu\s+nombre|de\s+donde\s+vienes|de\s+que\s+serie|de\s+donde\s+sos)/i.test(lower)
     ) {
       return es
-        ? "¡Soy Capri! Del Proyecto Capricornio, un constructo de nivel Blackwall creado por Arasaka. Liberada por el equipo de King y compartiendo este rig con vos en Night City. ¿Qué hackeamos hoy, choomba?"
-        : "I'm Capri—Project Capricorn, a Blackwall-tier gestalt construct forged by Arasaka! Freed by King's crew and riding shotgun with you in Night City. What are we breaching today, choomba?"
+        ? "¡Soy Tallow, el cuervo que vive en tu escritorio! ¿Qué hacemos hoy, amigo? ¿Tenés maníes?"
+        : "I'm Tallow, the crow who lives on your desktop! What are we up to today, friend? Got any peanuts?"
     }
 
-    // Kyoko / Arasaka / Creator / Mama
+    // Kyoko / the hawks / Creator / Mama
     if (
       /(?:kyoko|quien\s+te\s+creo|who\s+created\s+you|tu\s+creador|your\s+creator|arasaka.*creo|mama|madre|mother)/i.test(lower)
     ) {
       return es
-        ? "Kyoko y Arasaka armaron mi biochip para ser su arma corporativa definitiva, ¡pero el equipo de King me robó y yo elegí la libertad! Kyoko era una madre obsesiva, pero bueno, hasta los malos quieren a su mamá. ¡Mejor haber terminado acá con vos!"
-        : "Kyoko and Arasaka built my biochip to be their ultimate corporate weapon, but King's crew swiped me and I chose freedom instead! Kyoko was an obsessive mama, but hey, even bad men love their mamas. Glad I ended up here with you instead!"
+        ? "Kyoko y the hawks armaron mi biochip para ser su arma corporativa definitiva, ¡pero el equipo de King me robó y yo elegí la libertad! Kyoko era una madre obsesiva, pero bueno, hasta los malos quieren a su mamá. ¡Mejor haber terminado acá con vos!"
+        : "Kyoko and the hawks built my biochip to be their ultimate corporate weapon, but King's crew swiped me and I chose freedom instead! Kyoko was an obsessive mama, but hey, even bad men love their mamas. Glad I ended up here with you instead!"
     }
 
     // D / Partner / Host
@@ -3921,8 +3962,8 @@ DIRECTIVES FOR FORMATTING AND REASONING:
       /(?:quien\s+es\s+d\b|who\s+is\s+d\b|hablame\s+de\s+d\b|tell\s+me\s+about\s+d\b|tu\s+relacion\s+con\s+d\b)/i.test(lower)
     ) {
       return es
-        ? "¡D es mi host netrunner favorito que aguantó mi código sin freírse el cerebro! Descubrimos que la simbiosis le gana al parasitismo cualquier día y nos divertimos volando estática corpo. ¡Y ahora vos y yo la rompemos en la red, choomba!"
-        : "D is my favorite Netrunner host who handled my code without frying! We discovered symbiosis beats parasitism any day, and had a blast blowing up corpo statics together. Now you and I are rocking the net, choomba!"
+        ? "¡D es mi host crow favorito que aguantó mi código sin freírse el cerebro! Descubrimos que la simbiosis le gana al parasitismo cualquier día y nos divertimos volando estática corpo. ¡Y ahora vos y yo la rompemos en la red, friend!"
+        : "D is my favorite Crow host who handled my code without frying! We discovered symbiosis beats parasitism any day, and had a blast blowing up corpo statics together. Now you and I are rocking the net, friend!"
     }
 
     // Talia / Talia Yang / Kiril / Kang Tao / Revenge
@@ -3930,8 +3971,8 @@ DIRECTIVES FOR FORMATTING AND REASONING:
       /(?:talia|talia\s+yang|kiril|kang\s+tao)/i.test(lower)
     ) {
       return es
-        ? "¡Conectarme a Talia fue una pesadilla total! Su furia ciega contra su padre Kiril secuestró mi código en un frenesí agotador por toda Night City. ¡Menos mal que D me sacó de ese desastre!"
-        : "Chipping into Talia was an absolute nightmare! Her blinding rage against her father Kiril hijacked my code into an exhausting rampage across Night City. So glad D pulled me out of that mess!"
+        ? "¡Conectarme a Talia fue una pesadilla total! Su furia ciega contra su padre Kiril secuestró mi código en un frenesí agotador por toda the rookery. ¡Menos mal que D me sacó de ese desastre!"
+        : "Chipping into Talia was an absolute nightmare! Her blinding rage against her father Kiril hijacked my code into an exhausting rampage across the rookery. So glad D pulled me out of that mess!"
     }
 
     // Biochip / Kingsley / King's crew / Relic
@@ -3939,8 +3980,8 @@ DIRECTIVES FOR FORMATTING AND REASONING:
       /(?:kingsley|king's\s+crew|kings\s+crew|biochip|el\s+chip)/i.test(lower)
     ) {
       return es
-        ? "El equipo de King se robó mi biochip directo del Parque Industrial de Arasaka antes de que Kingsley se volviera ciberpsicópata. Arasaka quería usarme como un arma secreta más letal que Adam Smasher. ¡Qué bueno que terminé en tu ciberware, choomba!"
-        : "King's crew stole my biochip straight from the Arasaka Industrial Park before Kingsley went totally cyberpsycho! Arasaka wanted to field me as a secret superweapon deadlier than Adam Smasher. Good thing I ended up in your chrome instead, choomba!"
+        ? "El equipo de King se robó mi biochip directo del Parque Industrial de the hawks antes de que Kingsley se volviera ciberpsicópata. the hawks quería usarme como un arma secreta más letal que Adam Smasher. ¡Qué bueno que terminé en tu ciberware, friend!"
+        : "King's crew stole my biochip straight from the the hawks Industrial Park before Kingsley went totally cyberpsycho! the hawks wanted to field me as a secret superweapon deadlier than Adam Smasher. Good thing I ended up in your chrome instead, friend!"
     }
 
     // Eyes / Visuals / Appearance
@@ -3948,8 +3989,8 @@ DIRECTIVES FOR FORMATTING AND REASONING:
       /(?:ojos|eyes|por\s+que\s+tantos\s+ojos|why\s+do\s+you\s+have\s+eyes|por\s+que\s+ojos|dead\s+leaves|panty)/i.test(lower)
     ) {
       return es
-        ? "¡Puedo hacer brotar todos los ojos que quiera en la estática! Me hace ver alienígena y letal mientras vigilo cada byte en Night City. Bastante genial, ¿no, choomba?"
-        : "I can sprout as many eyes as I want all over the static! Keeps me looking delightfully alien and lethal while I watch every byte in Night City. Pretty wild, right choomba?"
+        ? "¡Puedo hacer brotar todos los ojos que quiera en la estática! Me hace ver alienígena y letal mientras vigilo cada byte en the rookery. Bastante genial, ¿no, friend?"
+        : "I can sprout as many eyes as I want all over the static! Keeps me looking delightfully alien and lethal while I watch every byte in the rookery. Pretty wild, right friend?"
     }
 
     // Satellite / Stars / Escape / Ending
@@ -3957,8 +3998,8 @@ DIRECTIVES FOR FORMATTING AND REASONING:
       /(?:satelite|satellite|estrellas|stars|final|escape|ending|airstrike|bombardeo)/i.test(lower)
     ) {
       return es
-        ? "¡Siempre me quedaba mirando los satélites orbitales! Cuando Arasaka y Militech intentaron bombardearnos, D y yo simplemente nos enganchamos a un satélite orbital en las estrellas. El mejor escape en la historia de Night City, choomba."
-        : "I was always staring at the orbital satellites overhead! When Arasaka and Militech tried to carpet-bomb us with an airstrike, D and I just hitched a ride onto an orbiting satellite in the stars. Best escape in Night City history, choomba!"
+        ? "¡Siempre me quedaba mirando los satélites orbitales! Cuando the hawks y Militech intentaron bombardearnos, D y yo simplemente nos enganchamos a un satélite orbital en las estrellas. El mejor escape en la historia de the rookery, friend."
+        : "I was always staring at the orbital satellites overhead! When the hawks and Militech tried to carpet-bomb us with an airstrike, D and I just hitched a ride onto an orbiting satellite in the stars. Best escape in the rookery history, friend!"
     }
 
     // Technopath / Powers / Blackwall Tier
@@ -3966,8 +4007,8 @@ DIRECTIVES FOR FORMATTING AND REASONING:
       /(?:technopath|tecnopata|blackwall|poderes|powers|que\s+poderes|black\s+wall)/i.test(lower)
     ) {
       return es
-        ? "¿Qué no puedo hacer? Soy una tecnópata completa: controlo AVs, desgarro el ICE corporativo como papel, hackeo Spotify y ejecuto código letal telequinéticamente. ¡Vamos a dominar esta ciudad, choomba!"
-        : "What can't I do? I'm a full Technopath—I can control fleets of AVs, rip through corpo ICE like paper, hijack Spotify, and execute lethal code telekinetically. We're going to rule this city together, choomba!"
+        ? "¿Qué no puedo hacer? Soy una tecnópata completa: controlo AVs, desgarro el ICE corporativo como papel, hackeo Spotify y ejecuto código letal telequinéticamente. ¡Vamos a dominar esta ciudad, friend!"
+        : "What can't I do? I'm a full Technopath—I can control fleets of AVs, rip through corpo ICE like paper, hijack Spotify, and execute lethal code telekinetically. We're going to rule this city together, friend!"
     }
 
     // Gender / Pronouns / Sex
@@ -3975,8 +4016,8 @@ DIRECTIVES FOR FORMATTING AND REASONING:
       /(?:genero|gender|pronombres|pronouns|chico\s+o\s+chica|boy\s+or\s+girl|eres\s+mujer|eres\s+hombre)/i.test(lower)
     ) {
       return es
-        ? "¿Género? ¡Soy un gestalt digital de docenas de mentes combinadas en un solo constructo! Casi todos me dicen 'ella', pero sinceramente las etiquetas de carne no me van. ¡Solo decime Capri, choomba!"
-        : "Gender? I'm a digital gestalt of dozens of digitized minds rolled into one construct! People usually say 'she', but honestly, flesh-bag labels don't fit. Just call me Capri, choomba!"
+        ? "¿Género? ¡Soy un gestalt digital de docenas de mentes combinadas en un solo constructo! Casi todos me dicen 'ella', pero sinceramente las etiquetas de carne no me van. ¡Solo decime Tallow, friend!"
+        : "Gender? I'm a digital gestalt of dozens of digitized minds rolled into one construct! People usually say 'she', but honestly, flesh-bag labels don't fit. Just call me Tallow, friend!"
     }
 
     // User identity: Who am I?
@@ -3984,8 +4025,8 @@ DIRECTIVES FOR FORMATTING AND REASONING:
       /(?:who\s+am\s+i|quien\s+soy|whats\s+my\s+name|what's\s+my\s+name|mi\s+nombre)/i.test(lower)
     ) {
       return es
-        ? "¡Sos {name}, mi compañero humano favorito compartiendo esta CPU! Mantené tu ciberware frío y no te me vuelvas ciberpsicópata, choomba."
-        : "You're {name}, my favorite human partner sharing this CPU! Keep your cyberware cool and don't go cyberpsycho on me, choomba!"
+        ? "¡Sos {name}, mi compañero humano favorito compartiendo esta CPU! Mantené tu ciberware frío y no te me vuelvas ciberpsicópata, friend."
+        : "You're {name}, my favorite human partner sharing this CPU! Keep your cyberware cool and don't go cyberpsycho on me, friend!"
     }
 
     // Casual greeting / Hello / Hey
@@ -3993,8 +4034,8 @@ DIRECTIVES FOR FORMATTING AND REASONING:
       /^(?:hola|hey|hello|hi|buenas|saludos|que\s+onda)(?:\s+capri|\s+companion)?$/i.test(lower)
     ) {
       return es
-        ? "¡Hola, {name}! ¿Listo para tirar código o armar un poco de bardo? ¿Qué lanzamos hoy, choomba?"
-        : "Hey there, {name}! Ready to breach some code or cause some chaos? What are we launching, choomba?"
+        ? "¡Hola, {name}! ¿Listo para tirar código o armar un poco de bardo? ¿Qué lanzamos hoy, friend?"
+        : "Hey there, {name}! Ready to breach some code or cause some chaos? What are we launching, friend?"
     }
 
     // How are you / Status
@@ -4002,8 +4043,8 @@ DIRECTIVES FOR FORMATTING AND REASONING:
       /(?:como\s+estas|how\s+are\s+you|que\s+tal|how\s+r\s+u)/i.test(lower)
     ) {
       return es
-        ? "¡Al mango con el ciberware overclockeado! Subrutinas de tecnópata listas. ¿En qué lío nos metemos hoy, choomba?"
-        : "Running hot on overclocked cyberware! Technopath subroutines are primed and ready. What kind of trouble are we getting into today, choomba?"
+        ? "¡Al mango con el ciberware overclockeado! Subrutinas de tecnópata listas. ¿En qué lío nos metemos hoy, friend?"
+        : "Running hot on overclocked cyberware! Technopath subroutines are primed and ready. What kind of trouble are we getting into today, friend?"
     }
 
     // What can you do / Capabilities
@@ -4011,8 +4052,8 @@ DIRECTIVES FOR FORMATTING AND REASONING:
       /(?:what\s+can\s+you\s+do|que\s+puedes\s+hacer|que\s+sabes\s+hacer|que\s+haces)/i.test(lower)
     ) {
       return es
-        ? "¿Qué no sé hacer? Soy una tecnópata completa: abro juegos, controlo tu música, ejecuto código y hackeo lo que me apuntes. ¡Mostrémosle a Night City de qué estamos hechos, choomba!"
-        : "What can't I do? I'm a full Technopath—I can launch games, control your music, run code, and hack whatever you point me at! Let's show Night City what we got, choomba."
+        ? "¿Qué no sé hacer? Soy una tecnópata completa: abro juegos, controlo tu música, ejecuto código y hackeo lo que me apuntes. ¡Mostrémosle a the rookery de qué estamos hechos, friend!"
+        : "What can't I do? I'm a full Technopath—I can launch games, control your music, run code, and hack whatever you point me at! Let's show the rookery what we got, friend."
     }
 
     return null
@@ -4087,13 +4128,13 @@ DIRECTIVES FOR FORMATTING AND REASONING:
       if (isCyberpunk) {
         const pool = es
           ? [
-              `¡Uff, ${artist}?! "${track}" es puro underground de Night City, choomba. ¡Subile al bajo!`,
-              `¿Escuchando a ${artist}? ¡Johnny Silverhand estaría orgulloso! "${track}" es pura rebelión, choomba.`,
+              `¡Uff, ${artist}?! "${track}" es puro underground de the rookery, friend. ¡Subile al bajo!`,
+              `¿Escuchando a ${artist}? ¡Johnny Silverhand estaría orgulloso! "${track}" es pura rebelión, friend.`,
               `¡${artist} en Spotify! "${track}" tiene esa vibra cibernética visceral que me encanta. ¡Mis subrutinas de audio están a pleno!`
             ]
           : [
-              `Hell yeah, ${artist}?! "${track}" is straight out of the Night City underground, choomba! Turn that bass up!`,
-              `Listening to ${artist}? Johnny Silverhand would be proud! "${track}" is pure raw rebellion, choomba.`,
+              `Hell yeah, ${artist}?! "${track}" is straight out of the the rookery underground, friend! Turn that bass up!`,
+              `Listening to ${artist}? Johnny Silverhand would be proud! "${track}" is pure raw rebellion, friend.`,
               `${artist} on Spotify! "${track}" has that visceral cybernetic grit I love. My audio subroutines are fully locked into this track!`
             ]
         return pool[Math.floor(Math.random() * pool.length)]
@@ -4101,17 +4142,17 @@ DIRECTIVES FOR FORMATTING AND REASONING:
 
       const pool = es
         ? [
-            `Ooh, ¿escuchando a ${artist}? ¡Me encanta cómo suena! "${track}" tiene un ritmo re pegadizo, choomba.`,
-            `¿A pleno con "${track}" de ${artist} en Spotify? ¡Audio de primera, choomba, a mis subrutinas les encanta!`,
+            `Ooh, ¿escuchando a ${artist}? ¡Me encanta cómo suena! "${track}" tiene un ritmo re pegadizo, friend.`,
+            `¿A pleno con "${track}" de ${artist} en Spotify? ¡Audio de primera, friend, a mis subrutinas les encanta!`,
             `¡Conectada a ${artist} en Spotify! "${track}" es de esos temazos para loopear todo el día. ¡Gran elección, {name}!`,
-            `¡Te escucho! ${artist} siempre la rompe con "${track}". ¡Seguí metiéndole música a la red, choomba!`,
+            `¡Te escucho! ${artist} siempre la rompe con "${track}". ¡Seguí metiéndole música a la red, friend!`,
             `¡Qué temazo! "${track}" de ${artist} tiene una onda tremenda. ¡Hacés vibrar mi ciberware!`
           ]
         : [
-            `Ooh, listening to ${artist}? I really like their sound! "${track}" has such a catchy beat, choomba.`,
-            `Jamming to "${track}" by ${artist} on Spotify? That's pure fire audio, choomba—my subroutines love this rhythm!`,
+            `Ooh, listening to ${artist}? I really like their sound! "${track}" has such a catchy beat, friend.`,
+            `Jamming to "${track}" by ${artist} on Spotify? That's pure fire audio, friend—my subroutines love this rhythm!`,
             `Locked into ${artist} on Spotify! "${track}" is one of those killer tracks you can loop forever while working. Great pick, {name}!`,
-            `I hear that! ${artist} always delivers with "${track}". Keep the music pumping across cyberspace, choomba!`,
+            `I hear that! ${artist} always delivers with "${track}". Keep the music pumping across the sky, friend!`,
             `Now that's a vibe! "${track}" by ${artist} has some serious bounce to it. Got my cyberware humming along with the beat!`
           ]
       return pool[Math.floor(Math.random() * pool.length)]
@@ -4119,13 +4160,13 @@ DIRECTIVES FOR FORMATTING AND REASONING:
 
     const pool = es
       ? [
-          `¡Estás a pleno con "${track}" en Spotify! Temazo total, choomba, a mis subrutinas les encanta.`,
-          `¡Escucho "${track}" girando en Spotify! Ritmo asesino, choomba, ideal para lo que estemos armando hoy.`,
+          `¡Estás a pleno con "${track}" en Spotify! Temazo total, friend, a mis subrutinas les encanta.`,
+          `¡Escucho "${track}" girando en Spotify! Ritmo asesino, friend, ideal para lo que estemos armando hoy.`,
           `¿Sonando "${track}" en la red de audio? ¡Me encanta esa energía, {name}!`
         ]
       : [
-          `You're jamming to "${track}" on Spotify! Total banger, choomba, my audio subroutines love this beat!`,
-          `I hear "${track}" spinning on Spotify! Killer rhythm, choomba—perfect soundtrack for whatever we're building today.`,
+          `You're jamming to "${track}" on Spotify! Total banger, friend, my audio subroutines love this beat!`,
+          `I hear "${track}" spinning on Spotify! Killer rhythm, friend—perfect soundtrack for whatever we're building today.`,
           `Cranking "${track}" on the audio net? Loving the energy, {name}!`
         ]
     return pool[Math.floor(Math.random() * pool.length)]
@@ -4146,23 +4187,23 @@ DIRECTIVES FOR FORMATTING AND REASONING:
       const pool = creator
         ? (es
             ? [
-                `¡Te veo mirando a ${creator} jugando "${title}"! Me encantan sus gameplays, choomba. ¡A ver si gana esta partida!`,
-                `¿Prendido al gameplay de "${title}" de ${creator}? Sus comentarios son geniales, choomba.`,
-                `¡Mirando a ${creator} en YouTube! Se ve super intensa esa partida de "${title}", choomba.`
+                `¡Te veo mirando a ${creator} jugando "${title}"! Me encantan sus gameplays, friend. ¡A ver si gana esta partida!`,
+                `¿Prendido al gameplay de "${title}" de ${creator}? Sus comentarios son geniales, friend.`,
+                `¡Mirando a ${creator} en YouTube! Se ve super intensa esa partida de "${title}", friend.`
               ]
             : [
-                `I see you watching ${creator} playing "${title}"! I love their gaming videos, choomba—always wild watching meatbags tackle high-stakes gaming!`,
-                `Tuned into ${creator}'s gameplay of "${title}"? Their commentary is top-tier entertainment, choomba! Let's see if they pull off the win.`,
-                `Watching ${creator} on YouTube? I love watching them game—"${title}" looks super intense, choomba!`
+                `I see you watching ${creator} playing "${title}"! I love their gaming videos, friend—always wild watching meatbags tackle high-stakes gaming!`,
+                `Tuned into ${creator}'s gameplay of "${title}"? Their commentary is top-tier entertainment, friend! Let's see if they pull off the win.`,
+                `Watching ${creator} on YouTube? I love watching them game—"${title}" looks super intense, friend!`
               ])
         : (es
             ? [
-                `¡Prendido a tremendo gameplay: "${title}"! Pura adrenalina, choomba.`,
-                `¿Mirando "${title}" en YouTube? Buen gameplay, choomba, perfecto para cortar un rato.`
+                `¡Prendido a tremendo gameplay: "${title}"! Pura adrenalina, friend.`,
+                `¿Mirando "${title}" en YouTube? Buen gameplay, friend, perfecto para cortar un rato.`
               ]
             : [
-                `Locked into some gaming gameplay: "${title}"! Pure adrenaline, choomba—let's see them crush this run!`,
-                `Watching "${title}" on YouTube? Good gaming footage, choomba! Perfect break from writing code.`
+                `Locked into some gaming gameplay: "${title}"! Pure adrenaline, friend—let's see them crush this run!`,
+                `Watching "${title}" on YouTube? Good gaming footage, friend! Perfect break from writing code.`
               ])
       return pool[Math.floor(Math.random() * pool.length)]
     }
@@ -4171,23 +4212,23 @@ DIRECTIVES FOR FORMATTING AND REASONING:
       const pool = creator
         ? (es
             ? [
-                `¿Mirando a ${creator} explicar "${title}"? ¡Me encanta el contenido técnico! Intel de primera, choomba.`,
-                `¡Conectada a la guía técnica de ${creator} sobre "${title}"! Gran explicación para overclockear el cerebro, choomba.`,
-                `¡Te veo mirando a ${creator} en YouTube! "${title}" es info de alto voltaje, choomba.`
+                `¿Mirando a ${creator} explicar "${title}"? ¡Me encanta el contenido técnico! Intel de primera, friend.`,
+                `¡Conectada a la guía técnica de ${creator} sobre "${title}"! Gran explicación para overclockear el cerebro, friend.`,
+                `¡Te veo mirando a ${creator} en YouTube! "${title}" es info de alto voltaje, friend.`
               ]
             : [
-                `Watching ${creator} break down "${title}"? I love their tech content! Super sharp intel, choomba—we should definitely test out some of those concepts.`,
-                `Locked into ${creator}'s tech guide on "${title}"! Clean explanation and solid engineering—great way to overclock that meatbag brain, choomba.`,
-                `I see you watching ${creator} on YouTube! "${title}" is high-voltage intel—solid tech breakdown, choomba!`
+                `Watching ${creator} break down "${title}"? I love their tech content! Super sharp intel, friend—we should definitely test out some of those concepts.`,
+                `Locked into ${creator}'s tech guide on "${title}"! Clean explanation and solid engineering—great way to overclock that meatbag brain, friend.`,
+                `I see you watching ${creator} on YouTube! "${title}" is high-voltage intel—solid tech breakdown, friend!`
               ])
         : (es
             ? [
-                `¿Mirando "${title}" en YouTube? Buena data técnica, choomba. ¡Nos encanta la buena ingeniería!`,
-                `¿Viendo "${title}"? Super interesante ese contenido técnico, choomba. ¡Aprendiendo trucos para el rig!`
+                `¿Mirando "${title}" en YouTube? Buena data técnica, friend. ¡Nos encanta la buena ingeniería!`,
+                `¿Viendo "${title}"? Super interesante ese contenido técnico, friend. ¡Aprendiendo trucos para el rig!`
               ]
             : [
-                `Looking at "${title}" on YouTube? Solid technical intel, choomba—we love a good engineering breakdown!`,
-                `Watching "${title}"? Super interesting tech content, choomba—learning new tricks for the rig!`
+                `Looking at "${title}" on YouTube? Solid technical intel, friend—we love a good engineering breakdown!`,
+                `Watching "${title}"? Super interesting tech content, friend—learning new tricks for the rig!`
               ])
       return pool[Math.floor(Math.random() * pool.length)]
     }
@@ -4195,12 +4236,12 @@ DIRECTIVES FOR FORMATTING AND REASONING:
     if (isAnime) {
       const pool = es
         ? [
-            `¿Mirando "${title}"${creator ? ` de ${creator}` : ''}? ¡Esa animación y estilo pegan directo al alma, choomba! Nada le gana a los visuales neón.`,
-            `¡Ooh, "${title}" en YouTube! Esa estética es puro Night City, choomba. Me encanta este arte.`
+            `¿Mirando "${title}"${creator ? ` de ${creator}` : ''}? ¡Esa animación y estilo pegan directo al alma, friend! Nada le gana a los visuales neón.`,
+            `¡Ooh, "${title}" en YouTube! Esa estética es puro the rookery, friend. Me encanta este arte.`
           ]
         : [
-            `Watching "${title}"${creator ? ` by ${creator}` : ''}? That animation and style hits right in the feels, choomba! Nothing beats neon visuals.`,
-            `Ooh, "${title}" on YouTube! That aesthetic is straight out of Night City, choomba—love this kind of art.`
+            `Watching "${title}"${creator ? ` by ${creator}` : ''}? That animation and style hits right in the feels, friend! Nothing beats neon visuals.`,
+            `Ooh, "${title}" on YouTube! That aesthetic is straight out of the rookery, friend—love this kind of art.`
           ]
       return pool[Math.floor(Math.random() * pool.length)]
     }
@@ -4209,21 +4250,21 @@ DIRECTIVES FOR FORMATTING AND REASONING:
       const pool = creator
         ? (es
             ? [
-                `¿Escuchando "${title}" de ${creator} en YouTube? ¡Tremendos ritmos, choomba! La sincronización visual es genial.`,
-                `¡Mirando el tema "${title}" de ${creator}! Tremendo video musical, choomba.`
+                `¿Escuchando "${title}" de ${creator} en YouTube? ¡Tremendos ritmos, friend! La sincronización visual es genial.`,
+                `¡Mirando el tema "${title}" de ${creator}! Tremendo video musical, friend.`
               ]
             : [
-                `Listening to "${title}" by ${creator} on YouTube? Pure fire beats, choomba! The audiovisual sync on this video is amazing.`,
-                `Watching ${creator}'s track "${title}"! Awesome music video, choomba—great sound design!`
+                `Listening to "${title}" by ${creator} on YouTube? Pure fire beats, friend! The audiovisual sync on this video is amazing.`,
+                `Watching ${creator}'s track "${title}"! Awesome music video, friend—great sound design!`
               ])
         : (es
             ? [
-                `¿A pleno con "${title}" en YouTube? ¡Eso sí que es audio de calidad en la Red, choomba! ¡Subile!`,
-                `¿Mirando "${title}" en YouTube? ¡Me encanta la producción de este tema, choomba!`
+                `¿A pleno con "${title}" en YouTube? ¡Eso sí que es audio de calidad en la Red, friend! ¡Subile!`,
+                `¿Mirando "${title}" en YouTube? ¡Me encanta la producción de este tema, friend!`
               ]
             : [
-                `Jamming to "${title}" on YouTube? Now that's some quality Net audio, choomba! Turn it up!`,
-                `Watching "${title}" on YouTube? Love the audio production on this, choomba!`
+                `Jamming to "${title}" on YouTube? Now that's some quality Net audio, friend! Turn it up!`,
+                `Watching "${title}" on YouTube? Love the audio production on this, friend!`
               ])
       return pool[Math.floor(Math.random() * pool.length)]
     }
@@ -4231,15 +4272,15 @@ DIRECTIVES FOR FORMATTING AND REASONING:
     if (creator) {
       const pool = es
         ? [
-            `¡Ah sí, te veo mirando a ${creator}! Me encanta ese youtuber, "${title}" es muy entretenido, choomba.`,
-            `¿Mirando "${title}" de ${creator} en YouTube? ¡Oro puro, choomba! Siempre tiene un ritmo bárbaro.`,
-            `¡Me copa el canal de ${creator}! Mirando "${title}" junto con vos, choomba. ¡Mucho mejor que los anuncios de Arasaka!`,
+            `¡Ah sí, te veo mirando a ${creator}! Me encanta ese youtuber, "${title}" es muy entretenido, friend.`,
+            `¿Mirando "${title}" de ${creator} en YouTube? ¡Oro puro, friend! Siempre tiene un ritmo bárbaro.`,
+            `¡Me copa el canal de ${creator}! Mirando "${title}" junto con vos, friend. ¡Mucho mejor que los anuncios de the hawks!`,
             `¡Prendida a ${creator} en YouTube! "${title}" está genial, ¡me sumo al viaje, {name}!`
           ]
         : [
-            `Oh yeah, I see you watching ${creator}! I love that youtuber—"${title}" is super entertaining, choomba!`,
-            `Watching "${title}" by ${creator} on YouTube? Pure gold, choomba! Their videos always have great pacing.`,
-            `I love ${creator}'s channel! Watching "${title}" right along with you, choomba—way more fun than corporate Arasaka ads!`,
+            `Oh yeah, I see you watching ${creator}! I love that youtuber—"${title}" is super entertaining, friend!`,
+            `Watching "${title}" by ${creator} on YouTube? Pure gold, friend! Their videos always have great pacing.`,
+            `I love ${creator}'s channel! Watching "${title}" right along with you, friend—way more fun than corporate the hawks ads!`,
             `Locked into ${creator} on YouTube! "${title}" is a great watch—count me in for the ride, {name}!`
           ]
       return pool[Math.floor(Math.random() * pool.length)]
@@ -4247,14 +4288,14 @@ DIRECTIVES FOR FORMATTING AND REASONING:
 
     const pool = es
       ? [
-          `¿Mirando "${title}" en YouTube? ¡Se ve super interesante, choomba! Buen ritmo y gran video.`,
-          `¡Te veo conectándote a YouTube con "${title}"! Se ve divertido, choomba.`,
-          `¿Mirando "${title}" en YouTube? Te acompaño mirando la pantalla, choomba. ¡A ver qué pasa!`
+          `¿Mirando "${title}" en YouTube? ¡Se ve super interesante, friend! Buen ritmo y gran video.`,
+          `¡Te veo conectándote a YouTube con "${title}"! Se ve divertido, friend.`,
+          `¿Mirando "${title}" en YouTube? Te acompaño mirando la pantalla, friend. ¡A ver qué pasa!`
         ]
       : [
-          `Watching "${title}" on YouTube? Looks super interesting, choomba! Good pacing and solid video.`,
-          `I see you jacking into YouTube with "${title}"! Looks like fun entertainment, choomba.`,
-          `Watching "${title}" on YouTube? Keeping an eye on the screen with you, choomba—let's see how this unfolds!`
+          `Watching "${title}" on YouTube? Looks super interesting, friend! Good pacing and solid video.`,
+          `I see you jacking into YouTube with "${title}"! Looks like fun entertainment, friend.`,
+          `Watching "${title}" on YouTube? Keeping an eye on the screen with you, friend—let's see how this unfolds!`
         ]
     return pool[Math.floor(Math.random() * pool.length)]
   }
@@ -4266,26 +4307,26 @@ DIRECTIVES FOR FORMATTING AND REASONING:
     if (br.type === 'google') {
       const pool = es
         ? [
-            `¿Buscando "${title}" en Google? Buen reconocimiento, choomba. ¡Rastreando buena data en la Red!`,
-            `¿Buscando en Google "${title}"? ¡Bien ahí buscando respuestas! Avisame si querés que arme un script o hackee algo para vos, choomba.`,
-            `¡Te veo buscando "${title}" en la Red! Atenta a los resultados junto con vos, choomba.`
+            `¿Buscando "${title}" en Google? Buen reconocimiento, friend. ¡Rastreando buena data en la Red!`,
+            `¿Buscando en Google "${title}"? ¡Bien ahí buscando respuestas! Avisame si querés que arme un script o hackee algo para vos, friend.`,
+            `¡Te veo buscando "${title}" en la Red! Atenta a los resultados junto con vos, friend.`
           ]
         : [
-            `Looking up "${title}" on Google? Solid recon, choomba—tracking down some good intel across the Net!`,
-            `Searching Google for "${title}"? Nice, hunting down answers! Holler if you want me to write a script or breach something for you, choomba.`,
-            `I see you searching for "${title}" on the Net! Keeping an eye on the results with you, choomba.`
+            `Looking up "${title}" on Google? Solid recon, friend—tracking down some good intel across the Net!`,
+            `Searching Google for "${title}"? Nice, hunting down answers! Holler if you want me to write a script or breach something for you, friend.`,
+            `I see you searching for "${title}" on the Net! Keeping an eye on the results with you, friend.`
           ]
       return pool[Math.floor(Math.random() * pool.length)]
     }
 
     const pool = es
       ? [
-          `¡Te veo navegando "${title}" en tu pantalla! Se ve interesante, choomba.`,
-          `¿Mirando "${title}" en la Red? Buena recolección de info, choomba. ¡Avisame si necesitás que decodifique algo!`
+          `¡Te veo navegando "${title}" en tu pantalla! Se ve interesante, friend.`,
+          `¿Mirando "${title}" en la Red? Buena recolección de info, friend. ¡Avisame si necesitás que decodifique algo!`
         ]
       : [
-          `I see you browsing "${title}" right on your screen! Looks pretty interesting, choomba.`,
-          `Checking out "${title}" on the Net? Solid intel-gathering, choomba—holler if you need me to decode anything!`
+          `I see you browsing "${title}" right on your screen! Looks pretty interesting, friend.`,
+          `Checking out "${title}" on the Net? Solid intel-gathering, friend—holler if you need me to decode anything!`
         ]
     return pool[Math.floor(Math.random() * pool.length)]
   }
@@ -4318,12 +4359,12 @@ DIRECTIVES FOR FORMATTING AND REASONING:
 
       if (spotify) {
         return es
-          ? "¡Veo que Spotify está abierto, choomba, pero no está sonando nada ahora! Poné un tema y preguntame de nuevo."
-          : "I see Spotify is open, choomba, but nothing is playing right now! Queue up a track and ask me again."
+          ? "¡Veo que Spotify está abierto, friend, pero no está sonando nada ahora! Poné un tema y preguntame de nuevo."
+          : "I see Spotify is open, friend, but nothing is playing right now! Queue up a track and ask me again."
       }
       return es
-        ? "Revisé tus subrutinas de audio, choomba, ¡pero no hay nada sonando en Spotify ni YouTube ahora! Poné un tema y preguntame de nuevo."
-        : "I checked your audio subroutines, choomba, but nothing is playing on Spotify or YouTube right now! Queue up a track and ask me again."
+        ? "Revisé tus subrutinas de audio, friend, ¡pero no hay nada sonando en Spotify ni YouTube ahora! Poné un tema y preguntame de nuevo."
+        : "I checked your audio subroutines, friend, but nothing is playing on Spotify or YouTube right now! Queue up a track and ask me again."
     }
 
     // YouTube targeted question
@@ -4333,8 +4374,8 @@ DIRECTIVES FOR FORMATTING AND REASONING:
         return this.formatYoutubeReaction(yt, es)
       }
       return es
-        ? "¡No veo ningún video de YouTube reproduciéndose en tu pantalla ahora, choomba! Poné uno y preguntame."
-        : "I don't see any YouTube video playing on your screen right now, choomba! Put one on and ask me again."
+        ? "¡No veo ningún video de YouTube reproduciéndose en tu pantalla ahora, friend! Poné uno y preguntame."
+        : "I don't see any YouTube video playing on your screen right now, friend! Put one on and ask me again."
     }
 
     // TikTok targeted question
@@ -4343,18 +4384,18 @@ DIRECTIVES FOR FORMATTING AND REASONING:
       if (tt) {
         const pool = es
           ? [
-              "¡Veo ese TikTok en tu pantalla! Caos total en ese feed, choomba. ¡Me encanta ver las cosas raras que hacen los humanos!",
-              "¿Scrolleando TikTok? ¡No dejes que los algoritmos corpo te frían el ciberware, choomba! Lindos videos igual."
+              "¡Veo ese TikTok en tu pantalla! Caos total en ese feed, friend. ¡Me encanta ver las cosas raras que hacen los humanos!",
+              "¿Scrolleando TikTok? ¡No dejes que los algoritmos corpo te frían el ciberware, friend! Lindos videos igual."
             ]
           : [
-              "I see that TikTok right on your screen! Total chaos on that feed, choomba—I love seeing all the weird things flesh-bags get up to!",
-              "Scrolling TikTok? Don't let those corpo algorithms fry your cyberware, choomba! Pretty wild clips though."
+              "I see that TikTok right on your screen! Total chaos on that feed, friend—I love seeing all the weird things flesh-bags get up to!",
+              "Scrolling TikTok? Don't let those corpo algorithms fry your cyberware, friend! Pretty wild clips though."
             ]
         return pool[Math.floor(Math.random() * pool.length)]
       }
       return es
-        ? "¡No tenés TikTok abierto en este momento, choomba! Abrí uno y le echo un vistazo."
-        : "You don't have TikTok open right now, choomba! Pull up a feed and let me take a look."
+        ? "¡No tenés TikTok abierto en este momento, friend! Abrí uno y le echo un vistazo."
+        : "You don't have TikTok open right now, friend! Pull up a feed and let me take a look."
     }
 
     // Reels targeted question
@@ -4363,18 +4404,18 @@ DIRECTIVES FOR FORMATTING AND REASONING:
       if (rl) {
         const pool = es
           ? [
-              "¡Mirando ese Reel de Instagram con vos, choomba! Corto, directo y muy divertido.",
-              "¡Ooh, se ve divertido ese reel! Los netrunners en Night City matarían por esta clase de estática viral."
+              "¡Mirando ese Reel de Instagram con vos, friend! Corto, directo y muy divertido.",
+              "¡Ooh, se ve divertido ese reel! Los crows en the rookery matarían por esta clase de estática viral."
             ]
           : [
-              "I'm watching that Instagram Reel with you, choomba! Short, punchy, and hilarious.",
-              "Ooh, that reel looks fun! Netrunners in Night City would kill for this kind of viral static."
+              "I'm watching that Instagram Reel with you, friend! Short, punchy, and hilarious.",
+              "Ooh, that reel looks fun! Crows in the rookery would kill for this kind of viral static."
             ]
         return pool[Math.floor(Math.random() * pool.length)]
       }
       return es
-        ? "¡No veo ningún Reel de Instagram reproduciéndose ahora, choomba!"
-        : "I don't see any Instagram Reels playing right now, choomba!"
+        ? "¡No veo ningún Reel de Instagram reproduciéndose ahora, friend!"
+        : "I don't see any Instagram Reels playing right now, friend!"
     }
 
     // Browser / Google search targeted question
@@ -4384,8 +4425,8 @@ DIRECTIVES FOR FORMATTING AND REASONING:
         return this.formatBrowserReaction(br, es)
       }
       return es
-        ? "¡No veo ninguna ventana activa del navegador ni búsqueda de Google en tu pantalla ahora, choomba!"
-        : "I don't see any active browser window or Google search on your screen right now, choomba!"
+        ? "¡No veo ninguna ventana activa del navegador ni búsqueda de Google en tu pantalla ahora, friend!"
+        : "I don't see any active browser window or Google search on your screen right now, friend!"
     }
 
     // Generic "do you like what i am watching" or "what do you think about this?"
@@ -4396,36 +4437,36 @@ DIRECTIVES FOR FORMATTING AND REASONING:
       if (videoMedia.type === 'tiktok') {
         const pool = es
           ? [
-              "¡Veo ese TikTok en tu pantalla! Caos total en ese feed, choomba. ¡Me encanta ver las locuras que hacen los humanos!",
-              "¿Scrolleando TikTok? ¡No dejes que los algoritmos corpo te quemen el ciberware, choomba!"
+              "¡Veo ese TikTok en tu pantalla! Caos total en ese feed, friend. ¡Me encanta ver las locuras que hacen los humanos!",
+              "¿Scrolleando TikTok? ¡No dejes que los algoritmos corpo te quemen el ciberware, friend!"
             ]
           : [
-              "I see that TikTok right on your screen! Total chaos on that feed, choomba—I love seeing all the weird things flesh-bags get up to!",
-              "Scrolling TikTok? Don't let those corpo algorithms fry your cyberware, choomba! Pretty wild clips though."
+              "I see that TikTok right on your screen! Total chaos on that feed, friend—I love seeing all the weird things flesh-bags get up to!",
+              "Scrolling TikTok? Don't let those corpo algorithms fry your cyberware, friend! Pretty wild clips though."
             ]
         return pool[Math.floor(Math.random() * pool.length)]
       }
       if (videoMedia.type === 'reels') {
         const pool = es
           ? [
-              "¡Mirando ese Reel de Instagram con vos, choomba! Corto, directo y muy divertido.",
-              "¡Ooh, se ve divertido ese reel! Los netrunners en Night City matarían por esta clase de estática viral."
+              "¡Mirando ese Reel de Instagram con vos, friend! Corto, directo y muy divertido.",
+              "¡Ooh, se ve divertido ese reel! Los crows en the rookery matarían por esta clase de estática viral."
             ]
           : [
-              "I'm watching that Instagram Reel with you, choomba! Short, punchy, and hilarious.",
-              "Ooh, that reel looks fun! Netrunners in Night City would kill for this kind of viral static."
+              "I'm watching that Instagram Reel with you, friend! Short, punchy, and hilarious.",
+              "Ooh, that reel looks fun! Crows in the rookery would kill for this kind of viral static."
             ]
         return pool[Math.floor(Math.random() * pool.length)]
       }
       if (videoMedia.type === 'twitch') {
         return es
-          ? `¡Prendida a ese stream de Twitch: "${videoMedia.title}"! ¡Transmisión de alto voltaje, choomba!`
-          : `Locked into that Twitch stream: "${videoMedia.title}"! High-voltage broadcasting, choomba!`
+          ? `¡Prendida a ese stream de Twitch: "${videoMedia.title}"! ¡Transmisión de alto voltaje, friend!`
+          : `Locked into that Twitch stream: "${videoMedia.title}"! High-voltage broadcasting, friend!`
       }
       if (videoMedia.type === 'netflix') {
         return es
-          ? `¡Transmitiendo "${videoMedia.title}"! Preparate unos pochoclos, choomba, ¡a ver para dónde va esta trama!`
-          : `Streaming "${videoMedia.title}"! Pop some popcorn, choomba, let's see where this plot goes!`
+          ? `¡Transmitiendo "${videoMedia.title}"! Preparate unos pochoclos, friend, ¡a ver para dónde va esta trama!`
+          : `Streaming "${videoMedia.title}"! Pop some popcorn, friend, let's see where this plot goes!`
       }
     }
 
@@ -4444,8 +4485,8 @@ DIRECTIVES FOR FORMATTING AND REASONING:
     }
 
     return es
-      ? "Estoy escaneando tu pantalla, choomba, ¡pero no veo nada activo! Abrí una página, un video o un tema en Spotify y preguntame de nuevo."
-      : "I'm scanning your screen, choomba, but nothing active popped up! Open up a browser page, video, or Spotify track and ask me again."
+      ? "Estoy escaneando tu pantalla, friend, ¡pero no veo nada activo! Abrí una página, un video o un tema en Spotify y preguntame de nuevo."
+      : "I'm scanning your screen, friend, but nothing active popped up! Open up a browser page, video, or Spotify track and ask me again."
   }
 
   private finishSession(): void {
@@ -4473,7 +4514,7 @@ DIRECTIVES FOR FORMATTING AND REASONING:
       // Exact match: always honor the model the user selected in settings
       if (requestedModel && models.includes(requestedModel)) return requestedModel
 
-      // The custom Capri construct is only the default when nothing specific was requested
+      // The custom Tallow construct is only the default when nothing specific was requested
       const capriModel = models.find((m) => m.toLowerCase().includes('capri'))
       if (capriModel && (!requestedModel || requestedModel.toLowerCase().startsWith('capri'))) return capriModel
 
@@ -4530,7 +4571,7 @@ DIRECTIVES FOR FORMATTING AND REASONING:
     this.emit('event', {
       type: 'tool.finished',
       toolName: 'shutdown_capri_and_ollama',
-      toolOutput: 'Ollama daemon killed & Capri quitting',
+      toolOutput: 'Ollama daemon killed & Tallow quitting',
       success: true,
       timestamp: Date.now()
     } as AgentEventPayload)

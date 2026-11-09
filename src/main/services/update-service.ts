@@ -1,10 +1,10 @@
 /**
  * Self-update and patch scripts.
  *
- * - "Capri, actualizate": checks the latest GitHub Release; if it's newer, downloads the
+ * - "Tallow, actualizate": checks the latest GitHub Release; if it's newer, downloads the
  *   installer, runs it silently and the app restarts on the new version. On Linux she does the same
  *   with the package she was installed from (see linux-update.ts), and the release page is the fallback.
- * - First run of a new version: Capri reads the patch scripts in scripts-capri/ for every
+ * - First run of a new version: Tallow reads the patch scripts in scripts-capri/ for every
  *   version she skipped (one file per version and language, e.g. 0.2.0.es.txt).
  */
 
@@ -15,6 +15,7 @@ import * as path from 'path'
 import { spawn } from './hidden-process'
 import { app, shell } from 'electron'
 import { resourceRoot } from './app-paths'
+import { isPortable } from './portable'
 import { isLinux } from './platform'
 import { installDeb, linuxInstallKind, restartAfterUpdate, unpackNextToApp } from './linux-update'
 import { startIndependently, windowsUpdateScript } from './windows-update'
@@ -25,6 +26,8 @@ import { windowManager } from '../windows/window-manager'
 import { IPC_CHANNELS } from '../ipc/channels'
 
 const REPO = 'MycroftCanner2/CapriDesktop'
+/** Crow Companion releases share the repo with Capri Desktop's: only tags like v1.0.0-crow are ours */
+const CROW_TAG = /^v?\d+\.\d+\.\d+-crow(?:[.-]?\d+)?$/i
 const SCRIPT_FILE = /^(\d+\.\d+\.\d+)(?:\.(es|en))?\.txt$/i
 
 type Lang = string
@@ -115,7 +118,7 @@ class UpdateService {
   /** "¿En qué versión estás?" */
   public versionLine(lang: Lang): string {
     const current = app.getVersion()
-    return lang === 'es' ? `[happy] Estoy en la versión ${current}, choomba.` : `[happy] I'm on version ${current}, choomba.`
+    return lang === 'es' ? `[happy] Estoy en la versión ${current}, friend.` : `[happy] I'm on version ${current}, friend.`
   }
 
   /** "¿Qué hay de nuevo?": the script of the version that's running */
@@ -124,8 +127,8 @@ class UpdateService {
     const script = readPatchScript(current, lang)
     if (script) return script
     return lang === 'es'
-      ? `[curious] Estoy en la versión ${current}, pero no tengo notas de este parche, choomba.`
-      : `[curious] I'm on version ${current}, but there are no notes for this patch, choomba.`
+      ? `[curious] Estoy en la versión ${current}, pero no tengo notas de este parche, friend.`
+      : `[curious] I'm on version ${current}, but there are no notes for this patch, friend.`
   }
 
   /** Checks GitHub Releases; if there's a newer version, downloads it, installs it and restarts */
@@ -144,30 +147,39 @@ class UpdateService {
 
     try {
       const current = app.getVersion()
-      const res = await fetch(`https://api.github.com/repos/${REPO}/releases/latest`, {
-        headers: { Accept: 'application/vnd.github+json', 'User-Agent': 'CapriDesktop-Updater' }
+      const res = await fetch(`https://api.github.com/repos/${REPO}/releases?per_page=50`, {
+        headers: { Accept: 'application/vnd.github+json', 'User-Agent': 'CrowCompanion-Updater' }
       })
       if (res.status === 404) {
         await sayAfterIntro(
           es
-            ? `[curious] Todavía no hay ninguna versión publicada, choomba. Estoy en la ${current}.`
-            : `[curious] No version has been published yet, choomba. I'm on ${current}.`
+            ? `[curious] Todavía no hay ninguna versión publicada, friend. Estoy en la ${current}.`
+            : `[curious] No version has been published yet, friend. I'm on ${current}.`
         )
         return
       }
       if (!res.ok) throw new Error(`GitHub respondió ${res.status}`)
-      const release = (await res.json()) as {
+      type Release = {
         tag_name?: string
         html_url?: string
+        draft?: boolean
         assets?: { name: string; size: number; browser_download_url: string; digest?: string | null }[]
       }
-      const latest = String(release.tag_name || '').replace(/^v/i, '')
+      const crowReleases = ((await res.json()) as Release[])
+        .filter((r) => !r.draft && CROW_TAG.test(String(r.tag_name || '')))
+        .sort((a, b) => compareVersions(String(b.tag_name), String(a.tag_name)))
+      if (!crowReleases.length) {
+        await sayAfterIntro(`[curious] No Crow Companion release has been published yet, friend. I'm on ${current}.`)
+        return
+      }
+      const release = crowReleases[0]
+      const latest = String(release.tag_name || '').replace(/^v/i, '').replace(/-crow.*$/i, '')
 
       if (!latest || compareVersions(latest, current) <= 0) {
         await sayAfterIntro(
           es
-            ? `[happy] Ya estoy en la última versión, la ${current}. [playful] Más actualizada imposible, choomba.`
-            : `[happy] I'm already on the latest version, ${current}. [playful] Can't get any fresher, choomba.`
+            ? `[happy] Ya estoy en la última versión, la ${current}. [playful] Más actualizada imposible, friend.`
+            : `[happy] I'm already on the latest version, ${current}. [playful] Can't get any fresher, friend.`
         )
         return
       }
@@ -211,7 +223,7 @@ class UpdateService {
         await sayAfterIntro(
           es
             ? `[excited] ¡Salió la versión ${latest}! [curious] Soy la versión portable: te abro la página para que bajes el nuevo .exe y reemplaces este.`
-            : `[excited] Version ${latest} is out! [curious] I'm the portable build: I'm opening the page so you can grab the new .exe and replace this one.`
+            : `[excited] Version ${latest} is out! [curious] I'm the portable build: I'm opening the page so you can grab the new zip and replace this folder (keep CrowCompanion-Data).`
         )
         if (release.html_url) await shell.openExternal(release.html_url)
         return
@@ -327,7 +339,8 @@ async function startWindowsUpdate(installer: string): Promise<void> {
 
 /** electron-builder's portable target sets this before starting the app */
 export function isPortableBuild(): boolean {
-  return process.platform === 'win32' && !!process.env.PORTABLE_EXECUTABLE_DIR
+  // Crow Companion has no installer: on Windows it is always the portable exe or the unzipped folder
+  return process.platform === 'win32' && (isPortable() || app.isPackaged)
 }
 
 async function sha256File(file: string): Promise<string> {
@@ -337,7 +350,7 @@ async function sha256File(file: string): Promise<string> {
 }
 
 async function download(url: string, dest: string): Promise<void> {
-  const res = await fetch(url, { redirect: 'follow', headers: { 'User-Agent': 'CapriDesktop-Updater' } })
+  const res = await fetch(url, { redirect: 'follow', headers: { 'User-Agent': 'CrowCompanion-Updater' } })
   if (!res.ok || !res.body) throw new Error(`la descarga respondió ${res.status}`)
   const out = fs.createWriteStream(dest)
   const reader = res.body.getReader()

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
-import capriFrameImg from '../assets/capri_frame.png'
+import capriFrameImg from '../assets/crow_frame.png'
 import {
   ScannerBounds,
   ScannerScanResult,
@@ -308,7 +308,7 @@ export const ScannerView: React.FC = () => {
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >
-      {/* 9-Slice Capri Frame Border Layer */}
+      {/* 9-Slice Tallow Frame Border Layer */}
       <div
         className="absolute inset-0 pointer-events-none transition-all duration-150"
         style={{
@@ -318,16 +318,16 @@ export const ScannerView: React.FC = () => {
           borderImageSlice: '160 150 160 140',
           borderImageRepeat: 'stretch',
           filter: isScanning
-            ? 'drop-shadow(0 0 16px rgba(0, 240, 255, 0.75)) drop-shadow(0 0 24px rgba(255, 0, 128, 0.45))'
+            ? 'drop-shadow(0 0 16px rgba(214, 194, 154, 0.75)) drop-shadow(0 0 24px rgba(212, 144, 43, 0.45))'
             : isContinuous
-            ? 'drop-shadow(0 0 12px rgba(16, 185, 129, 0.65)) drop-shadow(0 0 4px rgba(0, 240, 255, 0.4))'
-            : 'drop-shadow(0 0 10px rgba(0, 240, 255, 0.45))'
+            ? 'drop-shadow(0 0 12px rgba(130, 171, 84, 0.65)) drop-shadow(0 0 4px rgba(214, 194, 154, 0.4))'
+            : 'drop-shadow(0 0 10px rgba(214, 194, 154, 0.45))'
         }}
       />
 
       {/* Cyberpunk Top Header Bar & Control Buttons */}
       <div
-        className="absolute top-1 left-11 right-11 h-10 z-30 flex items-center justify-between px-2 bg-[#090b14]/90 border border-cyan-500/40 rounded shadow-[0_0_15px_rgba(0,240,255,0.25)] backdrop-blur-sm cursor-grab active:cursor-grabbing"
+        className="absolute top-1 left-11 right-11 h-10 z-30 flex items-center justify-between px-2 bg-[#110f0c]/90 border border-cyan-500/40 rounded shadow-[0_0_15px_rgba(214, 194, 154,0.25)] backdrop-blur-sm cursor-grab active:cursor-grabbing"
         onMouseDown={(e) => startDrag('move', e)}
         title="Drag to move scanner frame (or use Ctrl + Wheel to resize)"
       >
@@ -335,7 +335,7 @@ export const ScannerView: React.FC = () => {
         <div className="flex items-center gap-2 overflow-hidden">
           <div className="flex items-center gap-1.5 text-cyan-400 font-mono text-[11px] font-bold tracking-wider">
             <span className="text-cyan-300">☵</span>
-            <span className="truncate">CAPRI // NEURAL SCANNER</span>
+            <span className="truncate">TALLOW // NEURAL SCANNER</span>
           </div>
           <span className="text-[10px] font-mono text-cyan-500/70 border border-cyan-500/30 px-1 py-0.2 rounded bg-cyan-950/30">
             {dimensions.width}×{dimensions.height}
@@ -350,10 +350,10 @@ export const ScannerView: React.FC = () => {
             disabled={isScanning}
             className={`px-2.5 py-1 rounded font-mono text-[11px] font-bold tracking-wide transition-all duration-200 flex items-center gap-1 cursor-pointer ${
               isScanning
-                ? 'bg-rose-950/80 border border-rose-400 text-rose-300 animate-pulse shadow-[0_0_12px_rgba(244,63,94,0.5)]'
-                : 'bg-cyan-950/80 hover:bg-cyan-900 border border-cyan-400 text-cyan-300 hover:text-white shadow-[0_0_10px_rgba(0,240,255,0.35)] active:scale-95'
+                ? 'bg-rose-950/80 border border-rose-400 text-rose-300 animate-pulse shadow-[0_0_12px_rgba(220, 167, 87,0.5)]'
+                : 'bg-cyan-950/80 hover:bg-cyan-900 border border-cyan-400 text-cyan-300 hover:text-white shadow-[0_0_10px_rgba(214, 194, 154,0.35)] active:scale-95'
             }`}
-            title="Scan and show Capri what is inside the frame"
+            title="Scan and show Tallow what is inside the frame"
           >
             <span className="text-xs">{isScanning ? '⏳' : '⚡'}</span>
             <span>{isScanning ? 'SCANNING...' : 'SCAN'}</span>
@@ -364,7 +364,7 @@ export const ScannerView: React.FC = () => {
             onClick={handleToggleContinuous}
             className={`px-2 py-1 rounded font-mono text-[10px] font-semibold tracking-wide transition-all duration-200 border cursor-pointer ${
               isContinuous
-                ? 'bg-emerald-950/80 border-emerald-400 text-emerald-300 shadow-[0_0_10px_rgba(16,185,129,0.4)]'
+                ? 'bg-emerald-950/80 border-emerald-400 text-emerald-300 shadow-[0_0_10px_rgba(130, 171, 84,0.4)]'
                 : 'bg-slate-900/80 hover:bg-slate-800 border-slate-700 text-slate-400 hover:text-slate-200'
             }`}
             title="Continuous mode: auto-scans when frame content changes"
@@ -483,7 +483,7 @@ export const ScannerView: React.FC = () => {
               className="absolute inset-0 opacity-20"
               style={{
                 backgroundImage:
-                  'linear-gradient(to right, rgba(0, 240, 255, 0.25) 1px, transparent 1px), linear-gradient(to bottom, rgba(0, 240, 255, 0.25) 1px, transparent 1px)',
+                  'linear-gradient(to right, rgba(214, 194, 154, 0.25) 1px, transparent 1px), linear-gradient(to bottom, rgba(214, 194, 154, 0.25) 1px, transparent 1px)',
                 backgroundSize: '24px 24px'
               }}
             />
@@ -498,9 +498,9 @@ export const ScannerView: React.FC = () => {
               style={{
                 animation: 'scanSweep 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite',
                 background:
-                  'linear-gradient(90deg, transparent 0%, #00f0ff 25%, #ffffff 50%, #ff007f 75%, transparent 100%)',
+                  'linear-gradient(90deg, transparent 0%, #d6c29a 25%, #ffffff 50%, #d4902b 75%, transparent 100%)',
                 boxShadow:
-                  '0 0 15px #00f0ff, 0 0 30px #ff007f, 0 0 45px rgba(0, 240, 255, 0.8)'
+                  '0 0 15px #d6c29a, 0 0 30px #d4902b, 0 0 45px rgba(214, 194, 154, 0.8)'
               }}
             >
               {/* Trailing vertical gradient light wash */}
@@ -508,13 +508,13 @@ export const ScannerView: React.FC = () => {
                 className="w-full h-24 -mt-24 pointer-events-none"
                 style={{
                   background:
-                    'linear-gradient(180deg, transparent 0%, rgba(0, 240, 255, 0.15) 70%, rgba(255, 0, 128, 0.25) 100%)'
+                    'linear-gradient(180deg, transparent 0%, rgba(214, 194, 154, 0.15) 70%, rgba(212, 144, 43, 0.25) 100%)'
                 }}
               />
             </div>
 
             {/* Telemetry Readout */}
-            <div className="absolute top-3 left-3 font-mono text-[10px] text-cyan-300 font-bold bg-[#090b14]/85 px-2 py-1 rounded border border-cyan-400/40 shadow-[0_0_10px_rgba(0,240,255,0.3)] animate-pulse">
+            <div className="absolute top-3 left-3 font-mono text-[10px] text-cyan-300 font-bold bg-[#110f0c]/85 px-2 py-1 rounded border border-cyan-400/40 shadow-[0_0_10px_rgba(214, 194, 154,0.3)] animate-pulse">
               &gt; ACQUIRING OPTICAL BUFFER // NEURAL INFERENCE...
             </div>
           </div>
@@ -528,7 +528,7 @@ export const ScannerView: React.FC = () => {
               {(scanResult.tags || []).map((tag, idx) => (
                 <div
                   key={idx}
-                  className="px-2 py-0.5 rounded font-mono text-[10px] font-bold text-cyan-300 bg-[#090b14]/90 border border-cyan-400/70 shadow-[0_0_8px_rgba(0,240,255,0.4)] flex items-center gap-1"
+                  className="px-2 py-0.5 rounded font-mono text-[10px] font-bold text-cyan-300 bg-[#110f0c]/90 border border-cyan-400/70 shadow-[0_0_8px_rgba(214, 194, 154,0.4)] flex items-center gap-1"
                 >
                   <span className="text-cyan-400 text-[8px]">◈</span>
                   <span>{tag}</span>
@@ -536,17 +536,17 @@ export const ScannerView: React.FC = () => {
               ))}
             </div>
 
-            {/* Bottom: Target Summary & Capri Reaction Chip */}
+            {/* Bottom: Target Summary & Tallow Reaction Chip */}
             <div className="flex flex-col gap-1 max-w-full">
               {scanResult.summary && (
-                <div className="font-mono text-[10px] text-slate-200 bg-[#090b14]/90 px-2 py-1 rounded border border-cyan-500/40 shadow-[0_0_10px_rgba(0,240,255,0.25)] flex items-center gap-1.5 truncate">
+                <div className="font-mono text-[10px] text-slate-200 bg-[#110f0c]/90 px-2 py-1 rounded border border-cyan-500/40 shadow-[0_0_10px_rgba(214, 194, 154,0.25)] flex items-center gap-1.5 truncate">
                   <span className="text-cyan-400 font-bold">TARGET:</span>
                   <span className="truncate">{scanResult.summary}</span>
                 </div>
               )}
               {scanResult.response && (
-                <div className="font-mono text-[11px] text-emerald-300 bg-[#090b14]/95 px-2.5 py-1.5 rounded border border-emerald-400/60 shadow-[0_0_12px_rgba(16,185,129,0.3)] leading-tight">
-                  <span className="text-cyan-400 font-bold mr-1">CAPRI:</span>
+                <div className="font-mono text-[11px] text-emerald-300 bg-[#110f0c]/95 px-2.5 py-1.5 rounded border border-emerald-400/60 shadow-[0_0_12px_rgba(130, 171, 84,0.3)] leading-tight">
+                  <span className="text-cyan-400 font-bold mr-1">TALLOW:</span>
                   <span>&ldquo;{scanResult.response}&rdquo;</span>
                 </div>
               )}
@@ -557,7 +557,7 @@ export const ScannerView: React.FC = () => {
         {/* error state: Friendly Warning */}
         {scanState === 'error' && errorMessage && (
           <div className="absolute inset-0 flex items-center justify-center p-4">
-            <div className="bg-[#1a0a14]/95 border border-rose-500/70 text-rose-300 font-mono text-xs px-3 py-2 rounded shadow-[0_0_15px_rgba(244,63,94,0.4)] text-center max-w-md">
+            <div className="bg-[#15120f]/95 border border-rose-500/70 text-rose-300 font-mono text-xs px-3 py-2 rounded shadow-[0_0_15px_rgba(220, 167, 87,0.4)] text-center max-w-md">
               <div className="font-bold text-rose-400 mb-0.5">⚠️ OPTICAL SCANNER GLITCH</div>
               <div className="text-[11px] leading-snug">{errorMessage}</div>
             </div>

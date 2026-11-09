@@ -1,6 +1,6 @@
 /**
  * child_process with the console window hidden. On Windows every exec() without this flashes a CMD
- * window, and a single question to Capri can run several commands.
+ * window, and a single question to Tallow can run several commands.
  */
 
 import * as cp from 'child_process'

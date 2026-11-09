@@ -1,5 +1,5 @@
 /**
- * Decides who processes Capri's thinking: the local Ollama or any OpenAI-compatible API.
+ * Decides who processes Tallow's thinking: the local Ollama or any OpenAI-compatible API.
  * Every LLM request in the app goes through llmFetch(), so the code that builds prompts, parses
  * answers and runs tools is the same in both modes. In cloud mode the requests are translated to
  * /chat/completions and the answers are shaped back to what the caller expects.
@@ -18,7 +18,8 @@ import { scriptPath } from './app-paths'
 import { personalize } from './user-profile'
 import { XAI_API_BASE, XAI_DEFAULT_MODEL, XaiAuthError, getXaiAccessToken, getXaiAuthStatus, type XaiAuthStatus } from './xai-oauth'
 
-export type LlmProvider = 'local' | 'cloud'
+/** 'tallow': the local crow (default). 'local': Ollama. 'cloud': any OpenAI-compatible API */
+export type LlmProvider = 'tallow' | 'local' | 'cloud'
 /** 'key': API key (any OpenAI-compatible server). 'oauth': Sign in with Grok (xAI subscription) */
 export type LlmAuthMode = 'key' | 'oauth'
 export type LlmErrorCode = 'auth' | 'quota' | 'model' | 'network' | 'insecure' | 'other' | 'signin' | 'entitlement'
@@ -53,8 +54,11 @@ interface StoredSettings {
   encryptedKey?: string
 }
 
-/** A fresh install thinks with Grok through the user's own xAI subscription; Ollama stays one click away */
-const DEFAULTS: StoredSettings = { provider: 'cloud', preset: 'xai', baseUrl: XAI_API_BASE, model: XAI_DEFAULT_MODEL, authMode: 'oauth' }
+/**
+ * A fresh install thinks with Tallow, the local crow (Hugging Face weights served by the bundled
+ * llama-server). Ollama and cloud providers (Grok, any OpenAI-compatible API) stay as advanced options.
+ */
+const DEFAULTS: StoredSettings = { provider: 'tallow', preset: 'tallow', baseUrl: XAI_API_BASE, model: XAI_DEFAULT_MODEL, authMode: 'oauth' }
 
 /** Where Sign in with Grok requests go. Overridable only for testing another xAI route */
 const oauthBase = (): string => (process.env.CAPRI_XAI_OAUTH_BASE || XAI_API_BASE).replace(/\/+$/, '')
@@ -117,6 +121,16 @@ function keyWouldLeakInClear(baseUrl: string, key: string): boolean {
 
 const isOauth = (s: StoredSettings = load()): boolean => s.provider === 'cloud' && s.authMode === 'oauth'
 
+/** Tallow, the local crow, answers the chat (the default) */
+export function isTallowMode(): boolean {
+  return load().provider === 'tallow'
+}
+
+/** Only the 'local' provider runs on Ollama: Tallow and cloud providers never start or install it */
+export function usesOllama(): boolean {
+  return load().provider === 'local'
+}
+
 export function isCloudMode(): boolean {
   const s = load()
   return s.provider === 'cloud' && !!s.baseUrl && !!s.model
@@ -130,7 +144,7 @@ export function getLlmSettings(): LlmPublicSettings {
 export function setLlmSettings(update: LlmSettingsUpdate): { success: boolean; error?: string; settings: LlmPublicSettings } {
   const current = load()
   const next: StoredSettings = { ...current }
-  if (update.provider === 'local' || update.provider === 'cloud') next.provider = update.provider
+  if (update.provider === 'tallow' || update.provider === 'local' || update.provider === 'cloud') next.provider = update.provider
   if (typeof update.preset === 'string') next.preset = update.preset
   if (typeof update.model === 'string') next.model = update.model.trim()
   if (typeof update.baseUrl === 'string') next.baseUrl = normalizeBase(update.baseUrl)
@@ -173,7 +187,7 @@ function keyFor(baseUrl: string, typedKey?: string): string {
   if (typedKey) return typedKey.trim()
   const saved = sameOrigin(load().baseUrl, baseUrl) ? savedKey() : ''
   if (saved) return saved
-  // XAI_API_KEY in the environment (or Capri's .env) works for xAI without typing it in the app
+  // XAI_API_KEY in the environment (or Tallow's .env) works for xAI without typing it in the app
   return sameOrigin(baseUrl, XAI_API_BASE) ? (process.env.XAI_API_KEY || '').trim() : ''
 }
 
@@ -542,8 +556,26 @@ async function ollamaAnswer(res: Response, stream: boolean, kind: 'chat' | 'gene
   return jsonResponse(answer)
 }
 
+/**
+ * Tallow is a 15.7M-parameter crow: he answers with actions and caws, never JSON, tools or English
+ * sentences. The chat goes to him directly (capri-local-agent runWithTallow); the helper features
+ * that need a general language model (translation, drawing plans, macros from a sentence, vision)
+ * get a clear "not available" answer here and fall back to their offline paths, unless an advanced
+ * provider (Ollama or a cloud API) is chosen in Settings.
+ */
+async function tallowFetch(input: string, _init?: RequestInit): Promise<Response> {
+  const route = new URL(input).pathname
+  if (route.endsWith('/api/tags')) return jsonResponse({ models: [{ name: 'tallow' }] })
+  if (route.endsWith('/models')) return jsonResponse({ data: [{ id: 'tallow' }] })
+  return jsonResponse(
+    { error: 'Tallow is a crow: this helper needs an advanced provider (Ollama or a cloud API) in Settings > Brain.' },
+    503
+  )
+}
+
 /** Drop-in replacement for fetch() on every LLM call */
 export async function llmFetch(input: string, init?: RequestInit): Promise<Response> {
+  if (isTallowMode()) return tallowFetch(input, init)
   if (!isCloudMode()) return fetch(input, init)
 
   const settings = load()

@@ -1,4 +1,4 @@
-/** The language of Capri's fixed lines on this side of the app. The companion window keeps it updated */
+/** The language of Tallow's fixed lines on this side of the app. The companion window keeps it updated */
 let current = 'en'
 
 export const getLineLanguage = (): string => current

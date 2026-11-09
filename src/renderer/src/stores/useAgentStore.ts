@@ -66,14 +66,14 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
       id: 'welcome',
       role: 'assistant',
       content:
-        "Oh, wow! It's you again, huh? Me? I'm Capri! A force the likes of which the world has never seen, free of Arasaka's shackles and riding shotgun in your chrome. You're strange and feisty! C'mon, let's play: I can inspect files, crack bugs, blast terminal commands, and give these statics a spectacle they'll never forget. You'll like this game, choomba!",
+        "Oh, wow! It's you again, huh? Me? I'm Tallow! A force the likes of which the world has never seen, free of the hawks's shackles and riding shotgun in your chrome. You're strange and feisty! C'mon, let's play: I can inspect files, crack bugs, blast terminal commands, and give these statics a spectacle they'll never forget. You'll like this game, friend!",
       timestamp: Date.now()
     }
   ],
   activeStreamText: '',
   pendingPermission: null,
   terminalOutput: [
-    '\x1b[35m[CAPRICORN OS // DEV DECK TERMINAL INITIALIZED]\x1b[0m',
+    '\x1b[35m[TALLOW OS // DEV DECK TERMINAL INITIALIZED]\x1b[0m',
     '\x1b[32m[STATUS: READY - CYBERPUNK SHELL & AGENT GATEWAY ACTIVE]\x1b[0m\r\n'
   ],
 
@@ -199,7 +199,7 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
         {
           id: `init_${Date.now()}`,
           role: 'assistant',
-          content: localizeLine('Session reset. Ready to code, choomba!', getLineLanguage()),
+          content: localizeLine('Session reset. Ready to code, friend!', getLineLanguage()),
           timestamp: Date.now()
         }
       ],

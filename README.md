@@ -1,3 +1,31 @@
+# Crow Companion (Tallow)
+
+> **This branch (`feat/crow-companion`) turns Capri Desktop into Crow Companion.** Same app, same
+> features (desktop pet, chat window, animations, tray, onboarding, voice input, portable build), but
+> the companion is **Tallow, a crow**, and his brain is a tiny local model:
+> [digi-the-robot/Tallow](https://huggingface.co/digi-the-robot/Tallow) served by llama.cpp's
+> `llama-server` on `127.0.0.1`.
+
+- **First open:** Tallow downloads `config.json`, `model.safetensors` and `tallow_tok.model` (pinned
+  revision `e4618ddc`) from Hugging Face into `CrowCompanion-Data/tallow/` next to the exe, converts them
+  in-app to `tallow-f32.gguf` (SHA-256 `dde9a541…`, byte-identical to the proof of concept's converter)
+  and starts the bundled `llama-server.exe` (`-c 2048 -ngl 0 -ctk f32 -ctv f32 -fa off --no-warmup`,
+  SSE4.2 fallback build if the AVX2 one can't start). If Hugging Face asks for a token, a password box
+  for `HF_TOKEN` appears (kept in memory only). The weights are never in the zip.
+- **Prompting** follows the proof of concept exactly (`src/main/tallow/`): SentencePiece token ids
+  sent to `/completion`, `to_sp`/`from_sp`, `you:`/`tallow:` history joined with `<nl>`, sampling
+  `temperature 0.8, top_k 50, samplers [top_k, temperature], n_predict 80, stop ["<nl>", "<nl> "]`.
+- **Moods to animations:** idle, hop → happy, lean, droop, peer → curious, love, fluff, alarm, with the
+  proof of concept's caw sounds.
+- **Advanced providers** (Settings > Brain): Ollama or any OpenAI-compatible cloud still work for the
+  tool/coding features; Tallow himself speaks crow.
+
+Build (Linux host, no CI): `npm ci`, `npm run llama:win` (cross-compiles llama-server at llama.cpp
+`12e9084d` with mingw-w64), then `CSC_IDENTITY_AUTO_DISCOVERY=false npm run dist:win:portable` (needs
+Wine) and zip `release/win-unpacked`. Credits and licenses: [NOTICE.md](NOTICE.md).
+
+---
+
 # Capri Desktop
 
 <p align="center">

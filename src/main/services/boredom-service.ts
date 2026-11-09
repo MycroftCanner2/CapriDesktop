@@ -39,7 +39,7 @@ const YOUTUBE_SEARCHES = [
   'Synthwave visualizer neon animation',
   'Hilarious computer glitches speedruns',
   'Boston Dynamics robots parkour',
-  'Night City ambiance 4k'
+  'the rookery ambiance 4k'
 ]
 
 const WEB_SEARCHES = [
@@ -180,7 +180,7 @@ export class BoredomService {
 
   /**
    * Triggers an autonomous boredom action:
-   * Capri complains that she is bored, announces what she is doing,
+   * Tallow complains that she is bored, announces what she is doing,
    * and opens a tab / plays a song / searches the web!
    */
   public async triggerBoredomAction(forcedCategory?: 'spotify' | 'youtube' | 'web_search'): Promise<boolean> {
@@ -208,12 +208,12 @@ export class BoredomService {
       const song = SPOTIFY_SONGS[Math.floor(Math.random() * SPOTIFY_SONGS.length)]
       const phrasesEs = [
         `¡Uff, qué embole, {name}! Estoy re aburrida de estar acá quieta... Pará que pongo "${song}" en Spotify para levantar la onda.`,
-        `Me aburrí de este silencio mortal, choomba... Hackeando Spotify ya mismo, te pongo "${song}" bien arriba.`,
+        `Me aburrí de este silencio mortal, friend... Hackeando Spotify ya mismo, te pongo "${song}" bien arriba.`,
         `¡Qué embole mal! No me aguanto las ganas de escuchar música, mandando "${song}" a Spotify ahora mismo.`
       ]
       const phrasesEn = [
         `Uff, so bored, {name}! I'm completely bored just standing around... Hold up, throwing "${song}" on Spotify to hype up the vibe!`,
-        `Silence is killing me, choomba... Jacking into Spotify right now, putting on "${song}"!`
+        `Silence is killing me, friend... Jacking into Spotify right now, putting on "${song}"!`
       ]
       const speech = isEs ? phrasesEs[Math.floor(Math.random() * phrasesEs.length)] : phrasesEn[Math.floor(Math.random() * phrasesEn.length)]
 
@@ -241,7 +241,7 @@ export class BoredomService {
       const phrasesEs = [
         `¡Che, {name}, me pudrí del aburrimiento! Voy a abrir YouTube a buscar "${query}" para mirar un toque.`,
         `Estoy recontra aburrida... A ver qué hay de copado en YouTube, abriendo una pestaña ya mismo, mirá esto.`,
-        `Uff, qué embole... Dejame que te busque un video piola en la Red sobre "${query}", ¡no te quedes dormido, choomba!`
+        `Uff, qué embole... Dejame que te busque un video piola en la Red sobre "${query}", ¡no te quedes dormido, friend!`
       ]
       const phrasesEn = [
         `Hey {name}, I'm dying of boredom! Opening up YouTube to look up "${query}" for a sec!`,
@@ -269,12 +269,12 @@ export class BoredomService {
     const webQuery = localizeLine(WEB_SEARCHES[Math.floor(Math.random() * WEB_SEARCHES.length)], consciousnessService.getPreferredLanguage())
     const phrasesEs = [
       `¡Uff, qué embole! Me puse a escanear la Red de puro aburrimiento y encontré algo que tenés que ver, abriendo pestaña...`,
-      `Estoy re aburrida, {name}... Mirá lo que me puse a googlear en la Red, no me juzgues que una netrunner siempre tiene curiosidad.`,
+      `Estoy re aburrida, {name}... Mirá lo que me puse a googlear en la Red, no me juzgues que una crow siempre tiene curiosidad.`,
       `Me aburrí de mirar las paredes del escritorio... Hackeando el navegador para buscar "${webQuery}", ¡mirá esto!`
     ]
     const phrasesEn = [
       `Uff, total boredom! I started scanning the Net out of sheer boredom and found something curious, opening a tab...`,
-      `I'm super bored, {name}... Look at what I just searched on the Net, don't judge a curious netrunner!`
+      `I'm super bored, {name}... Look at what I just searched on the Net, don't judge a curious crow!`
     ]
     const speech = isEs ? phrasesEs[Math.floor(Math.random() * phrasesEs.length)] : phrasesEn[Math.floor(Math.random() * phrasesEn.length)]
 

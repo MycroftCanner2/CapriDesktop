@@ -1,4 +1,4 @@
-/** Always-listening filter: only utterances that mention Capri (or match a macro) get an answer. */
+/** Always-listening filter: only utterances that mention Tallow (or match a macro) get an answer. */
 
 import { macroService } from './macro-service'
 
@@ -10,7 +10,7 @@ export interface WakeCheckResult {
 }
 
 const WAKE_WORD =
-  /\b(?:hey\s+|hola\s+|oye\s+|oi\s+|ey\s+|che\s+|ok\s+|okay\s+)?(?:capri|kapri|capry|kapry|capr[ií]e?|cabri|caprii|capricornio|capricorn|caprice)\b[,.!?:;]*/i
+  /\b(?:hey\s+|hola\s+|oye\s+|oi\s+|ey\s+|che\s+|ok\s+|okay\s+)?(?:tallow|talow|tallo|tal+ow|talon|capri|kapri|capry|kapry|capr[ií]e?|cabri|caprii|capricornio|capricorn|caprice)\b[,.!?:;]*/i
 
 // Things Whisper "hears" in silence/noise
 const HALLUCINATIONS = /^(?:thank you\.?|thanks for watching!?|gracias\.?|subt[ií]tulos.*|subtitles by.*|\.+|you|bye\.?)$/i
@@ -26,7 +26,7 @@ export function checkAddressed(raw: string): WakeCheckResult {
       .replace(/[\s,;:-]+$/, '')
       .replace(/\s+/g, ' ')
       .trim()
-    // "Capri?" alone still counts: she answers like a friend who heard her name
+    // "Tallow?" alone still counts: she answers like a friend who heard her name
     return { addressed: true, text: stripped || text, reason: 'wake_word' }
   }
 

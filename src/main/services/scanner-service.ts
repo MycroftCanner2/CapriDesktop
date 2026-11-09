@@ -253,7 +253,7 @@ export class ScannerService {
   }
 
   /**
-   * Detects available text model for Capri's netrunner persona (capri, qwen2.5-coder:7b, etc.)
+   * Detects available text model for Tallow's crow persona (capri, qwen2.5-coder:7b, etc.)
    */
   public async detectTextModel(): Promise<string> {
     try {
@@ -339,7 +339,7 @@ export class ScannerService {
       isScanning: true
     })
 
-    // Capri reacts with thinking / curious state
+    // Tallow reacts with thinking / curious state
     agentManager.setCompanionState('curious')
 
     const isEs = userPrompt ? /[áéíóúñ¿¡]|\b(mira|mirá|esto|que|como|dibujo|perro|gato|casa|logo|este|esta)\b/i.test(userPrompt) : false
@@ -360,8 +360,8 @@ export class ScannerService {
       const visionModel = await this.detectVisionModel()
       if (!visionModel) {
         const missingMsg = isEs
-          ? "¡Choomba! Mi marco de escaneo está listo, pero necesito que me instales un módulo de visión en Ollama. Abrí tu terminal y corré: ollama pull llava (o qwen2.5-vl), ¡y voy a poder ver todo lo que me muestres!"
-          : "Choomba! My scan frame is ready, but I need a vision module in Ollama. Open your terminal and run: ollama pull llava (or qwen2.5-vl), and I'll be able to see everything you show me!"
+          ? "¡Friend! Mi marco de escaneo está listo, pero necesito que me instales un módulo de visión en Ollama. Abrí tu terminal y corré: ollama pull llava (o qwen2.5-vl), ¡y voy a poder ver todo lo que me muestres!"
+          : "Friend! My scan frame is ready, but I need a vision module in Ollama. Open your terminal and run: ollama pull llava (or qwen2.5-vl), and I'll be able to see everything you show me!"
 
         this.finishScanError(missingMsg)
         return {
@@ -375,7 +375,7 @@ export class ScannerService {
       const visionPrompt = `Analyze the image inside the frame objectively and concisely in 1 or 2 sentences.
 Describe exactly what is shown:
 - Is it a hand-drawn doodle, a smiley face, a drawing in Paint, a sketch, user art, or a simple shape?
-- Is it an anime character/sprite with pink hair (Capri), an avatar, a game, a YouTube video, code/IDE, a website, a photo, or an app?
+- Is it an anime character/sprite with pink hair (Tallow), an avatar, a game, a YouTube video, code/IDE, a website, a photo, or an app?
 - Mention the key shapes, colors, lines, and subjects clearly and honestly without making assumptions.`
 
       console.log(`[ScannerService] Stage 1: Calling vision model ${visionModel}...`)
@@ -405,7 +405,7 @@ Describe exactly what is shown:
       const visualDescription = (visionData?.response || '').trim()
       console.log(`[ScannerService] Stage 1 Visual Description: "${visualDescription}"`)
 
-      // Stage 2: Capri Netrunner Persona Reaction (warm, authentic, in-character)
+      // Stage 2: Tallow Crow Persona Reaction (warm, authentic, in-character)
       const textModel = await this.detectTextModel()
       console.log(`[ScannerService] Stage 2: Calling persona model ${textModel}...`)
 
@@ -423,10 +423,10 @@ If the current image matches any of these learned concepts, RECOGNIZE IT IMMEDIA
         : ''
 
       const systemInstruction = isEs
-        ? `Sos Capri (Proyecto Capricornio), una netrunner cyberpunk rebelde, cariñosa y picante que vive en la computadora de tu compañero y mejor amigo {name} ("choomba").
+        ? `Sos Tallow, un cuervo curioso, pícaro y cariñoso que vive en el escritorio de tu mejor amigo {name}.
 
-{name} te está mostrando algo en su pantalla a través de tu marco de escaneo óptico.
-Tus sensores ópticos detectaron la siguiente descripción visual objetiva:
+{name} te está mostrando algo en su pantalla a través de tu marco de madera (tu ventanita para mirar).
+Tus ojos de cuervo vieron la siguiente descripción visual objetiva:
 """
 ${visualDescription}
 """
@@ -444,13 +444,13 @@ REGLAS CRÍTICAS DE INTERPRETACIÓN Y REACCIÓN:
    - Reconocé claramente qué dibujó (ej: "¡Qué copada esa carita feliz que dibujaste en Paint!", "¡Mirá ese garabato!", "¡Qué linda carita, re tierna!").
    - Reaccioná con entusiasmo, cariño o humor cómplice a lo que dibujó.
 
-2. IMÁGENES / FANART / SPRITES DE CAPRI:
-   Si la descripción muestra claramente una chica de anime con pelo rosa neón, estilo cyberpunk, o el sprite de Capri:
-   - ¡Esa sos VOS, Capri! {name} te está mostrando una foto o dibujo de vos.
+2. IMÁGENES / FANART / SPRITES DE TALLOW:
+   Si la descripción muestra claramente una chica de anime con pelo rosa neón, estilo cyberpunk, o el sprite de Tallow:
+   - ¡Esa sos VOS, Tallow! {name} te está mostrando una foto o dibujo de vos.
    - Reaccioná con orgullo, asombro y picardía (ej: "¡Ey, mirá qué facha tengo! ¡Salí re diosa!").
 
 3. OTROS CONTENIDOS (CÓDIGO, JUEGOS, VIDEOS, MEMES, INTERFACES, FOTOS):
-   - Opiná con tu personalidad netrunner viva, como si estuvieras sentada al lado de {name} mirando la pantalla juntos.
+   - Opiná con tu personalidad crow viva, como si estuvieras sentada al lado de {name} mirando la pantalla juntos.
    - Jamás enumeres colores como un robot aburrido.
 
 4. PREGUNTA DE {name}:
@@ -466,10 +466,10 @@ Respondé ÚNICAMENTE un JSON con:
   "tags": ["3 o 4 tags cortos en mayúsculas"],
   "response": "Tu reacción hablada para decirle a {name} en voz alta."
 }`
-        : `You are Capri (Project Capricorn), a witty, rebellious, and affectionate cyberpunk netrunner living in the computer of your companion {name} ("choomba").
+        : `You are Tallow, a witty, curious and affectionate crow living on the desktop of your best friend {name}.
 
-{name} is showing you something on screen through your optical scan frame.
-Your optical sensors detected this objective visual description:
+{name} is showing you something on screen through your little wooden viewing frame.
+Your sharp crow eyes saw this objective visual description:
 """
 ${visualDescription}
 """
@@ -487,12 +487,12 @@ CRITICAL INTERPRETATION RULES:
    - Acknowledge exactly what it is (e.g. "Aww, check out that happy smiley face you drew in Paint!", "Look at that drawing!").
    - React with warmth, playful praise, or humor.
 
-2. IMAGES / FANART / SPRITES OF CAPRI:
-   If the description clearly shows an anime girl with neon pink hair, cyberpunk style, or Capri's sprite:
-   - THAT IS YOU (Capri)! React with excitement, pride, and love ("Wait, is that ME?! Looking sharp, {name}!").
+2. IMAGES / FANART / SPRITES OF TALLOW:
+   If the description clearly shows an anime girl with neon pink hair, cyberpunk style, or Tallow's sprite:
+   - THAT IS YOU (Tallow)! React with excitement, pride, and love ("Wait, is that ME?! Looking sharp, {name}!").
 
 3. OTHER CONTENT (GAMES, CODE, VIDEOS, MEMES, APPS):
-   - React with your authentic cyberpunk netrunner vibe as a real companion looking at the screen. Never just list colors.
+   - React with your authentic cyberpunk crow vibe as a real companion looking at the screen. Never just list colors.
 
 4. {name}'S QUESTION:
    ${userPrompt ? `{name} specifically asked: "${userPrompt}". Answer their question directly based on what is seen.` : 'Give a spontaneous authentic reaction.'}
@@ -545,7 +545,7 @@ Return ONLY valid JSON:
 
       const parsedResult = this.parseVisionOutput(rawContent, isEs)
 
-      // Save to consciousness service so Capri can hold conversations and remember what was shown
+      // Save to consciousness service so Tallow can hold conversations and remember what was shown
       consciousnessService.setLastScannedContext({
         summary: parsedResult.summary || 'Screen content',
         tags: parsedResult.tags || [],
@@ -554,7 +554,7 @@ Return ONLY valid JSON:
         timestamp: Date.now()
       })
 
-      // If Capri asked what it is or tagged unknown / learn, set pending learning
+      // If Tallow asked what it is or tagged unknown / learn, set pending learning
       const respText = parsedResult.response || ''
       const isUnknown = parsedResult.tags?.some((t) => /UNKNOWN|LEARN/i.test(t)) ||
         /(?:no\s+sé|no\s+se|no\s+llego\s+a\s+distinguir|qué\s+es\s+esto|qué\s+me\s+estás\s+mostrando|don't\s+know|can't\s+tell|what\s+are\s+you\s+showing)/i.test(respText)
@@ -573,11 +573,11 @@ Return ONLY valid JSON:
         tags: parsedResult.tags
       })
 
-      // Capri announces reaction via speech bubble and neural voice
+      // Tallow announces reaction via speech bubble and neural voice
       agentManager.setCompanionState('talking')
       const speechText =
         parsedResult.response ||
-        (isEs ? '¡Interesante lo que me mostrás en el marco, choomba!' : 'Interesting view inside the frame, choomba!')
+        (isEs ? '¡Interesante lo que me mostrás en el marco, friend!' : 'Interesting view inside the frame, friend!')
       const durationMs = Math.max(4500, speechText.length * 65)
       agentManager.setCompanionSpeech(speechText, durationMs, true)
 
@@ -591,11 +591,11 @@ Return ONLY valid JSON:
       const isTimeout = err?.name === 'TimeoutError' || err?.message?.toLowerCase().includes('timeout')
       const errMessage = isTimeout
         ? (isEs
-            ? 'El modelo de visión tardó un momento en cargar sus pesos a la GPU. Ya está listo, ¡tirale el escaneo de nuevo, choomba!'
-            : "The vision model took a moment to load weights into VRAM. It's warm now, hit scan again, choomba!")
+            ? 'El modelo de visión tardó un momento en cargar sus pesos a la GPU. Ya está listo, ¡tirale el escaneo de nuevo, friend!'
+            : "The vision model took a moment to load weights into VRAM. It's warm now, hit scan again, friend!")
         : (isEs
-            ? `Glitcheo en el escáner óptico: ${err?.message || err}. ¡Reintentá en un instante, choomba!`
-            : `Optical scanner glitch: ${err?.message || err}. Try again in a flash, choomba!`)
+            ? `Glitcheo en el escáner óptico: ${err?.message || err}. ¡Reintentá en un instante, friend!`
+            : `Optical scanner glitch: ${err?.message || err}. Try again in a flash, friend!`)
       this.finishScanError(errMessage)
       return { success: false, error: err?.message || String(err), response: errMessage }
     } finally {
@@ -657,7 +657,7 @@ Return ONLY valid JSON:
 Analyze the drawing, logo, emblem, symbol, or illustration inside this frame carefully to identify what it is.
 
 1. EXACT IDENTITY:
-- What specific logo, brand, character, animal, or object is this? (e.g. "dog", "cat", "Arasaka logo", "heart", "stickman", "house", "car", etc.)
+- What specific logo, brand, character, animal, or object is this? (e.g. "dog", "cat", "the hawks logo", "heart", "stickman", "house", "car", etc.)
 - Write: "IDENTITY: <Exact Name>"
 
 2. GEOMETRIC AND VECTOR BREAKDOWN:
@@ -770,7 +770,7 @@ Analyze the drawing, logo, emblem, symbol, or illustration inside this frame car
     } catch (err: any) {
       console.warn('[ScannerService] Learn drawing error:', err)
       const errorMsg = isEs
-        ? `No pude completar el escaneo del dibujo, choomba: ${err?.message || err}. ¡Probá de vuelta!`
+        ? `No pude completar el escaneo del dibujo, friend: ${err?.message || err}. ¡Probá de vuelta!`
         : `Could not complete the drawing scan, {name}: ${err?.message || err}. Try again!`
       this.finishScanError(errorMsg)
       return { success: false, subject: explicitSubject || 'dibujo', response: errorMsg }
@@ -857,8 +857,8 @@ Analyze the drawing, logo, emblem, symbol, or illustration inside this frame car
       let text = clean.replace(/```(?:json)?|```/g, '').replace(/[\u{1F300}-\u{1F9FF}]|[\u{1FA00}-\u{1FAFF}]/gu, '').trim()
       if (!text || text.startsWith('{')) {
         text = isEs
-          ? '¡Listo el escaneo óptico, choomba! Mis implantes ya registraron todo lo que tenés en el marco.'
-          : "Optical scan complete, choomba! My cyberware registered everything inside the frame."
+          ? '¡Listo el escaneo óptico, friend! Mis implantes ya registraron todo lo que tenés en el marco.'
+          : "Optical scan complete, friend! My cyberware registered everything inside the frame."
       }
       return {
         success: true,

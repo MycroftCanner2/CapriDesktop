@@ -1,9 +1,9 @@
 /**
- * Renderer side of the `{name}` placeholder: how Capri calls the user.
+ * Renderer side of the `{name}` placeholder: how Tallow calls the user.
  * The name lives in the main process (capri_consciousness.json) and is cached here.
  */
 
-let currentName = 'choom'
+let currentName = 'friend'
 let initialized = false
 
 export function initUserName(): void {

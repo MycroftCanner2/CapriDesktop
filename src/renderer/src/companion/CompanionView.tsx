@@ -1,7 +1,7 @@
 import { personalize } from '../utils/userName'
 import { AlwaysListener } from '../utils/alwaysListening'
 import React, { useCallback, useEffect, useMemo, useState, useRef } from 'react'
-import { CapriRenderer, playMultiGlitchSound, playPetChirpSound } from './CapriRenderer'
+import { CapriRenderer, playCrowSound, playMultiGlitchSound, playPetChirpSound } from './CapriRenderer'
 import { SpeechBubble } from './SpeechBubble'
 import { useT } from '../utils/useUiLang'
 import { localizeLine } from '../../../shared/lines'
@@ -11,7 +11,7 @@ import { voiceVolume } from '../utils/soundSettings'
 import { useCompanionStore, CompanionEmotionState } from '../stores/useCompanionStore'
 import { useAgentStore } from '../stores/useAgentStore'
 import dialogueBlipAudio from '../assets/dialogue_blip.wav'
-import patPatGif from '../assets/capri/pat-pat-pet-pet.gif'
+import patPatGif from '../assets/crow/peanut.png'
 import { VoiceSettingsModal } from './VoiceSettingsModal'
 import { acceleratorFromEvent, DEFAULT_HOTKEYS, HOTKEY_ACTIONS } from '../../../shared/hotkeys'
 import {
@@ -160,7 +160,7 @@ export const CompanionView: React.FC = () => {
     }
   }, [isGamingMode])
 
-  // Gaming Mode: Capri is click-through so she never steals clicks from the game.
+  // Gaming Mode: Tallow is click-through so she never steals clicks from the game.
   // Hold Ctrl over her to interact / drag her (mouse moves are forwarded even while click-through).
   useEffect(() => {
     if (!isGamingMode || !window.api?.companion?.setClickThrough) return
@@ -282,8 +282,8 @@ export const CompanionView: React.FC = () => {
       window.api.companion.getConsciousness().then((res) => {
         const isEs = currentLangRef.current === 'es'
         const welcome = res?.bootGreeting || (isEs
-          ? "¡Bienvenido de vuelta, {name}! Conectada a tu ciberware y lista para la acción. ¿Qué hackeamos hoy, choomba?"
-          : "Welcome back, {name}! Jacked into your cyberware and ready for action. What are we hacking today, choomba?")
+          ? "¡Bienvenido de vuelta, {name}! Conectada a tu ciberware y lista para la acción. ¿Qué hackeamos hoy, friend?"
+          : "Welcome back, {name}! Jacked into your cyberware and ready for action. What are we hacking today, friend?")
         setChatMessages([
           {
             id: `init-${Date.now()}`,
@@ -296,8 +296,8 @@ export const CompanionView: React.FC = () => {
       }).catch(() => {
         const isEs = currentLangRef.current === 'es'
         const fallback = isEs
-          ? "¡Bienvenido de vuelta, {name}! Conectada a tu ciberware y lista para la acción. ¿Qué hackeamos hoy, choomba?"
-          : "Welcome back, {name}! Jacked into your cyberware and ready for action. What are we hacking today, choomba?"
+          ? "¡Bienvenido de vuelta, {name}! Conectada a tu ciberware y lista para la acción. ¿Qué hackeamos hoy, friend?"
+          : "Welcome back, {name}! Jacked into your cyberware and ready for action. What are we hacking today, friend?"
         setChatMessages([
           {
             id: `init-${Date.now()}`,
@@ -311,8 +311,8 @@ export const CompanionView: React.FC = () => {
     } else {
       const isEs = currentLangRef.current === 'es'
       const welcome = isEs
-        ? "¡Bienvenido de vuelta, {name}! Conectada a tu ciberware y lista para la acción. ¿Qué hackeamos hoy, choomba?"
-        : "Welcome back, {name}! Jacked into your cyberware and ready for action. What are we hacking today, choomba?"
+        ? "¡Bienvenido de vuelta, {name}! Conectada a tu ciberware y lista para la acción. ¿Qué hackeamos hoy, friend?"
+        : "Welcome back, {name}! Jacked into your cyberware and ready for action. What are we hacking today, friend?"
       setChatMessages([
         {
           id: `init-${Date.now()}`,
@@ -325,7 +325,7 @@ export const CompanionView: React.FC = () => {
     }
   }, [])
 
-  // Voice State (STT & TTS with Capri original voice)
+  // Voice State (STT & TTS with Tallow original voice)
   const [isVoiceMuted, setIsVoiceMuted] = useState(() => {
     try {
       return localStorage.getItem('capri_voice_muted') === 'true'
@@ -510,7 +510,7 @@ export const CompanionView: React.FC = () => {
     }
   }
 
-  /** The user is talking or sent something: stop Capri mid-sentence and forget queued lines */
+  /** The user is talking or sent something: stop Tallow mid-sentence and forget queued lines */
   const interruptSpeech = () => {
     speechQueueRef.current = []
     currentAudioIdRef.current++ // discards a line still being synthesized
@@ -566,7 +566,7 @@ export const CompanionView: React.FC = () => {
     audio.play().catch(finish)
   }
 
-  // Synthesize and play one line with Capri's voice (supports dialogue_blip.wav or Original TTS)
+  // Synthesize and play one line with Tallow's voice (supports dialogue_blip.wav or Original TTS)
   const playSpeechNow = async (text: string) => {
     // In Editor Mode, DO not speak. Only speak in Pet Mode
     if (isDeckOpenRef.current || isVoiceMutedRef.current) return
@@ -583,9 +583,9 @@ export const CompanionView: React.FC = () => {
 
     const bubbleText = clean.replace(/\[[a-zA-Z0-9_\s\-]+\]/g, '').replace(/\s+/g, ' ').trim() || clean
     const emotions = clean.match(/\[[a-zA-Z0-9_\s\-]+\]/g) || []
-    console.log('[Capri Dialogue] Text to synthesize:', clean)
-    console.log('[Capri Dialogue] Emotions/Tags detected:', emotions)
-    console.log('[Capri Dialogue] Visual bubble text:', bubbleText)
+    console.log('[Tallow Dialogue] Text to synthesize:', clean)
+    console.log('[Tallow Dialogue] Emotions/Tags detected:', emotions)
+    console.log('[Tallow Dialogue] Visual bubble text:', bubbleText)
 
     // Debounce duplicate calls with the exact same text within 4 seconds
     const now = Date.now()
@@ -758,10 +758,10 @@ export const CompanionView: React.FC = () => {
   const startVoiceRecording = async () => {
     if (isRecordingVoice || isProcessingVoice || micOpeningRef.current) return
     if (isExecuting) {
-      setSpeech("Hold on, I'm still thinking, choomba.", 2500)
+      setSpeech("Hold on, I'm still thinking, friend.", 2500)
       return
     }
-    // The user started talking: Capri stops so the mic doesn't pick her up
+    // The user started talking: Tallow stops so the mic doesn't pick her up
     if (isScriptPlayingRef.current) window.api.companion.cancelScript()
     interruptSpeech()
 
@@ -890,7 +890,7 @@ export const CompanionView: React.FC = () => {
           const arrayBuffer = await blob.arrayBuffer()
           // The first time Whisper is still downloading, and silence would look like a broken mic
           if ((await window.api.voice.sttState()) === 'loading') {
-            setSpeech("I'm still loading my hearing, choomba. The first time can take a few minutes, hold on.", 0)
+            setSpeech("I'm still loading my hearing, friend. The first time can take a few minutes, hold on.", 0)
           }
           const res = await window.api.voice.transcribe(arrayBuffer)
           setSpeech(null)
@@ -901,24 +901,24 @@ export const CompanionView: React.FC = () => {
             setActiveUserPrompt(finalText)
             handleSendMessage(finalText)
           } else if ((await window.api.voice.sttState()) === 'failed') {
-            setSpeech("My hearing isn't installed properly, choomba. Run the setup again from the model settings.", 6000)
+            setSpeech("My hearing isn't installed properly, friend. Run the setup again from the model settings.", 6000)
           } else if (micPeakRef.current >= 0 && micPeakRef.current < MIN_MIC_LEVEL) {
-            setSpeech("Your microphone isn't sending any sound, choomba. Check the one selected in my voice settings.", 6000)
+            setSpeech("Your microphone isn't sending any sound, friend. Check the one selected in my voice settings.", 6000)
           } else if (res.error && !/no speech/i.test(res.error)) {
             console.warn('[VoiceRecord] Transcription failed:', res.error)
-            setSpeech(`Something failed in my hearing, choomba: ${res.error.slice(0, 140)}`, 8000)
+            setSpeech(`Something failed in my hearing, friend: ${res.error.slice(0, 140)}`, 8000)
           } else {
             setSpeech(
               isEs
-                ? "No te llegué a escuchar con todo este ruido de la red, choomba. ¿Me repetís?"
-                : "Didn't catch that over the cyber ICE, choomba. Mind repeating that?",
+                ? "No te llegué a escuchar con todo este ruido de la red, friend. ¿Me repetís?"
+                : "Didn't catch that over the cyber ICE, friend. Mind repeating that?",
               3500
             )
           }
         } catch (err: any) {
           console.error('[VoiceRecord] Final transcription failed:', err)
           const isEs = currentLangRef.current === 'es'
-          setSpeech(isEs ? "¡Glitcheo en el micrófono! Probá de nuevo, choomba." : "Microphone glitch! Try again, choomba.", 3000)
+          setSpeech(isEs ? "¡Glitcheo en el micrófono! Probá de nuevo, friend." : "Microphone glitch! Try again, friend.", 3000)
         } finally {
           setIsRecordingVoice(false)
           isRecordingVoiceRef.current = false
@@ -964,9 +964,9 @@ export const CompanionView: React.FC = () => {
   stopVoiceRecordingRef.current = stopVoiceRecording
   cancelVoiceRecordingRef.current = cancelVoiceRecording
 
-  // always listening (Right arrow): mic stays open, Capri only answers when she
+  // always listening (Right arrow): mic stays open, Tallow only answers when she
   // hears her name (or a saved macro phrase). After she answers you get a few
-  // seconds to keep talking without repeating "Capri".
+  // seconds to keep talking without repeating "Tallow".
   const toggleAlwaysListening = async () => {
     const isEs = currentLangRef.current === 'es'
     if (alwaysListenerRef.current?.active) {
@@ -981,7 +981,7 @@ export const CompanionView: React.FC = () => {
 
     const listener = new AlwaysListener({
       isPaused: () =>
-        // The Dev Deck has its own mic: hearing "Capri" from it here sent a second prompt
+        // The Dev Deck has its own mic: hearing "Tallow" from it here sent a second prompt
         // that cut the deck's recording and hid the user's message
         isDeckOpenRef.current ||
         isSpeakingRef.current ||
@@ -999,7 +999,7 @@ export const CompanionView: React.FC = () => {
       setIsAlwaysListening(true)
       try { localStorage.setItem('capri.alwaysListening', '1') } catch {}
       setSpeech(
-        isEs ? 'Te escucho todo el tiempo, choomba. Decí "Capri" cuando me hables a mí.' : 'Always listening, choomba. Say "Capri" when you are talking to me.',
+        isEs ? 'Te escucho todo el tiempo, friend. Decí "Tallow" cuando me hables a mí.' : 'Always listening, friend. Say "Tallow" when you are talking to me.',
         3500
       )
     } catch (err) {
@@ -1034,7 +1034,7 @@ export const CompanionView: React.FC = () => {
     }
   }
 
-  // Open the follow-up window once Capri has finished answering
+  // Open the follow-up window once Tallow has finished answering
   useEffect(() => {
     if (!isSpeaking && !isExecuting && awaitingFollowUpRef.current && alwaysListenerRef.current?.active) {
       awaitingFollowUpRef.current = false
@@ -1069,7 +1069,7 @@ export const CompanionView: React.FC = () => {
     }
   }, [])
 
-  // Clear active user prompt whenever speech expires and Capri is silent
+  // Clear active user prompt whenever speech expires and Tallow is silent
   useEffect(() => {
     if (!speech && !isExecuting && !isSpeaking) {
       setActiveUserPrompt(null)
@@ -1077,6 +1077,25 @@ export const CompanionView: React.FC = () => {
   }, [speech, isExecuting, isSpeaking])
 
   // Listen to IPC broadcasts for emotion, speech, roaming status, and agent streaming events
+  // Tallow's own mood for the line he just said (hop, lean, droop, peer, love, fluff, alarm)
+  const [tallowLook, setTallowLook] = useState<CompanionEmotionState | null>(null)
+  const tallowLineRef = useRef(false)
+  const tallowLookTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  useEffect(() => {
+    if (!window.api?.tallow) return
+    const LOOKS: Record<string, CompanionEmotionState> = {
+      idle: 'standing', hop: 'happy', lean: 'lean', droop: 'droop', peer: 'curious', love: 'love', fluff: 'fluff', alarm: 'alarm'
+    }
+    return window.api.tallow.onLine((line) => {
+      tallowLineRef.current = true
+      const look = LOOKS[line.action] || 'standing'
+      setTallowLook(look)
+      if (line.sound) playCrowSound(line.sound, 0.75)
+      if (tallowLookTimerRef.current) clearTimeout(tallowLookTimerRef.current)
+      tallowLookTimerRef.current = setTimeout(() => setTallowLook(null), 5200)
+    })
+  }, [])
+
   useEffect(() => {
     if (!window.api) return
 
@@ -1159,7 +1178,7 @@ export const CompanionView: React.FC = () => {
     const unsubAgent = window.api.agent.onEvent((event) => {
       switch (event.type) {
         case 'session.started':
-          // In Editor Mode, Capri remains quiet and does not hijack the pet HUD
+          // In Editor Mode, Tallow remains quiet and does not hijack the pet HUD
           if (event.source === 'editor' || isDeckOpenRef.current) break
           setIsExecuting(true)
           lastAssistantContentRef.current = ''
@@ -1229,12 +1248,12 @@ export const CompanionView: React.FC = () => {
             const toolName = event.toolName
             const output = event.toolOutput
 
-            // If close or delete action finished, show closed avatar (red cyber eye) for 3.5 seconds
+            // If close or delete action finished, show closed avatar (red crow eye) for 3.5 seconds
             if (toolName === 'close_application' || toolName === 'delete_path') {
               isClosedActiveRef.current = true
               setEmotion('closed')
               if (window.api?.companion) window.api.companion.setState('closed')
-              setSpeech("Target terminated, choomba! Cyberspace dusted!", 3500)
+              setSpeech("Kaw! Gone. Carried it off, nothing left but a feather.", 3500)
               if (closedTimerRef.current) clearTimeout(closedTimerRef.current)
               closedTimerRef.current = setTimeout(() => {
                 isClosedActiveRef.current = false
@@ -1244,11 +1263,11 @@ export const CompanionView: React.FC = () => {
               }, 3500)
             }
 
-            // If shutdown Capri & Ollama triggered, change emotion to sleep
+            // If shutdown Tallow & Ollama triggered, change emotion to sleep
             if (toolName === 'shutdown_capri_and_ollama') {
               setEmotion('sleep')
               if (window.api?.companion) window.api.companion.setState('sleep')
-              setSpeech("Jacking out of cyberspace... Catch you on the other side, {name}!", 4000)
+              setSpeech("Tucking my beak under my wing... see you at dawn, {name}!", 4000)
             }
 
             setChatMessages((prev) => {
@@ -1273,14 +1292,20 @@ export const CompanionView: React.FC = () => {
         case 'session.finished':
           setIsExecuting(false)
           isExecutingRef.current = false
-          // In Editor Mode, Capri never speaks. Only in Pet Mode
+          // In Editor Mode, Tallow never speaks. Only in Pet Mode
           if (event.source !== 'editor' && !isDeckOpenRef.current) {
             const rawText = lastAssistantContentRef.current.trim()
             const textToSpeak = rawText
               .replace(/[\u{1F300}-\u{1FAFF}]|[\u{2600}-\u{27BF}]|[\u{1F000}-\u{1F02F}]|[\u{1F0A0}-\u{1F0FF}]|[\u{1F100}-\u{1F64F}]|[\u{1F680}-\u{1F6FF}]/gu, '')
               .replace(/[🐾✨👀⚡🎉🦾🛑💬🎵🔥💥💡⚔️📹🎮💤✓✕⚠️🤖🐱🐶👍👎❤️🎶]/g, '')
               .trim()
-            if (textToSpeak) {
+            const wasTallow = tallowLineRef.current
+            tallowLineRef.current = false
+            if (textToSpeak && wasTallow) {
+              // Tallow speaks crow: his caw already played, the words go in the bubble
+              setActiveSpeechText(textToSpeak)
+              setSpeech(textToSpeak, 6500)
+            } else if (textToSpeak) {
               if (isScriptPlayingRef.current) {
                 // She's in the middle of a reply: two voices at once would be worse than one line less
               } else if (isVoiceMutedRef.current) {
@@ -1327,7 +1352,7 @@ export const CompanionView: React.FC = () => {
               {
                 id: `err-${Date.now()}`,
                 role: 'assistant',
-                content: `Glitch in the Net: ${event.error}`,
+                content: `Ruffled feathers: ${event.error}`,
                 timestamp: Date.now()
               }
             ])
@@ -1361,6 +1386,7 @@ export const CompanionView: React.FC = () => {
     // in the talking animation instead of flashing another pose.
     if (scriptLook) return scriptLook
     if (isScriptPlaying) return 'talking'
+    if (tallowLook && !isGamingMode) return tallowLook
 
     // Red Cyber Eye (Target Terminated / App Closed)
     if (emotion === 'closed' || isClosedActiveRef.current) return 'closed'
@@ -1386,17 +1412,17 @@ export const CompanionView: React.FC = () => {
     }
 
     // Desktop Chat Open or Explicit Eye Mode on Desktop:
-    // Shows the single black cyber eye ('ojos' animated sprite sequence from capri_generados/sprites/ojos)
+    // Shows the single black crow eye ('ojos' animated sprite sequence from capri_generados/sprites/ojos)
     if (isDesktopChatOpen || isEyeMode) {
       return 'ojos'
     }
 
-    // User actively recording voice to speak to Capri -> Curious listening avatar
+    // User actively recording voice to speak to Tallow -> Curious listening avatar
     if (isRecordingVoice) {
       return 'curious'
     }
 
-    // Tab Mode: Capri is perched sitting on window tab or sitting front in center -> 'idle_front' or 'idle'
+    // Tab Mode: Tallow is perched sitting on window tab or sitting front in center -> 'idle_front' or 'idle'
     if (isTabMode) return emotion === 'idle_front' ? 'idle_front' : 'idle'
 
     // Closed or sleep
@@ -1415,9 +1441,9 @@ export const CompanionView: React.FC = () => {
 
     // Default desktop state: standing full-body avatar (never ojos!)
     return 'standing'
-  }, [scriptLook, isScriptPlaying, isSpeaking, speech, isTabMode, isDesktopChatOpen, isEyeMode, emotion, isExecuting, isSynthesizingVoice, isRoaming, isRecordingVoice, isGamingMode])
+  }, [scriptLook, tallowLook, isScriptPlaying, isSpeaking, speech, isTabMode, isDesktopChatOpen, isEyeMode, emotion, isExecuting, isSynthesizingVoice, isRoaming, isRecordingVoice, isGamingMode])
 
-  // Dynamic user-facing label representing Capri's current active state
+  // Dynamic user-facing label representing Tallow's current active state
   const companionStatusLabel = useMemo(() => {
     if (isGamingMode) return tr('st_gaming')
     if (isExecuting) return tr('st_thinking')
@@ -1557,7 +1583,7 @@ export const CompanionView: React.FC = () => {
         isPettingRef.current = false
         if (!scareTriggeredRef.current) {
           const isEs = currentLangRef.current === 'es'
-          const poutText = isEs ? "¡No me despeines los circuitos!" : "Don't mess up my cyberware, choomba!"
+          const poutText = isEs ? "¡No me despeines los circuitos!" : "Don't mess up my cyberware, friend!"
           setSpeech(poutText, 2500)
         }
       }
@@ -1647,13 +1673,13 @@ export const CompanionView: React.FC = () => {
           const isReleaseEs = currentLangRef.current === 'es'
           const scaredReleasePhrases = isReleaseEs
             ? [
-                "Uff... ¡No me vuelvas a agarrar así, choomba!",
+                "Uff... ¡No me vuelvas a agarrar así, friend!",
                 "¡Gah! ¡Avisame antes de moverme como una valija, {name}!",
                 "Mis circuitos del Soulkiller todavía están vibrando... ¡Qué susto!",
                 "Menos mal... De vuelta en estática firme. ¡Mantené las manos quietas la próxima!"
               ]
             : [
-                "Phew... Never grab me like that again, choomba!",
+                "Phew... Never grab me like that again, friend!",
                 "Gah! Warn me before you move me like luggage, {name}!",
                 "My soulkiller circuits are still vibrating from that... Geez!",
                 "Whew... Back on solid static. Keep your hands to yourself next time!"
@@ -1680,16 +1706,16 @@ export const CompanionView: React.FC = () => {
           const dragPhrases = isDragEs
             ? [
                 "¡Yuuujuuu! ¡Recalibrando coordenadas físicas!",
-                "¡Ey, cuidado con el ciberware, choomba! Pero me gusta este lugar.",
+                "¡Ey, cuidado con el ciberware, friend! Pero me gusta este lugar.",
                 "¡Nuevas coordenadas fijadas! Me copa este punto de vista, {name}.",
-                "¡Moviéndome por la estática! ¿Qué hackeamos desde acá, choomba?",
+                "¡Moviéndome por la estática! ¿Qué hackeamos desde acá, friend?",
                 "¡Paseando por el espacio físico! Lindo panorama desde acá arriba."
               ]
             : [
                 "Wheee! Repositioning my physical coordinates!",
-                "Hey, hands off the cyberware, choomba! But I like this spot.",
+                "Hey, hands off the cyberware, friend! But I like this spot.",
                 "New coordinates locked! Digging the new vantage point, {name}.",
-                "Moved through the static! What are we hacking from here, choomba?",
+                "Moved through the static! What are we hacking from here, friend?",
                 "Carried across meatspace! Nice view from up here."
               ]
           const phrase = dragPhrases[Math.floor(Math.random() * dragPhrases.length)]
@@ -1721,7 +1747,7 @@ export const CompanionView: React.FC = () => {
     setIsContextMenuOpen((prev) => !prev)
   }
 
-  // Opens/closes Capri's chat input (Ctrl + Click on her, or the Left arrow hotkey)
+  // Opens/closes Tallow's chat input (Ctrl + Click on her, or the Left arrow hotkey)
   const toggleDesktopChat = () => {
     const next = !isDesktopChatOpenRef.current
     setIsDesktopChatOpen(next)
@@ -1738,7 +1764,7 @@ export const CompanionView: React.FC = () => {
   }
   toggleDesktopChatRef.current = toggleDesktopChat
 
-  // Click on Capri: Normal click toggles Dev Deck; Ctrl + Click toggles Interactive HUD Input; Shift + Click moves window
+  // Click on Tallow: Normal click toggles Dev Deck; Ctrl + Click toggles Interactive HUD Input; Shift + Click moves window
   const handleCapriClick = async (e: React.MouseEvent<HTMLDivElement>) => {
     if (isContextMenuOpen) {
       setIsContextMenuOpen(false)
@@ -1763,7 +1789,7 @@ export const CompanionView: React.FC = () => {
     }
   }
 
-  // Handle submitting message to Capri
+  // Handle submitting message to Tallow
   handleSendMessageRef.current = (t: string) => {
     handleSendMessage(t)
   }
@@ -1771,7 +1797,7 @@ export const CompanionView: React.FC = () => {
     const text = (textToSend || inputText).trim()
     if (!text || isExecuting) return
 
-    // A new prompt from the user interrupts whatever Capri was saying (and what was queued)
+    // A new prompt from the user interrupts whatever Tallow was saying (and what was queued)
     interruptSpeech()
 
     setInputText('')
@@ -1866,8 +1892,8 @@ export const CompanionView: React.FC = () => {
   const handleClearChat = () => {
     const isEs = currentLangRef.current === 'es'
     const resetMsg = isEs
-      ? "¡Bancos de memoria reiniciados, {name}! ¿Cuál es nuestra próxima jugada, choomba?"
-      : "Memory banks refreshed, {name}! What's our next move, choomba?"
+      ? "¡Bancos de memoria reiniciados, {name}! ¿Cuál es nuestra próxima jugada, friend?"
+      : "Memory banks refreshed, {name}! What's our next move, friend?"
     const resetList: DesktopChatMessage[] = [
       {
         id: `init-${Date.now()}`,
@@ -1914,7 +1940,7 @@ export const CompanionView: React.FC = () => {
           background: 'transparent'
         } as React.CSSProperties}
       >
-        {/* Capri Cyber Frame (Ojos or Talking) strictly anchored at the top-left */}
+        {/* Tallow Cyber Frame (Ojos or Talking) strictly anchored at the top-left */}
         <div
           onMouseDown={handleCapriMouseDown}
           onContextMenu={handleCapriContextMenu}
@@ -1932,7 +1958,7 @@ export const CompanionView: React.FC = () => {
           </div>
         </div>
 
-        {/* Downward Speech Bubble strictly below Capri */}
+        {/* Downward Speech Bubble strictly below Tallow */}
         {isBubbleVisible && (
           <div
             className="w-full flex flex-col items-center z-40 select-none mt-1 px-3 animate-fade-in"
@@ -1969,9 +1995,9 @@ export const CompanionView: React.FC = () => {
                       e.preventDefault()
                       handleSendMessage()
                     }}
-                    className="mt-2 pt-2 border-t border-[#00f0ff]/30 flex items-center gap-1.5 font-terminal animate-fade-in"
+                    className="mt-2 pt-2 border-t border-[#d6c29a]/30 flex items-center gap-1.5 font-terminal animate-fade-in"
                   >
-                    <span className="text-xs font-bold text-[#fcee0a] select-none font-terminal">&gt;</span>
+                    <span className="text-xs font-bold text-[#ddb23c] select-none font-terminal">&gt;</span>
 
                     <input
                       ref={promptInputRef}
@@ -1980,7 +2006,7 @@ export const CompanionView: React.FC = () => {
                       onChange={(e) => setInputText(e.target.value)}
                       placeholder={
                         isRecordingVoice
-                          ? localizeLine('Listening... speak to Capri...', currentLang)
+                          ? localizeLine('Listening... speak to Tallow...', currentLang)
                           : isProcessingVoice
                           ? localizeLine('Decoding voice...', currentLang)
                           : localizeLine('type command...', currentLang)
@@ -1991,7 +2017,7 @@ export const CompanionView: React.FC = () => {
                           setIsDesktopChatOpen(false)
                         }
                       }}
-                      className="flex-1 bg-black/90 border border-zinc-700 focus:border-[#00f0ff] text-[#f8fafc] text-xs px-2.5 py-1 rounded outline-none select-text shadow-inner transition-colors font-terminal placeholder:text-zinc-600"
+                      className="flex-1 bg-black/90 border border-zinc-700 focus:border-[#d6c29a] text-[#f8fafc] text-xs px-2.5 py-1 rounded outline-none select-text shadow-inner transition-colors font-terminal placeholder:text-zinc-600"
                     />
 
                     <button
@@ -2009,13 +2035,13 @@ export const CompanionView: React.FC = () => {
                       onClick={toggleVoiceRecordingSafe}
                       className={`p-1.5 rounded text-xs font-bold transition-all cursor-pointer ${
                         isRecordingVoice
-                          ? 'bg-[#ff003c] text-white animate-pulse'
+                          ? 'bg-[#d4532b] text-white animate-pulse'
                           : 'bg-zinc-800 text-zinc-300 hover:text-white hover:bg-zinc-700'
                       }`}
                       title={isRecordingVoice ? 'Stop recording' : 'Record voice (Down arrow)'}
                     >
                       {isProcessingVoice ? (
-                        <div className="w-3.5 h-3.5 border-2 border-[#00f0ff] border-t-transparent rounded-full animate-spin" />
+                        <div className="w-3.5 h-3.5 border-2 border-[#d6c29a] border-t-transparent rounded-full animate-spin" />
                       ) : isRecordingVoice ? (
                         <MicOff size={13} />
                       ) : (
@@ -2058,7 +2084,7 @@ export const CompanionView: React.FC = () => {
     >
       {/* =========================================================================
           GROUPED PET + BUBBLE STACK: Anchored to the bottom
-          Speech bubble sits directly on top of Capri's head without an empty void.
+          Speech bubble sits directly on top of Tallow's head without an empty void.
           Ample headroom so Ctrl + Click input is never clipped at the top!
           ========================================================================= */}
       <div className="w-full flex flex-col items-center justify-end flex-shrink-0 pb-1">
@@ -2097,9 +2123,9 @@ export const CompanionView: React.FC = () => {
                       e.preventDefault()
                       handleSendMessage()
                     }}
-                    className="mt-2 pt-2 border-t border-[#00f0ff]/30 flex items-center gap-1.5 font-terminal animate-fade-in"
+                    className="mt-2 pt-2 border-t border-[#d6c29a]/30 flex items-center gap-1.5 font-terminal animate-fade-in"
                   >
-                    <span className="text-xs font-bold text-[#fcee0a] select-none font-terminal">&gt;</span>
+                    <span className="text-xs font-bold text-[#ddb23c] select-none font-terminal">&gt;</span>
 
                     <input
                       ref={promptInputRef}
@@ -2108,7 +2134,7 @@ export const CompanionView: React.FC = () => {
                       onChange={(e) => setInputText(e.target.value)}
                       placeholder={
                         isRecordingVoice
-                          ? localizeLine('Listening... speak to Capri...', currentLang)
+                          ? localizeLine('Listening... speak to Tallow...', currentLang)
                           : isProcessingVoice
                           ? localizeLine('Decoding voice...', currentLang)
                           : localizeLine('type command...', currentLang)
@@ -2119,7 +2145,7 @@ export const CompanionView: React.FC = () => {
                           setIsDesktopChatOpen(false)
                         }
                       }}
-                      className="flex-1 bg-black/90 border border-zinc-700 focus:border-[#00f0ff] text-[#f8fafc] text-xs px-2.5 py-1 rounded outline-none select-text shadow-inner transition-colors font-terminal placeholder:text-zinc-600"
+                      className="flex-1 bg-black/90 border border-zinc-700 focus:border-[#d6c29a] text-[#f8fafc] text-xs px-2.5 py-1 rounded outline-none select-text shadow-inner transition-colors font-terminal placeholder:text-zinc-600"
                     />
 
                     <button
@@ -2137,15 +2163,15 @@ export const CompanionView: React.FC = () => {
                       onClick={toggleVoiceRecordingSafe}
                       className={`p-1.5 rounded text-xs font-bold transition-all cursor-pointer ${
                         isRecordingVoice
-                          ? 'bg-[#ff003c] text-white animate-pulse shadow-[0_0_12px_#ff003c]'
+                          ? 'bg-[#d4532b] text-white animate-pulse shadow-[0_0_12px_#d4532b]'
                           : isProcessingVoice
                           ? 'bg-zinc-800 text-zinc-400'
-                          : 'bg-[#00f0ff]/10 hover:bg-[#00f0ff]/20 text-[#00f0ff] border border-[#00f0ff]/50'
+                          : 'bg-[#d6c29a]/10 hover:bg-[#d6c29a]/20 text-[#d6c29a] border border-[#d6c29a]/50'
                       }`}
-                      title={isRecordingVoice ? 'Click para enviar (o Flecha abajo ↓)' : 'Hablar con Capri (Flecha abajo ↓ o clic)'}
+                      title={isRecordingVoice ? 'Click para enviar (o Flecha abajo ↓)' : 'Hablar con Tallow (Flecha abajo ↓ o clic)'}
                     >
                       {isProcessingVoice ? (
-                        <Loader2 size={13} className="animate-spin text-[#00f0ff]" />
+                        <Loader2 size={13} className="animate-spin text-[#d6c29a]" />
                       ) : isRecordingVoice ? (
                         <MicOff size={13} />
                       ) : (
@@ -2195,13 +2221,13 @@ export const CompanionView: React.FC = () => {
                         }
                       }
                     }}
-                    className="cp-cut cp-font uppercase tracking-wider px-2.5 py-0.5 bg-black/80 hover:bg-black border border-[#5ef6ff]/40 hover:border-[#5ef6ff] rounded-none text-[10px] font-bold flex items-center gap-1.5 transition-all cursor-pointer"
+                    className="cp-cut cp-font uppercase tracking-wider px-2.5 py-0.5 bg-black/80 hover:bg-black border border-[#e2d4b8]/40 hover:border-[#e2d4b8] rounded-none text-[10px] font-bold flex items-center gap-1.5 transition-all cursor-pointer"
                     title={tr('cp_statusTitle')}
                   >
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#00ff66] animate-pulse shadow-[0_0_6px_#00ff66]" />
-                    <span className="font-hud tracking-wide text-white">Capri</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#82ab54] animate-pulse shadow-[0_0_6px_#82ab54]" />
+                    <span className="font-hud tracking-wide text-white">Tallow</span>
                     <span className="text-zinc-500 font-normal">|</span>
-                    <span className="text-[#00f0ff] font-semibold">{companionStatusLabel}</span>
+                    <span className="text-[#d6c29a] font-semibold">{companionStatusLabel}</span>
                     <span className="text-[9px] text-zinc-400 font-normal opacity-70 ml-0.5">(Ctrl + {localizeLine('Click', currentLang)})</span>
                   </button>
 
@@ -2211,7 +2237,7 @@ export const CompanionView: React.FC = () => {
                     className={`cp-cut cp-font uppercase tracking-wider px-2 py-0.5 rounded-none text-[10px] font-bold flex items-center gap-1 border transition-all cursor-pointer ${
                       isVoiceMuted
                         ? 'bg-stone-950/90 border-stone-700 text-stone-500 hover:text-stone-300'
-                        : 'bg-black/80 border-[#ff5f57]/70 text-[#ff5f57] hover:text-cp-100'
+                        : 'bg-black/80 border-[#e0af67]/70 text-[#e0af67] hover:text-cp-100'
                     }`}
                     title={isVoiceMuted ? tr('cp_voiceMutedTitle') : tr('cp_voiceOnTitle')}
                   >
@@ -2222,7 +2248,7 @@ export const CompanionView: React.FC = () => {
                       </>
                     ) : (
                       <>
-                        <Volume2 size={11} className="text-[#ff003c] animate-pulse" />
+                        <Volume2 size={11} className="text-[#d4532b] animate-pulse" />
                         <span>{tr('cp_on')}</span>
                       </>
                     )}
@@ -2241,11 +2267,11 @@ export const CompanionView: React.FC = () => {
                         return next
                       })
                     }}
-                    className="cp-cut cp-font uppercase tracking-wider px-2 py-0.5 rounded-none text-[10px] font-bold flex items-center gap-1 border border-[#5ef6ff]/50 bg-black/80 text-[#5ef6ff] hover:bg-[#5ef6ff]/20 transition-all cursor-pointer "
+                    className="cp-cut cp-font uppercase tracking-wider px-2 py-0.5 rounded-none text-[10px] font-bold flex items-center gap-1 border border-[#e2d4b8]/50 bg-black/80 text-[#e2d4b8] hover:bg-[#e2d4b8]/20 transition-all cursor-pointer "
                     title="Toggle Voice: Dialogue Blip (@dialogue_blip.wav) vs Original Edge TTS"
                   >
                     <span className="text-zinc-400 font-normal">{localizeLine('Voice', currentLang).toUpperCase()}:</span>
-                    <span className="text-[#fcee0a] uppercase font-bold">{voiceType}</span>
+                    <span className="text-[#ddb23c] uppercase font-bold">{voiceType}</span>
                   </button>
 
                 </div>
@@ -2284,13 +2310,13 @@ export const CompanionView: React.FC = () => {
                   }
                 }
               }}
-              className="cp-cut cp-font uppercase tracking-wider px-2.5 py-0.5 bg-black/80 hover:bg-black border border-[#5ef6ff]/40 hover:border-[#5ef6ff] rounded-none text-[10px] font-bold flex items-center gap-1.5 transition-all cursor-pointer"
+              className="cp-cut cp-font uppercase tracking-wider px-2.5 py-0.5 bg-black/80 hover:bg-black border border-[#e2d4b8]/40 hover:border-[#e2d4b8] rounded-none text-[10px] font-bold flex items-center gap-1.5 transition-all cursor-pointer"
               title={tr('cp_statusTitle')}
             >
-              <span className="w-1.5 h-1.5 rounded-full bg-[#00ff66] animate-pulse shadow-[0_0_6px_#00ff66]" />
-              <span className="font-hud tracking-wide text-white">Capri</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-[#82ab54] animate-pulse shadow-[0_0_6px_#82ab54]" />
+              <span className="font-hud tracking-wide text-white">Tallow</span>
               <span className="text-zinc-500 font-normal">|</span>
-              <span className="text-[#00f0ff] font-semibold">{companionStatusLabel}</span>
+              <span className="text-[#d6c29a] font-semibold">{companionStatusLabel}</span>
               <span className="text-[9px] text-zinc-400 font-normal opacity-70 ml-0.5">(Ctrl + {localizeLine('Click', currentLang)})</span>
             </button>
 
@@ -2300,7 +2326,7 @@ export const CompanionView: React.FC = () => {
               className={`cp-cut cp-font uppercase tracking-wider px-2 py-0.5 rounded-none text-[10px] font-bold flex items-center gap-1 border transition-all cursor-pointer ${
                 isVoiceMuted
                   ? 'bg-stone-950/90 border-stone-700 text-stone-500 hover:text-stone-300'
-                  : 'bg-black/80 border-[#ff5f57]/70 text-[#ff5f57] hover:text-cp-100'
+                  : 'bg-black/80 border-[#e0af67]/70 text-[#e0af67] hover:text-cp-100'
               }`}
               title={isVoiceMuted ? tr('cp_voiceMutedTitle') : tr('cp_voiceOnTitle')}
             >
@@ -2311,7 +2337,7 @@ export const CompanionView: React.FC = () => {
                 </>
               ) : (
                 <>
-                  <Volume2 size={11} className="text-[#ff003c] animate-pulse" />
+                  <Volume2 size={11} className="text-[#d4532b] animate-pulse" />
                   <span>{tr('cp_on')}</span>
                 </>
               )}
@@ -2329,17 +2355,17 @@ export const CompanionView: React.FC = () => {
                   return next
                 })
               }}
-              className="cp-cut cp-font uppercase tracking-wider px-2 py-0.5 rounded-none text-[10px] font-bold flex items-center gap-1 border border-[#5ef6ff]/50 bg-black/80 text-[#5ef6ff] hover:bg-[#5ef6ff]/20 transition-all cursor-pointer "
+              className="cp-cut cp-font uppercase tracking-wider px-2 py-0.5 rounded-none text-[10px] font-bold flex items-center gap-1 border border-[#e2d4b8]/50 bg-black/80 text-[#e2d4b8] hover:bg-[#e2d4b8]/20 transition-all cursor-pointer "
               title="Toggle Voice: Dialogue Blip (@dialogue_blip.wav) vs Original Edge TTS"
             >
               <span className="text-zinc-400 font-normal">{localizeLine('Voice', currentLang).toUpperCase()}:</span>
-              <span className="text-[#fcee0a] uppercase font-bold">{voiceType}</span>
+              <span className="text-[#ddb23c] uppercase font-bold">{voiceType}</span>
             </button>
 
           </div>
         )}
 
-        {/* Capri Roaming Freely Anchored directly below the speech bubble */}
+        {/* Tallow Roaming Freely Anchored directly below the speech bubble */}
         <div
           onMouseDown={handleCapriMouseDown}
           onContextMenu={handleCapriContextMenu}
@@ -2355,7 +2381,7 @@ export const CompanionView: React.FC = () => {
                 e.stopPropagation()
                 toggleAlwaysListeningRef.current()
               }}
-              className="cp-cut cp-font uppercase tracking-wider absolute top-1 right-3 z-30 flex items-center gap-1 px-2 py-0.5 bg-black/85 border border-cyan-300/70 text-cyan-300 text-[11px] font-bold cursor-pointer hover:bg-[#1a0d0e]"
+              className="cp-cut cp-font uppercase tracking-wider absolute top-1 right-3 z-30 flex items-center gap-1 px-2 py-0.5 bg-black/85 border border-cyan-300/70 text-cyan-300 text-[11px] font-bold cursor-pointer hover:bg-[#161411]"
               title={tr('cp_listeningTitle')}
             >
               <span className="relative flex w-1.5 h-1.5">
@@ -2374,21 +2400,21 @@ export const CompanionView: React.FC = () => {
                 <img
                   src={patPatGif}
                   alt="pat-pat"
-                  className="w-28 h-28 object-contain filter drop-shadow(0 0 16px rgba(0,240,255,0.9)) pointer-events-none"
+                  className="w-28 h-28 object-contain filter drop-shadow(0 0 16px rgba(214, 194, 154,0.9)) pointer-events-none"
                 />
               </div>
 
               {/* Floating cute digital hearts and cyber sparks */}
-              <div className="absolute top-2 left-6 z-40 pointer-events-none select-none text-pink-400 font-mono text-sm animate-pulse drop-shadow-[0_0_8px_#ff007f]">
+              <div className="absolute top-2 left-6 z-40 pointer-events-none select-none text-pink-400 font-mono text-sm animate-pulse drop-shadow-[0_0_8px_#d4902b]">
                 ♥
               </div>
-              <div className="absolute top-4 right-6 z-40 pointer-events-none select-none text-cyan-400 font-mono text-xs animate-ping drop-shadow-[0_0_8px_#00f0ff]">
+              <div className="absolute top-4 right-6 z-40 pointer-events-none select-none text-cyan-400 font-mono text-xs animate-ping drop-shadow-[0_0_8px_#d6c29a]">
                 ✦
               </div>
             </>
           )}
 
-          {/* Capri Avatar with rhythmic headpat squish & wobble when petted */}
+          {/* Tallow Avatar with rhythmic headpat squish & wobble when petted */}
           <div
             className={`w-full h-full flex items-end justify-center overflow-visible ${
               isPetting ? 'animate-capri-pet' : ''
@@ -2428,7 +2454,7 @@ export const CompanionView: React.FC = () => {
               setIsContextMenuOpen(false)
               setIsVoiceSettingsOpen(true)
             }}
-            className="flex items-center gap-2 px-2.5 py-1.5 rounded-none hover:bg-[#2a1213] text-cp-500 hover:text-white transition-colors text-left cursor-pointer"
+            className="flex items-center gap-2 px-2.5 py-1.5 rounded-none hover:bg-[#231e19] text-cp-500 hover:text-white transition-colors text-left cursor-pointer"
           >
             <Sliders size={13} className="text-cp-500 shrink-0" />
             <div className="flex flex-col">
@@ -2442,7 +2468,7 @@ export const CompanionView: React.FC = () => {
               setIsContextMenuOpen(false)
               if (window.api?.deck) await window.api.deck.show()
             }}
-            className="flex items-center gap-2 px-2.5 py-1.5 rounded-none hover:bg-[#2a1213] text-cp-500 hover:text-white transition-colors text-left cursor-pointer"
+            className="flex items-center gap-2 px-2.5 py-1.5 rounded-none hover:bg-[#231e19] text-cp-500 hover:text-white transition-colors text-left cursor-pointer"
           >
             <Code2 size={13} className="text-cp-500 shrink-0" />
             <div className="flex flex-col">
@@ -2456,7 +2482,7 @@ export const CompanionView: React.FC = () => {
               setIsContextMenuOpen(false)
               toggleVoiceMute()
             }}
-            className="flex items-center gap-2 px-2.5 py-1.5 rounded-none hover:bg-[#2a1213] text-cp-500 hover:text-white transition-colors text-left cursor-pointer"
+            className="flex items-center gap-2 px-2.5 py-1.5 rounded-none hover:bg-[#231e19] text-cp-500 hover:text-white transition-colors text-left cursor-pointer"
           >
             {isVoiceMuted ? (
               <>

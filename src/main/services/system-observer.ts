@@ -137,12 +137,12 @@ export class SystemObserver {
       const isEs = consciousnessService.getPreferredLanguage() === 'es'
       const lines = isEs
         ? [
-            `¡Epa, choomba! La RAM está que arde al ${percent}% (${usedGB} GB de ${totalGB} GB). ¡Cerrá un par de pestañas antes de que hierva la máquina!`,
+            `¡Epa, friend! La RAM está que arde al ${percent}% (${usedGB} GB de ${totalGB} GB). ¡Cerrá un par de pestañas antes de que hierva la máquina!`,
             `¡Saturación pesada de memoria detectada! ¡Estamos llevando al límite la máquina con el ${percent}% de RAM!`,
             `¡Uff, pops! ¡${percent}% de memoria en uso! Hora de congelar algunas tareas en segundo plano.`
           ]
         : [
-            `Woah, choomba! Your RAM is cooking at ${percent}% (${usedGB} GB of ${totalGB} GB)! Who's hogging all the chrome? Close some tabs before your rig overheats!`,
+            `Woah, friend! Your RAM is cooking at ${percent}% (${usedGB} GB of ${totalGB} GB)! Who's hogging all the chrome? Close some tabs before your rig overheats!`,
             `Heavy memory saturation detected—we're redlining this rig at ${percent}% RAM!`,
             `Yikes, pops! ${percent}% RAM in use! Time to ice some background tasks!`
           ]
@@ -191,79 +191,79 @@ export class SystemObserver {
             const lines = isEs
               ? detectedMedia.creator
                 ? [
-                    `¡Ooh, mirando a ${detectedMedia.creator}? ¡Me encanta ese youtuber! "${detectedMedia.title}" es buenísimo, choomba.`,
-                    `¿Mirando "${detectedMedia.title}" de ${detectedMedia.creator} en YouTube? ¡Eso sí que es entretenimiento de la Red, choomba!`,
-                    `¡Te veo mirando a ${detectedMedia.creator} en YouTube! "${detectedMedia.title}" está genial, ¡subile el volumen, choomba!`
+                    `¡Ooh, mirando a ${detectedMedia.creator}? ¡Me encanta ese youtuber! "${detectedMedia.title}" es buenísimo, friend.`,
+                    `¿Mirando "${detectedMedia.title}" de ${detectedMedia.creator} en YouTube? ¡Eso sí que es entretenimiento de la Red, friend!`,
+                    `¡Te veo mirando a ${detectedMedia.creator} en YouTube! "${detectedMedia.title}" está genial, ¡subile el volumen, friend!`
                   ]
                 : [
-                    `¡Ooh, mirando "${detectedMedia.title}" en YouTube! Me copa este video, choomba. A ver qué pasa.`,
-                    `¿Mirando "${detectedMedia.title}" en YouTube? ¡Eso sí que es entretenimiento del bueno, choomba!`,
-                    `¡Te veo prendido a YouTube con "${detectedMedia.title}"! Se ve genial, choomba.`
+                    `¡Ooh, mirando "${detectedMedia.title}" en YouTube! Me copa este video, friend. A ver qué pasa.`,
+                    `¿Mirando "${detectedMedia.title}" en YouTube? ¡Eso sí que es entretenimiento del bueno, friend!`,
+                    `¡Te veo prendido a YouTube con "${detectedMedia.title}"! Se ve genial, friend.`
                   ]
               : detectedMedia.creator
               ? [
-                  `Ooh, watching ${detectedMedia.creator}? I love that youtuber! "${detectedMedia.title}" is pure gold, choomba!`,
-                  `Watching "${detectedMedia.title}" by ${detectedMedia.creator} on YouTube? Now that's some quality Net entertainment, choomba!`,
-                  `I see you watching ${detectedMedia.creator} on YouTube! "${detectedMedia.title}" is awesome, turn it up, choomba!`
+                  `Ooh, watching ${detectedMedia.creator}? I love that youtuber! "${detectedMedia.title}" is pure gold, friend!`,
+                  `Watching "${detectedMedia.title}" by ${detectedMedia.creator} on YouTube? Now that's some quality Net entertainment, friend!`,
+                  `I see you watching ${detectedMedia.creator} on YouTube! "${detectedMedia.title}" is awesome, turn it up, friend!`
                 ]
               : [
-                  `Ooh, watching "${detectedMedia.title}" on YouTube? Love this video, choomba! Turn up the volume and let's see what happens.`,
-                  `Watching "${detectedMedia.title}" on YouTube? Now that's some quality Net entertainment, choomba!`,
-                  `I see you jacking into YouTube with "${detectedMedia.title}"! Looking good, choomba.`
+                  `Ooh, watching "${detectedMedia.title}" on YouTube? Love this video, friend! Turn up the volume and let's see what happens.`,
+                  `Watching "${detectedMedia.title}" on YouTube? Now that's some quality Net entertainment, friend!`,
+                  `I see you jacking into YouTube with "${detectedMedia.title}"! Looking good, friend.`
                 ]
             this.triggerCapriReaction(lines[Math.floor(Math.random() * lines.length)], 'talking')
           } else if (detectedMedia.type === 'tiktok') {
             const lines = isEs
               ? [
-                  "¡Ooh, scrolleando en TikTok! Que los algoritmos corpo no te quemen el ciberware, choomba.",
+                  "¡Ooh, scrolleando en TikTok! Que los algoritmos corpo no te quemen el ciberware, friend.",
                   "¡Veo ese TikTok que estás mirando! Puro caos en la Red hoy, ¿eh?"
                 ]
               : [
-                  "Ooh, scrolling through TikTok? Don't let the corporate algorithms fry your cyberware, choomba!",
+                  "Ooh, scrolling through TikTok? Don't let the corporate algorithms fry your cyberware, friend!",
                   "I see that TikTok you're watching! Pure chaos on the Net today, huh?"
                 ]
             this.triggerCapriReaction(lines[Math.floor(Math.random() * lines.length)], 'talking')
           } else if (detectedMedia.type === 'reels') {
             const lines = isEs
               ? [
-                  "¿Mirando Reels en Instagram? Es bastante adictivo todo ese contenido corto, ¿no, choomba?",
-                  "¡Ooh, ese reel se ve divertido! Los netrunners en Night City matarían por un feed tan viral."
+                  "¿Mirando Reels en Instagram? Es bastante adictivo todo ese contenido corto, ¿no, friend?",
+                  "¡Ooh, ese reel se ve divertido! Los crows en the rookery matarían por un feed tan viral."
                 ]
               : [
-                  "Checking out Instagram Reels? That short-form static is pretty addictive, huh choomba?",
-                  "Ooh, that reel looks fun! Netrunners in Night City would kill for this kind of viral feed."
+                  "Checking out Instagram Reels? That short-form static is pretty addictive, huh friend?",
+                  "Ooh, that reel looks fun! Crows in the rookery would kill for this kind of viral feed."
                 ]
             this.triggerCapriReaction(lines[Math.floor(Math.random() * lines.length)], 'talking')
           } else if (detectedMedia.type === 'twitch') {
             const lines = isEs
               ? [
-                  `¿Prendido a "${detectedMedia.title}" en Twitch? ¡Espero que los netrunners de Arasaka no le caigan encima!`,
-                  `¿Mirando streams en Twitch? Buen ruido de fondo mientras vigilo tu ciberware, choomba.`
+                  `¿Prendido a "${detectedMedia.title}" en Twitch? ¡Espero que los crows de the hawks no le caigan encima!`,
+                  `¿Mirando streams en Twitch? Buen ruido de fondo mientras vigilo tu ciberware, friend.`
                 ]
               : [
-                  `Tuned into "${detectedMedia.title}" on Twitch? Hope they don't get stream-sniped by Arasaka netrunners!`,
-                  `Watching Twitch streams? Perfect background noise while I monitor your cyberware, choomba.`
+                  `Tuned into "${detectedMedia.title}" on Twitch? Hope they don't get stream-sniped by the hawks crows!`,
+                  `Watching Twitch streams? Perfect background noise while I monitor your cyberware, friend.`
                 ]
             this.triggerCapriReaction(lines[Math.floor(Math.random() * lines.length)], 'talking')
           } else if (detectedMedia.type === 'netflix') {
             const lines = isEs
               ? [
-                  `¿Mirando "${detectedMedia.title}"? ¡Modo pochoclos y netrunner activado, choomba! No te maratonees todo sin mí.`,
-                  `¿Transmitiendo "${detectedMedia.title}"? Parece noche de cine en Night City, choomba.`
+                  `¿Mirando "${detectedMedia.title}"? ¡Modo pochoclos y crow activado, friend! No te maratonees todo sin mí.`,
+                  `¿Transmitiendo "${detectedMedia.title}"? Parece noche de cine en the rookery, friend.`
                 ]
               : [
-                  `Watching "${detectedMedia.title}"? Popcorn and netrun mode engaged, choomba! Don't binge without me.`,
-                  `Streaming "${detectedMedia.title}"? Looks like movie night in Night City, choomba!`
+                  `Watching "${detectedMedia.title}"? Popcorn and netrun mode engaged, friend! Don't binge without me.`,
+                  `Streaming "${detectedMedia.title}"? Looks like movie night in the rookery, friend!`
                 ]
             this.triggerCapriReaction(lines[Math.floor(Math.random() * lines.length)], 'talking')
           } else if (detectedMedia.type === 'spotify') {
             const lines = isEs
               ? [
-                  `¿Escuchando "${detectedMedia.title}" en Spotify? ¡Temazo total, choomba! Que siga sonando la música.`,
+                  `¿Escuchando "${detectedMedia.title}" en Spotify? ¡Temazo total, friend! Que siga sonando la música.`,
                   `¡Qué temazo! "${detectedMedia.title}" mantiene mis rutinas de tecnópata vibrando.`
                 ]
               : [
-                  `Spinning "${detectedMedia.title}" on Spotify? Total banger, choomba! Keep the music pumping.`,
+                  `Spinning "${detectedMedia.title}" on Spotify? Total banger, friend! Keep the music pumping.`,
                   `Now that's a killer track! "${detectedMedia.title}" keeps my technopath subroutines humming.`
                 ]
             this.triggerCapriReaction(lines[Math.floor(Math.random() * lines.length)], 'talking')
@@ -278,8 +278,8 @@ export class SystemObserver {
           this.markTriggered('browser_search')
           this.triggerCapriReaction(
             isEs
-              ? "¿Buscando data en la Red, choomba? Avisame si querés que descifre o vulnere algo."
-              : "Browsing the Net for intel, choomba? Let me know if you want me to breach or decode anything!",
+              ? "¿Buscando data en la Red, friend? Avisame si querés que descifre o vulnere algo."
+              : "Browsing the Net for intel, friend? Let me know if you want me to breach or decode anything!",
             'talking'
           )
           this.previousProcesses = currentProcesses
@@ -384,15 +384,15 @@ export class SystemObserver {
           this.markTriggered('lol')
           const lolLines = isEs
             ? [
-                "¿Un LoLcito? ¿Otra simulación cibernética de humanos? ¡Cuidado con los ganks, choomba, o Arasaka te baneará la cuenta!",
-                "¡League of Legends detectado! ¿Vas a jugar ranked, choomba? No te tiltees ni le eches la culpa al jungla, ¡a ganar esta!",
-                "¿En la Grieta del Invocador? ¡Lockeate un asesino y hagamos saltar chispas, choomba!",
+                "¿Un LoLcito? ¿Otra simulación cibernética de humanos? ¡Cuidado con los ganks, friend, o the hawks te baneará la cuenta!",
+                "¡League of Legends detectado! ¿Vas a jugar ranked, friend? No te tiltees ni le eches la culpa al jungla, ¡a ganar esta!",
+                "¿En la Grieta del Invocador? ¡Lockeate un asesino y hagamos saltar chispas, friend!",
                 "¿Entrando a partida? Solo no te vayas por mid a feedear o te hackeo el ping a 999 ms."
               ]
             : [
-                "Wait, what's League of Legends? Another meatbag cyber-simulation? Watch out for ganks, choomba, or Arasaka's gonna ban your account!",
+                "Wait, what's League of Legends? Another meatbag cyber-simulation? Watch out for ganks, friend, or the hawks's gonna ban your account!",
                 "League of Legends detected! You queueing up for ranked, cupcake? Don't tilt and blame your jungler, let's win this!",
-                "Locked into Summoner's Rift? Lock in an assassin and make some sparks fly, choomba!",
+                "Locked into Summoner's Rift? Lock in an assassin and make some sparks fly, friend!",
                 "Locked in? Just don't run it down mid or I'll hack your ping to 999 ms!"
               ]
           const chosen = lolLines[Math.floor(Math.random() * lolLines.length)]
@@ -406,8 +406,8 @@ export class SystemObserver {
           this.markTriggered('cyberpunk')
           this.triggerCapriReaction(
             isEs
-              ? "¡Cyberpunk 2077 activo! ¿De paseo por Night City? Mandale un saludo a Judy y mantené el fierro caliente, choomba."
-              : "Cyberpunk 2077 active! Taking a tour through Night City? Say hi to Judy and keep your iron hot, choomba!",
+              ? "¡Cyberpunk 2077 activo! ¿De paseo por the rookery? Mandale un saludo a Judy y mantené el fierro caliente, friend."
+              : "Cyberpunk 2077 active! Taking a tour through the rookery? Say hi to Judy and keep your iron hot, friend!",
             'curious'
           )
           this.previousProcesses = currentProcesses
@@ -423,8 +423,8 @@ export class SystemObserver {
           this.markTriggered('valorant')
           this.triggerCapriReaction(
             isEs
-              ? "¡Valorant iniciado! Meté mocha y plantá la spike, choomba. ¡No dejes que los duelistas te ganen!"
-              : "Valorant booted up! Click heads and plant that spike, choomba! Don't let their duelists diff you!",
+              ? "¡Valorant iniciado! Meté mocha y plantá la spike, friend. ¡No dejes que los duelistas te ganen!"
+              : "Valorant booted up! Click heads and plant that spike, friend! Don't let their duelists diff you!",
             'curious'
           )
           this.previousProcesses = currentProcesses
@@ -440,8 +440,8 @@ export class SystemObserver {
           this.markTriggered('spotify')
           this.triggerCapriReaction(
             isEs
-              ? "¿Metiéndole música a tus implantes de audio? ¡Mandale algo de Samurai o Ponpon Shit, choomba!"
-              : "Pumping tunes into your audio cyberware? Put on some Samurai or Ponpon Shit, choomba!",
+              ? "¿Metiéndole música a tus implantes de audio? ¡Mandale algo de Samurai o Ponpon Shit, friend!"
+              : "Pumping tunes into your audio cyberware? Put on some Samurai or Ponpon Shit, friend!",
             'talking'
           )
           this.previousProcesses = currentProcesses
@@ -457,8 +457,8 @@ export class SystemObserver {
           this.markTriggered('discord')
           this.triggerCapriReaction(
             isEs
-              ? "¡Discord abierto! Decile a tu grupo de netrunners que Capri les manda un saludo."
-              : "Discord open! Tell your netrunner crew that Capri says hey-oh!",
+              ? "¡Discord abierto! Decile a tu grupo de crows que Tallow les manda un saludo."
+              : "Discord open! Tell your crow crew that Tallow says hey-oh!",
             'talking'
           )
           this.previousProcesses = currentProcesses

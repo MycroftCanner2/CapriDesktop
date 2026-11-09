@@ -1,10 +1,10 @@
 {
-  "name": "capridesktop",
-  "version": "1.0.4",
+  "name": "crow-companion",
+  "version": "1.0.0",
   "type": "module",
-  "description": "Capri, a cyberpunk desktop companion that lives on your screen: voice chat with a local LLM, game commentary (League of Legends, Cyberpunk 2077), voice macros and a coding agent.",
+  "description": "Crow Companion: Tallow, a little crow that lives on your desktop. A fork of Capri Desktop with every feature kept (chat, animations, tray, onboarding, voice) and a local Hugging Face model (digi-the-robot/Tallow) served by llama.cpp llama-server.",
   "main": "./out/main/index.js",
-  "homepage": "https://github.com/MycroftCanner2/CapriDesktop",
+  "homepage": "https://github.com/MycroftCanner2/CapriDesktop/tree/feat/crow-companion",
   "author": {
     "name": "nunezValen",
     "url": "https://github.com/nunezValen"
@@ -21,7 +21,8 @@
     "build": "electron-vite build",
     "dist:win": "electron-vite build && electron-builder --win",
     "dist:win:portable": "electron-vite build && electron-builder --win portable --x64",
-    "dist:linux": "electron-vite build && electron-builder --linux"
+    "dist:linux": "electron-vite build && electron-builder --linux",
+    "llama:win": "bash scripts/crow/build-llama-server-win.sh"
   },
   "dependencies": {
     "@codemirror/lang-css": "^6.3.1",
@@ -53,5 +54,6 @@
     "tailwindcss": "^3.4.19",
     "typescript": "^5.7.3",
     "vite": "^6.1.1"
-  }
+  },
+  "productName": "Crow Companion"
 }

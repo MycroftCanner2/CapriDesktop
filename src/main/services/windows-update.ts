@@ -1,7 +1,7 @@
 /**
  * The silent installer sometimes crashes as it starts (about 1 run in 5, inside the NSIS System
  * plugin that electron-builder ships), before touching anything. So the update runs from a small
- * script that outlives Capri: it tries again, makes sure she comes back, and if every try fails it
+ * script that outlives Tallow: it tries again, makes sure she comes back, and if every try fails it
  * reopens the version that is still installed, so an update can never leave the user without her.
  */
 
@@ -12,7 +12,7 @@ export function windowsUpdateScript(installer: string, currentApp: string, start
   return [
     // She waits for this file before closing: no file means this script never ran
     `Set-Content -Path ${quote(startedMarker)} -Value 'started'`,
-    // Capri has to be closed first: the installer would stop to wait for her
+    // Tallow has to be closed first: the installer would stop to wait for her
     'Start-Sleep -Seconds 3',
     '$installed = $false',
     `foreach ($try in 1..${tries}) {`,
@@ -34,7 +34,7 @@ function appProcessName(appPath: string): string {
 }
 
 /**
- * Starts a program that has to keep running after Capri closes. spawn's "detached" isn't enough:
+ * Starts a program that has to keep running after Tallow closes. spawn's "detached" isn't enough:
  * PowerShell started that way exits at once, reporting success, without running anything.
  * Going through "start" works and survives her.
  */

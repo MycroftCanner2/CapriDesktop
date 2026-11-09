@@ -1,4 +1,4 @@
-/** A piece of a reply that Capri says with its own look. */
+/** A piece of a reply that Tallow says with its own look. */
 
 /** 'ojos' is her single eye, 'ojos2' the video of both eyes, 'closed' the red eye */
 export type ScriptLook = 'ojos' | 'ojos2' | 'closed' | 'thinking' | 'asustada'

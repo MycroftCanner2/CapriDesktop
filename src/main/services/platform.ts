@@ -145,7 +145,7 @@ const LINUX_PROCESS_ALIASES: Record<string, string[]> = {
   notepad: ['gedit', 'gnome-text-editor', 'kate', 'kwrite', 'mousepad', 'xed', 'pluma', 'leafpad']
 }
 
-/** Pure part of killProcesses: the pids to stop. Never Capri herself or the process that started her */
+/** Pure part of killProcesses: the pids to stop. Never Tallow herself or the process that started her */
 export function pidsToKill(procs: Pick<LinuxProcess, 'pid' | 'names'>[], names: string[], ownPids: number[]): number[] {
   const wanted = new Set<string>()
   for (const raw of names) {
@@ -328,7 +328,7 @@ export function parseWmctrl(output: string): LinuxWindow[] {
   for (const line of output.split(/\r?\n/)) {
     const m = line.match(/^(0x[0-9a-f]+)\s+(-?\d+)\s+(\d+)\s+(-?\d+)\s+(-?\d+)\s+(\d+)\s+(\d+)\s+\S+\s*(.*)$/i)
     if (!m) continue
-    // Desktop -1 means sticky: panels, docks and Capri herself
+    // Desktop -1 means sticky: panels, docks and Tallow herself
     if (m[2] === '-1') continue
     windows.push({
       id: m[1],

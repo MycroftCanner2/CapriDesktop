@@ -1,4 +1,6 @@
 import type { LlmAuthMode, LlmPublicSettings, LlmSettingsUpdate } from '../main/services/llm-gateway'
+import type { TallowStatus } from '../main/tallow/tallow-service'
+import type { TallowAction, TallowLevel, TallowMood, TallowSound } from '../main/tallow/text'
 import type { XaiAuthStatus, XaiDeviceCodePrompt, XaiLoginMethod } from '../main/services/xai-oauth'
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron'
 import type { HotkeyAction, HotkeyProblem, Hotkeys } from '../shared/hotkeys'
@@ -55,6 +57,32 @@ const api = {
   window: {
     minimize: (): Promise<void> => ipcRenderer.invoke(IPC_CHANNELS.WINDOW_MINIMIZE),
     close: (): Promise<void> => ipcRenderer.invoke(IPC_CHANNELS.WINDOW_CLOSE)
+  },
+
+  // Tallow, the local crow
+  tallow: {
+    getStatus: (): Promise<TallowStatus> => ipcRenderer.invoke(IPC_CHANNELS.TALLOW_GET_STATUS),
+    start: (): Promise<TallowStatus> => ipcRenderer.invoke(IPC_CHANNELS.TALLOW_START),
+    /** Kept in memory by the main process for the download only */
+    setToken: (token: string): Promise<TallowStatus> => ipcRenderer.invoke(IPC_CHANNELS.TALLOW_SET_TOKEN, token),
+    forget: (): Promise<boolean> => ipcRenderer.invoke(IPC_CHANNELS.TALLOW_FORGET),
+    openDataFolder: (): Promise<string> => ipcRenderer.invoke(IPC_CHANNELS.TALLOW_OPEN_DATA),
+    onStatus: (callback: (status: TallowStatus) => void): (() => void) => {
+      const subscription = (_event: IpcRendererEvent, status: TallowStatus): void => callback(status)
+      ipcRenderer.on(IPC_CHANNELS.TALLOW_STATUS, subscription)
+      return (): void => {
+        ipcRenderer.removeListener(IPC_CHANNELS.TALLOW_STATUS, subscription)
+      }
+    },
+    onLine: (
+      callback: (line: { line: string; mood: TallowMood; level: TallowLevel; action: TallowAction; sound: TallowSound | null; timestamp: number }) => void
+    ): (() => void) => {
+      const subscription = (_event: IpcRendererEvent, payload: Parameters<typeof callback>[0]): void => callback(payload)
+      ipcRenderer.on(IPC_CHANNELS.TALLOW_LINE, subscription)
+      return (): void => {
+        ipcRenderer.removeListener(IPC_CHANNELS.TALLOW_LINE, subscription)
+      }
+    }
   },
 
   // Roaming & Desktop Walking

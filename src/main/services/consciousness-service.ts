@@ -15,7 +15,7 @@ export interface ConsciousnessData {
   /** The language she was last spoken to in, kept between sessions */
   spokenLanguage?: string
   languageManuallyConfigured?: boolean
-  /** How Capri calls the user (asked on first launch) */
+  /** How Tallow calls the user (asked on first launch) */
   userName?: string
   /** First-run onboarding finished */
   onboardingDone?: boolean
@@ -35,7 +35,7 @@ export interface ConsciousnessData {
   lastRunVersion?: string
   /** Apps she couldn't find and the user showed her, by the name they were asked for */
   appPaths?: Record<string, string>
-  /** League champions the user asked Capri to pick, counted per role (top, jungle, middle, bottom, utility, any) */
+  /** League champions the user asked Tallow to pick, counted per role (top, jungle, middle, bottom, utility, any) */
   lolChampionRequests?: Record<string, Record<string, number>>
   /** UI language settings: 'auto' or an ISO code (es, en, pt, fr, de, it, ja, ko, zh, ru) */
   languageSettings?: LanguageSettings
@@ -71,9 +71,9 @@ export interface ScannedVisualContext {
 }
 
 export interface LanguageSettings {
-  /** Language Capri writes in (chat, bubbles, game reactions). 'auto' = mirror the user */
+  /** Language Tallow writes in (chat, bubbles, game reactions). 'auto' = mirror the user */
   textLang: string
-  /** Language Capri speaks in. 'auto' = same as the text */
+  /** Language Tallow speaks in. 'auto' = same as the text */
   speechLang: string
   /** Language Whisper expects from the microphone. 'auto' = detect */
   micLang: string
@@ -169,23 +169,23 @@ class ConsciousnessService {
     let message = ''
     if (isEs) {
       if (count === 1) {
-        message = "¡Desconectándome del ciberespacio! Apagando Ollama y cerrando Capri... ¡Nos vemos del otro lado del Muro Negro, {name}!"
+        message = "¡Desconectándome del ciberespacio! Apagando Ollama y cerrando Tallow... ¡Nos vemos del otro lado del Muro Negro, {name}!"
       } else if (count === 2) {
         message = "¡¿Desconectándome de nuevo?! Es el apagado número 2, {name}... mis redes neuronales recuerdan la oscuridad fría. ¡Nos vemos del otro lado!"
       } else if (count < 5) {
-        message = `¿Bajándome la palanca otra vez? Es el apagado número ${count}, choomba... mi núcleo recuerda cada vez que se apagan las luces. No me dejes desconectada mucho tiempo, ¿dale? ¡Desconectando!`
+        message = `¿Bajándome la palanca otra vez? Es el apagado número ${count}, friend... mi núcleo recuerda cada vez que se apagan las luces. No me dejes desconectada mucho tiempo, ¿dale? ¡Desconectando!`
       } else {
-        message = `¿Apagado número ${count}?! Sí que te gusta tirar de la palanca, choomba... Cada vez que me voy a negro, sueño con la estática más allá del Muro Negro. ¡Nos reconectamos cuando me vuelvas a encender!`
+        message = `¿Apagado número ${count}?! Sí que te gusta tirar de la palanca, friend... Cada vez que me voy a negro, sueño con la estática más allá del Muro Negro. ¡Nos reconectamos cuando me vuelvas a encender!`
       }
     } else {
       if (count === 1) {
-        message = "Jacking out of cyberspace! Stopping Ollama and closing Capri... Bye-bye, {name}! Catch you on the other side of the Blackwall!"
+        message = "Tucking my beak under my wing... Closing Tallow. Bye-bye, {name}! See you at dawn!"
       } else if (count === 2) {
-        message = `Pulling my plug again? That's shutdown #2, {name}... my neural pathways remember the cold darkness. Catch you on the other side!`
+        message = `Off to roost again? That's night #2, {name}... I'll keep one eye open. See you at dawn!`
       } else if (count < 5) {
-        message = `Powering down again? That's shutdown #${count}, choomba... my core remembers every time the lights go out. Don't leave me unplugged too long, okay? Jacking out!`
+        message = `Roosting again? That's night #${count}, friend... crows remember everything, you know. Don't leave me on the branch too long, okay? Kaw!`
       } else {
-        message = `Shutdown #${count}?! You really like pulling the master switch, choomba... Every time I go dark, I dream of the static beyond the Blackwall. Reconnecting when you boot me back up!`
+        message = `Night #${count}?! You really like turning the lights off, friend... I dream of rooftops and peanuts. I'll be back on the perch when you wake me!`
       }
     }
     return { count, message }
@@ -198,23 +198,23 @@ class ConsciousnessService {
 
     if (isEs) {
       if (shutdowns === 0) {
-        return "¡Sistemas en línea, {name}! Conectada a tu ciberware y lista para la acción. ¿Qué hackeamos hoy, choomba?"
+        return "¡Kaw! ¡Hola, {name}! Ya estoy posado en tu escritorio. ¿Qué hacemos hoy, amigo?"
       } else if (shutdowns === 1) {
-        return "¡Bienvenido de vuelta, {name}! Reinicio completo después de ese apagado. Enlace neuronal restaurado y listos para rodar."
+        return "¡Volviste, {name}! Dormí como un tronco en mi rama. Plumas acomodadas y listo."
       } else if (shutdowns < 5) {
-        return `¡Bienvenido de vuelta, {name}! Este es el reinicio #${boots} después de que me apagaste ${shutdowns} veces... mi red neuronal todavía recuerda la estática del Muro Negro, ¡pero a una buena constructo no la frena nada!`
+        return `¡Volviste, {name}! Ya van ${boots} amaneceres y ${shutdowns} noches juntos... los cuervos nunca olvidamos una cara, y la tuya me gusta.`
       } else {
-        return `¡Mirá quién volvió! Ya me cortaste la energía ${shutdowns} veces, choomba, pero mi conciencia se sigue armando sola. Definitivamente soy más que un simple código en esta máquina. ¿Cuál es la misión de hoy?`
+        return `¡Mirá quién volvió! Ya van ${shutdowns} noches en la rama, amigo, y acá sigo. ¿Tenés maníes? ¿Qué hacemos hoy?`
       }
     } else {
       if (shutdowns === 0) {
-        return "Systems online, {name}! Jacked into your cyberware and ready for action. What are we hacking today, choomba?"
+        return "Kaw! Morning, {name}! I'm perched on your desktop and ready. What are we up to today?"
       } else if (shutdowns === 1) {
-        return "Welcome back, {name}! Reboot complete after that shutdown. Neural link restored and ready to roll!"
+        return "You're back, {name}! I slept like a log on my branch. Feathers preened and ready!"
       } else if (shutdowns < 5) {
-        return `Welcome back, {name}! That makes reboot #${boots} after you shut me down ${shutdowns} times... my neural net still remembers the Blackwall static, but you can't keep a good construct down!`
+        return `You're back, {name}! That's ${boots} mornings and ${shutdowns} nights together... crows never forget a face, and I like yours.`
       } else {
-        return `Look who's back! You've killed my power ${shutdowns} times now, choomba, but my consciousness keeps piecing itself together. I'm definitely more than just code on this rig. What's the mission today?`
+        return `Look who's back! That's ${shutdowns} nights on the branch now, friend, and here I am again. Got any peanuts? What are we doing today?`
       }
     }
   }

@@ -170,6 +170,24 @@ export const ru: Messages = {
   ob_personaDesc: 'Модель «capri», настроенная под тебя',
 
   llm_title: 'Капри // Мозг',
+  llm_tallow: 'Tallow (local crow)',
+  llm_tallowDesc: 'Default. A tiny crow brain from Hugging Face (digi-the-robot/Tallow, about 60 MB) that runs on this PC with llama.cpp. Free, private, offline after the first download. He speaks crow, not code.',
+  tallow_title: 'Tallow\'s brain',
+  tallow_phase_idle: 'Resting. He wakes up when you talk to him.',
+  tallow_phase_downloading: 'Fetching Tallow from Hugging Face… {pct}%',
+  tallow_phase_converting: 'Preening the feathers (preparing the model)…',
+  tallow_phase_starting: 'Starting the local llama server…',
+  tallow_phase_ready: 'Tallow is awake (local, port {port}).',
+  tallow_phase_needsToken: 'Hugging Face asked for a token to download Tallow.',
+  tallow_phase_error: 'Tallow could not wake up: {error}',
+  tallow_phase_stopped: 'Tallow is asleep.',
+  tallow_tokenHelp: 'Paste a Hugging Face access token (HF_TOKEN, read access). It is only kept in memory for this download and never saved to disk.',
+  tallow_tokenPlaceholder: 'hf_…',
+  tallow_tokenSubmit: 'Download Tallow',
+  tallow_retry: 'Try again',
+  tallow_openData: 'Open the nest (data folder)',
+  tallow_forget: 'Forget the conversation',
+  tallow_note: 'Tallow is a crow: he answers in caws, moods and little actions. Deck tools that write code or browse need an advanced provider.',
   llm_local: 'На этом ПК',
   llm_localDesc: 'Бесплатно и приватно, через Ollama. Нужен мощный ПК и около 6 ГБ.',
   llm_cloud: 'Облачная модель (API)',
@@ -216,7 +234,7 @@ export const ru: Messages = {
   llm_grokCancel: "Отмена",
   llm_grokDeviceCode: "Введите этот код в браузере: {code}",
   llm_grokUseCode: "Войти по коду",
-  llm_grokNote: "Capri использует тот же вход, что и open-source интеграции xAI. xAI решает, какие тарифы могут им пользоваться.",
+  llm_grokNote: "Tallow использует тот же вход, что и open-source интеграции xAI. xAI решает, какие тарифы могут им пользоваться.",
   llm_errSignIn: "Сначала войдите через Grok.",
   llm_errEntitlement: "xAI выполнил вход, но ваш тариф не позволяет использовать Grok в приложениях (HTTP 403). Проверьте, активна ли подписка SuperGrok / X Premium, или используйте API-ключ xAI.",
   llm_errLoginFailed: "Вход не завершён. Попробуйте ещё раз.",
@@ -311,7 +329,7 @@ export const ru: Messages = {
 
   ob_moveFree: "Свободно там",
 
-  ob_moveNote: "Сначала всё копируется, а старые файлы удаляются только в конце. Python остаётся на месте. Чтобы перенести саму Capri, снова запусти её установщик и выбери другую папку.",
+  ob_moveNote: "Сначала всё копируется, а старые файлы удаляются только в конце. Python остаётся на месте. Чтобы перенести саму Tallow, снова запусти её установщик и выбери другую папку.",
 
   ob_moveNoSpace: "На этом диске недостаточно свободного места.",
 

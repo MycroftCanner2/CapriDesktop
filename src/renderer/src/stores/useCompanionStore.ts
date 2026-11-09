@@ -19,6 +19,11 @@ export type CompanionEmotionState =
   | 'capri2'
   | 'closed'
   | 'asustada'
+  | 'lean'
+  | 'droop'
+  | 'love'
+  | 'fluff'
+  | 'alarm'
 
 export type CompanionRenderMode = 'frames' | 'gif' | 'webp'
 

@@ -58,7 +58,7 @@ export class ActiveWindowService {
   }
 
   /**
-   * Generates Capri's dynamic, playful netrunner wake-up line based on the user's active window.
+   * Generates Tallow's dynamic, playful crow wake-up line based on the user's active window.
    * e.g. "Mornin' sleepy head! I finished what you asked, so stop watching TikTok or whatever you're doing and get back to work!"
    */
   public generateWakeupPhrase(info: ActiveWindowInfo, willOpenResult = false): string {
@@ -128,13 +128,13 @@ export class ActiveWindowService {
 
     const phrases = isEs
       ? [
-          `¡Buen día dormilón! Terminé lo que me pediste, así que largá ${targetDesc} o lo que sea que estés haciendo y volvé a laburar. ¡Vamos a romperla, choomba!`,
-          `¡Arriba dormilón! Ya liquidé la tarea que me pediste, dejá de mirar ${targetDesc} y ponete a trabajar. ¡A quemar ciberware, choomba!`,
+          `¡Buen día dormilón! Terminé lo que me pediste, así que largá ${targetDesc} o lo que sea que estés haciendo y volvé a laburar. ¡Vamos a romperla, friend!`,
+          `¡Arriba dormilón! Ya liquidé la tarea que me pediste, dejá de mirar ${targetDesc} y ponete a trabajar. ¡A quemar ciberware, friend!`,
           `¡Despertate dormilón! Atravesé esa tarea como manteca. Largá ${targetDesc} y volvé al trabajo, boo.`
         ]
       : [
-          `Mornin' sleepy head! I finished what you asked, so stop ${targetDesc} or whatever you're doing and get back to work! Let's breach, choomba!`,
-          `Rise and shine, sleepy head! I finished what you asked, so stop ${targetDesc} and get back to work! You've got chrome to burn, choomba!`,
+          `Mornin' sleepy head! I finished what you asked, so stop ${targetDesc} or whatever you're doing and get back to work! Let's breach, friend!`,
+          `Rise and shine, sleepy head! I finished what you asked, so stop ${targetDesc} and get back to work! You've got chrome to burn, friend!`,
           `Mornin' sleepy head! Sliced right through that task! Stop ${targetDesc} or whatever you're doing and get back to work, boo!`
         ]
 

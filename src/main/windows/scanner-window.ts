@@ -23,7 +23,7 @@ export function createScannerWindow(): BrowserWindow {
   const iconPath = assetPath('icon.png')
 
   const scannerWindow = new BrowserWindow({
-    title: 'Capri // Neural Scanner Frame',
+    title: 'Tallow // Scanner Frame',
     icon: iconPath,
     width,
     height,

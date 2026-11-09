@@ -15,7 +15,7 @@ export function createCompanionWindow(): BrowserWindow {
   const iconPath = assetPath('icon.png')
 
   const companionWindow = new BrowserWindow({
-    title: 'Capricorn // Capri Desktop',
+    title: 'Crow Companion // Tallow',
     icon: iconPath,
     width,
     height,

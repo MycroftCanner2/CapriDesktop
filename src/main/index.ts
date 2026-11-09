@@ -13,6 +13,9 @@ import { proactiveDialogueService } from './services/proactive-dialogue-service'
 import { gamePresenceService } from './services/game-presence-service'
 import { updateService } from './services/update-service'
 import { legacyUserDataDir } from './services/legacy-data'
+import { tallowService } from './tallow/tallow-service'
+import { isTallowMode } from './services/llm-gateway'
+import { PORTABLE_DATA_DIR, portableRoot } from './services/portable'
 import fs from 'fs'
 import path from 'path'
 
@@ -34,15 +37,16 @@ process.on('unhandledRejection', (reason) => {
 })
 
 // Set app name
-app.setName('Capri Desktop')
+app.setName('Crow Companion')
 
-// Portable build (CapriDesktop-Portable-x.y.z.exe): settings, memories and the Grok sign-in live in a
-// "CapriDesktop-Data" folder next to the exe, so the whole thing travels on a USB stick.
-// CAPRI_PORTABLE_DATA=0 keeps them in %APPDATA% instead. The sign-in and API keys are encrypted for
-// this Windows user, so on another PC Capri just asks to sign in again.
+// Portable build (CrowCompanion-Portable-x.y.z.exe, or the unzipped CrowCompanion folder): settings,
+// memories and Tallow's model live in a "CrowCompanion-Data" folder next to the exe, so the whole
+// thing travels on a USB stick. CROW_PORTABLE_DATA=0 keeps them in %APPDATA% instead. Sign-ins and API
+// keys are encrypted for this Windows user, so on another PC they have to be entered again.
 let portableData = false
-if (!app.commandLine.hasSwitch('user-data-dir') && process.env.PORTABLE_EXECUTABLE_DIR && process.env.CAPRI_PORTABLE_DATA !== '0') {
-  const dir = path.join(process.env.PORTABLE_EXECUTABLE_DIR, 'CapriDesktop-Data')
+const portableDir = portableRoot()
+if (!app.commandLine.hasSwitch('user-data-dir') && portableDir && process.env.CROW_PORTABLE_DATA !== '0') {
+  const dir = path.join(portableDir, PORTABLE_DATA_DIR)
   try {
     fs.mkdirSync(dir, { recursive: true })
     fs.accessSync(dir, fs.constants.W_OK)
@@ -105,7 +109,7 @@ if (!gotTheLock) {
     // The game only loads its mods when it opens, so the mod has to be there before that
     cyberpunkAdapter.installCetMod()
 
-    // First run after an update: Capri reads the patch scripts (scripts-capri/) once she's on screen
+    // First run after an update: Tallow reads the patch scripts (scripts-capri/) once she's on screen
     setTimeout(() => {
       updateService.announcePatchNotesIfUpdated().catch((err) => console.warn('[UpdateService] patch notes failed:', err))
     }, 9000)
@@ -122,6 +126,12 @@ if (!gotTheLock) {
     try {
       voiceService.ensureWorker()
     } catch {}
+
+    // Tallow, the local crow: on first open this clones the model from Hugging Face into the data
+    // folder, then starts llama-server on 127.0.0.1. Progress shows next to him.
+    if (isTallowMode()) {
+      setTimeout(() => tallowService.ensureStarted().catch((err) => console.warn('[Tallow] start failed:', err)), 1500)
+    }
 
     // Auto-start Ollama in background if installed and not yet running
     ollamaService.ensureRunning().catch((err) => {
@@ -142,6 +152,7 @@ if (!gotTheLock) {
     gameEventBus.stop()
     systemObserver.stop()
     ollamaService.stop()
+    tallowService.stop()
     if (process.platform !== 'darwin') {
       app.quit()
     }
@@ -155,5 +166,6 @@ if (!gotTheLock) {
     gameEventBus.stop()
     systemObserver.stop()
     ollamaService.stop()
+    tallowService.stop()
   })
 }

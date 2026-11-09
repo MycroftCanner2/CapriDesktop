@@ -1,7 +1,10 @@
 import React, { forwardRef, useEffect, useImperativeHandle, useState } from 'react'
-import { Check, Cloud, Cpu, Key, List, Loader2, LogIn, LogOut, Server, ShieldAlert, X } from 'lucide-react'
+import { Bird, Check, Cloud, Cpu, Key, List, Loader2, LogIn, LogOut, Server, ShieldAlert, X } from 'lucide-react'
 import { MessageKey } from '../i18n'
 import { useT } from '../utils/useUiLang'
+import { TallowStatusPanel } from './TallowStatusPanel'
+
+type ProviderId = 'tallow' | 'local' | 'cloud'
 
 /** Any OpenAI-compatible server works: these only save the user from looking up the address */
 const PRESETS: { id: string; label: string; baseUrl: string }[] = [
@@ -42,10 +45,10 @@ export interface LlmProviderFormHandle {
   save: () => Promise<boolean>
 }
 
-export const LlmProviderForm = forwardRef<LlmProviderFormHandle, { onProviderChange?: (provider: 'local' | 'cloud') => void }>(
+export const LlmProviderForm = forwardRef<LlmProviderFormHandle, { onProviderChange?: (provider: ProviderId) => void }>(
   ({ onProviderChange }, ref) => {
     const t = useT()
-    const [provider, setProvider] = useState<'local' | 'cloud'>('cloud')
+    const [provider, setProvider] = useState<ProviderId>('tallow')
     const [preset, setPreset] = useState('xai')
     const [baseUrl, setBaseUrl] = useState(PRESETS[0].baseUrl)
     const [model, setModel] = useState(XAI_DEFAULT_MODEL)
@@ -100,7 +103,7 @@ export const LlmProviderForm = forwardRef<LlmProviderFormHandle, { onProviderCha
       setNotice(null)
     }
 
-    const choose = (next: 'local' | 'cloud') => {
+    const choose = (next: ProviderId) => {
       setProvider(next)
       setNotice(null)
       onProviderChange?.(next)
@@ -145,7 +148,9 @@ export const LlmProviderForm = forwardRef<LlmProviderFormHandle, { onProviderCha
     useImperativeHandle(ref, () => ({
       save: async () => {
         const res = await window.api.agent.setLlmSettings(
-          provider === 'local'
+          provider === 'tallow'
+            ? { provider: 'tallow' }
+            : provider === 'local'
             ? { provider: 'local' }
             : usingOauth
               ? { provider: 'cloud', preset: 'xai', authMode: 'oauth', model: model.trim() || XAI_DEFAULT_MODEL }
@@ -165,9 +170,10 @@ export const LlmProviderForm = forwardRef<LlmProviderFormHandle, { onProviderCha
 
     return (
       <div className="space-y-4">
-        <div className="grid grid-cols-2 gap-2.5">
+        <div className="grid grid-cols-3 gap-2.5">
           {(
             [
+              ['tallow', 'llm_tallow', 'llm_tallowDesc', <Bird size={16} key="i" />],
               ['local', 'llm_local', 'llm_localDesc', <Cpu size={16} key="i" />],
               ['cloud', 'llm_cloud', 'llm_cloudDesc', <Cloud size={16} key="i" />]
             ] as const
@@ -189,6 +195,8 @@ export const LlmProviderForm = forwardRef<LlmProviderFormHandle, { onProviderCha
             )
           })}
         </div>
+
+        {provider === 'tallow' && <TallowStatusPanel />}
 
         {provider === 'cloud' && (
           <div className="space-y-3">

@@ -6,7 +6,7 @@
 import { openMicrophone } from './microphone'
 export interface AlwaysListenerOptions {
   onUtterance: (wav: ArrayBuffer) => void
-  /** While true (Capri speaking, push-to-talk, agent busy) audio is ignored */
+  /** While true (Tallow speaking, push-to-talk, agent busy) audio is ignored */
   isPaused: () => boolean
   onLevel?: (level: number, speaking: boolean) => void
 }

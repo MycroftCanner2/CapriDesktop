@@ -309,8 +309,8 @@ export class MacroService {
         '{"type":"play_music","query":"<song, artist or playlist to play on Spotify>"}',
         '{"type":"open_url","url":"https://..."}',
         '{"type":"media","action":"next|prev|play|pause"}',
-        '{"type":"gaming_mode","on":true|false}   (Capri\'s game mode / modo game)',
-        '{"type":"say","text":"<something Capri should say>"}',
+        '{"type":"gaming_mode","on":true|false}   (Tallow\'s game mode / modo game)',
+        '{"type":"say","text":"<something Tallow should say>"}',
         '{"type":"wait","seconds":<1-30>}',
         '{"type":"command","command":"<windows cmd command>"}   (only if the user explicitly asks to run a command)',
         'Keep the actions in the order the user said them. Do not invent actions the user did not ask for.'
@@ -443,7 +443,7 @@ export class MacroService {
     return results
   }
 
-  /** Human-readable summary of the actions for Capri's confirmation */
+  /** Human-readable summary of the actions for Tallow's confirmation */
   public describe(macro: Macro, lang: 'es' | 'en'): string {
     const es = lang === 'es'
     const parts = macro.actions.map((a) => {

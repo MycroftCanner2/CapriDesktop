@@ -149,9 +149,9 @@ export class ReactionEngine {
     if (!phrase && event.type === 'civilian_killed') {
       const civilianLinesEn = [
         '{name}! What are you doing?! Are you going full cyberpsycho on me?! That was an innocent civilian!',
-        'Choomba! Have you lost your mind? Is this a cyberpsychosis outbreak?! Leave the civilians alone or MaxTac will drop us!',
+        'Friend! Have you lost your mind? Is this a cyberpsychosis outbreak?! Leave the civilians alone or MaxTac will drop us!',
         'Are you going psycho, {name}?! Chill those implants right now, you just zeroed a total bystander!',
-        'Hold your fire, choomba! Did all that chrome fry your humanity? You are scaring me, that was an innocent pedestrian!'
+        'Hold your fire, friend! Did all that chrome fry your humanity? You are scaring me, that was an innocent pedestrian!'
       ]
       phrase = civilianLinesEn[Math.floor(Math.random() * civilianLinesEn.length)]
     }
@@ -163,7 +163,7 @@ export class ReactionEngine {
       phrase = pickLine(PLAYER_QUICKHACK_LINES[key] || PLAYER_QUICKHACK_LINES.generic)
     }
 
-    // Contextual Player Being Hacked reaction (directly identifying what enemy netrunner is doing!)
+    // Contextual Player Being Hacked reaction (directly identifying what enemy crow is doing!)
     if (!phrase && event.type === 'player_being_hacked') {
       const hack = String(event.payload?.hack || '').toLowerCase()
       const key = BEING_HACKED_LINES[hack] ? hack : hackKeyFromEffect(String(event.payload?.effect || ''), BEING_HACKED_LINES)
@@ -174,9 +174,9 @@ export class ReactionEngine {
     if (!phrase && event.type === 'player_kill' && event.payload?.gang) {
       const g = String(event.payload.gang).toLowerCase()
       if (g.includes('arasaka')) {
-        phrase = 'Another Arasaka suit flatlined! Beautiful kill, {name}!'
+        phrase = 'Another the hawks suit flatlined! Beautiful kill, {name}!'
       } else if (g.includes('maelstrom')) {
-        phrase = 'Maelstrom scrap flatlined! Good riddance to that chrome monster, choomba!'
+        phrase = 'Maelstrom scrap flatlined! Good riddance to that chrome monster, friend!'
       } else if (g.includes('scavenger') || g.includes('scav')) {
         phrase = 'Scav flatlined! Hate those chrome thieves, clean shot {name}!'
       } else if (g.includes('tyger')) {
@@ -184,11 +184,11 @@ export class ReactionEngine {
       } else if (g.includes('valentino')) {
         phrase = 'Valentino down! Fast and lethal, {name}.'
       } else if (g.includes('sixth') || g.includes('6th')) {
-        phrase = 'Sixth Street militant flatlined! Great shot, choomba!'
+        phrase = 'Sixth Street militant flatlined! Great shot, friend!'
       } else if (g.includes('animal')) {
         phrase = 'Animal heavy down! All that muscle and juice could not save them from you, {name}.'
       } else if (g.includes('voodoo')) {
-        phrase = 'Voodoo Boy unplugged! Thought they owned cyberspace, {name}.'
+        phrase = 'Voodoo Boy unplugged! Thought they owned the sky, {name}.'
       } else if (g.includes('barghest')) {
         phrase = 'Barghest merc neutralized! Dogtown is heating up, {name}!'
       } else if (g.includes('militech')) {
@@ -202,7 +202,7 @@ export class ReactionEngine {
       if (stars === 1) {
         phrase = 'Sirens in the distance, {name}... NCPD is sniffing around.'
       } else if (stars === 2) {
-        phrase = '2 stars NCPD! Squad cars closing in on our flanks, choomba!'
+        phrase = '2 stars NCPD! Squad cars closing in on our flanks, friend!'
       } else if (stars === 3) {
         phrase = '3 stars! Drones and cruisers inbound, get ready {name}!'
       } else if (stars === 4) {
@@ -216,15 +216,15 @@ export class ReactionEngine {
     if (!phrase && event.type === 'vehicle_crash') {
       const crashLines = [
         'Whoa! My gyro sensors just recalibrated after that smash, {name}! Watch the concrete!',
-        'Suspension just took a beating! Did that lamppost jump out at us, choomba?!',
+        'Suspension just took a beating! Did that lamppost jump out at us, friend?!',
         'Smooth drift... right into a barricade! The fixers are gonna charge us for that bumper.',
         'Hope the airbags in this clunker are certified by Trauma Team, {name}!',
-        'That was metal on concrete! Keep your eyes on the road, choomba!',
+        'That was metal on concrete! Keep your eyes on the road, friend!',
         'Oof! My visual feed just flickered from that impact. Let us not turn this ride into scrap metal!',
         'Well, that is one way to test the crumple zones. Next time, try easing off the throttle, {name}!',
-        'Crunch! Hope you got eddies saved up, because this paint job is officially ruined, choom.',
+        'Crunch! Hope you got eddies saved up, because this paint job is officially ruined, friend.',
         'Did a Scav design these brakes or what?! Steer clear of the walls, {name}!',
-        'That curb had a personal vendetta against us! Check the alignment, choomba.',
+        'That curb had a personal vendetta against us! Check the alignment, friend.',
         'Hold on to your chrome! If we hit another pillar like that, we are walking back to Watson!',
         'Preem driving, {name}... if the goal was remodeling that shopfront! Ease up on the steering!'
       ]
@@ -237,7 +237,7 @@ export class ReactionEngine {
         'Kerenzikov kicked in! Line up that headshot while they are frozen!',
         'Kerenzikov reflex boost active! Preem slide, {name}, take your shot!',
         'Smooth reflex dodge! Kerenzikov opened the window, finish them!',
-        'Reflex booster firing! Everything is standing still for you, choomba!'
+        'Reflex booster firing! Everything is standing still for you, friend!'
       ]
       phrase = lines[Math.floor(Math.random() * lines.length)]
     }
@@ -256,7 +256,7 @@ export class ReactionEngine {
       const lines = [
         'Sandevistan engaged! Move like a ghost, {name}!',
         'Time slowed down to a crawl... carve them up before they can blink!',
-        'Sandevistan overclocking your nervous system! Slice them to ribbons, choomba!',
+        'Sandevistan overclocking your nervous system! Slice them to ribbons, friend!',
         'World is in slow motion! Dance between their bullets, {name}!'
       ]
       phrase = lines[Math.floor(Math.random() * lines.length)]
@@ -265,7 +265,7 @@ export class ReactionEngine {
     // Contextual Match Entrance / Departure
     if (!phrase && event.type === 'match_started') {
       if (event.gameId === 'cyberpunk') {
-        phrase = 'Neural link established with V in Night City, choomba! Cyberware synchronized.'
+        phrase = 'Neural link established with V in the rookery, friend! Cyberware synchronized.'
       } else if (event.gameId === 'lol') {
         const lang = consciousnessService.getPreferredLanguage() === 'es' ? 'es' : 'en'
         phrase = lang === 'es'
@@ -275,12 +275,12 @@ export class ReactionEngine {
     }
     if (!phrase && event.type === 'match_ended') {
       if (event.gameId === 'cyberpunk') {
-        phrase = 'Disconnecting from Night City net. Rest up your cyberware, choomba.'
+        phrase = 'Disconnecting from the rookery net. Rest up your cyberware, friend.'
       } else if (event.gameId === 'lol') {
         const lang = consciousnessService.getPreferredLanguage() === 'es' ? 'es' : 'en'
         phrase = lang === 'es'
-          ? 'Partida concluida en la Grieta del Invocador. ¡Buen combate, choomba!'
-          : 'Summoner\'s Rift match concluded. Good fight, choom!'
+          ? 'Partida concluida en la Grieta del Invocador. ¡Buen combate, friend!'
+          : 'Summoner\'s Rift match concluded. Good fight, friend!'
       }
     }
 
@@ -316,7 +316,7 @@ export class ReactionEngine {
 
     // Speak in character with voice
     const speak = (text: string) => {
-      console.log(`[ReactionEngine] [${event.gameId}] [${event.type}] -> Capri says: "${text}"`)
+      console.log(`[ReactionEngine] [${event.gameId}] [${event.type}] -> Tallow says: "${text}"`)
       const speechDuration = Math.min(10000, Math.max(3000, text.length * 60))
       agentManager.setCompanionSpeech(text, speechDuration, true, describeEvent(event))
     }

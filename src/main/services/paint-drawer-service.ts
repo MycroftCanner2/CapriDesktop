@@ -57,7 +57,7 @@ export class PaintDrawerService {
     const isEs = lang === 'es'
 
     const warningPhrase = isEs
-      ? `¡Atención choomba! Soltá el mouse un segundo que tomo los mandos de Paint para dibujar "${subject}".`
+      ? `¡Atención friend! Soltá el mouse un segundo que tomo los mandos de Paint para dibujar "${subject}".`
       : `Hands off the mouse for a second, {name}! Jacking into Paint right now to draw "${subject}".`
 
     try {

@@ -20,7 +20,7 @@ import { ollamaService } from './ollama-service'
 import { voiceService } from './voice-service'
 import { createHash } from 'crypto'
 import { consciousnessService } from './consciousness-service'
-import { isCloudMode } from './llm-gateway'
+import { usesOllama } from './llm-gateway'
 import { windowManager } from '../windows/window-manager'
 import { localizeLine } from '../../shared/lines'
 import { getUserName } from './user-profile'
@@ -156,7 +156,7 @@ export class SetupService {
     const missing: SetupStep[] = []
     if (!s.python.envReady) missing.push('python')
     if (!s.ffmpeg) missing.push('ffmpeg')
-    if (!isCloudMode()) {
+    if (usesOllama()) {
       if (!s.ollama.installed) missing.push('ollama')
       else if (s.ollama.running && s.ollama.models.length === 0) missing.push('model')
     }
@@ -221,7 +221,7 @@ export class SetupService {
     const resume = async () => {
       if (!stopped) return
       voiceService.restartWorker()
-      if (!isCloudMode()) await ollamaService.ensureRunning()
+      if (usesOllama()) await ollamaService.ensureRunning()
     }
     try {
       const plan = await this.planStorageMove(root)
@@ -340,7 +340,7 @@ export class SetupService {
 
   /** An update can change her persona: an installed model keeps the old one until it's rebuilt */
   public async refreshPersona(): Promise<void> {
-    if (!app.isPackaged || this.busy || isCloudMode()) return
+    if (!app.isPackaged || this.busy || !usesOllama()) return
     const version = createHash('sha256').update(fs.readFileSync(scriptPath('Modelfile.capri'))).digest('hex')
     if (consciousnessService.getPersonaVersion() === version) return
     const tags = await ollamaService.queryTags()
@@ -366,7 +366,7 @@ export class SetupService {
     const lang = consciousnessService.getPreferredLanguage()
     const { response, checkboxChecked } = await dialog.showMessageBox({
       type: 'warning',
-      title: 'Capri Desktop',
+      title: 'Crow Companion',
       message: localizeLine("Part of my setup is missing, so some things might not work. Want to open it and finish?", lang),
       buttons: [localizeLine('Open setup', lang), localizeLine('Not now', lang)],
       defaultId: 0,
@@ -522,7 +522,7 @@ export class SetupService {
       log('ffmpeg', `Extracting to ${dest}`)
       fs.rmSync(dest, { recursive: true, force: true })
       fs.mkdirSync(dest, { recursive: true })
-      // Only the program: the archive also carries 300 MB of docs and tools Capri doesn't use
+      // Only the program: the archive also carries 300 MB of docs and tools Tallow doesn't use
       await run('tar', ['-xJf', archive, '-C', dest, '--no-same-owner', '--wildcards', '*/bin/ffmpeg'], (l) => log('ffmpeg', l))
       fs.rmSync(archive, { force: true })
     }
@@ -614,7 +614,7 @@ export class SetupService {
         sys = await this.findSystemPython()
       }
       if (!sys) {
-        log('python', 'Python was installed but is not visible yet. Restart Capri and run this step again.')
+        log('python', 'Python was installed but is not visible yet. Restart Tallow and run this step again.')
         return false
       }
     }

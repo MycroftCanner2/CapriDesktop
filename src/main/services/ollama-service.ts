@@ -1,5 +1,5 @@
 import { ollamaModelsDir, programDirs } from './storage-location'
-import { isCloudMode, llmFetch } from './llm-gateway'
+import { llmFetch, usesOllama } from './llm-gateway'
 import { toolsDir } from './app-paths'
 import { findOnPath, isLinux, isWindows, killProcesses } from './platform'
 import { spawn } from './hidden-process'
@@ -57,8 +57,8 @@ export class OllamaService {
       clearTimeout(this.idleTimer)
       this.idleTimer = null
     }
-    // With a cloud model Capri never started Ollama: an instance running here belongs to the user
-    if (isCloudMode()) return true
+    // With a cloud model Tallow never started Ollama: an instance running here belongs to the user
+    if (!usesOllama()) return true
 
     this.isStarting = false
     this.cachedModels = []
@@ -77,7 +77,7 @@ export class OllamaService {
    */
   public async queryTags(): Promise<OllamaStatus> {
     try {
-      if (isCloudMode()) {
+      if (!usesOllama()) {
         const res = await llmFetch('http://127.0.0.1:11434/api/tags')
         const data = (await res.json()) as { models?: { name: string }[] }
         return { running: true, models: (data.models || []).map((m) => m.name) }

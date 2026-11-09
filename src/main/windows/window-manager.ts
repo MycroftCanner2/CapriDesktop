@@ -138,7 +138,7 @@ export class WindowManager {
     // Escape cancels a push-to-talk recording. Registered only while recording
     // (see setVoiceRecordingActive) so Esc keeps working normally in every other app.
 
-    // Linux can't report Ctrl while Capri is click-through, so this replaces Ctrl + hover in Gaming Mode
+    // Linux can't report Ctrl while Tallow is click-through, so this replaces Ctrl + hover in Gaming Mode
     if (isLinux) {
       try {
         globalShortcut.register('CommandOrControl+Alt+G', () => {
@@ -382,7 +382,7 @@ export class WindowManager {
 
       if (keepPosition && this.companionWin && !this.companionWin.isDestroyed()) {
         const cur = this.companionWin.getBounds()
-        // Anchor bottom-center so Capri stays exactly under the cursor when switching window dimensions
+        // Anchor bottom-center so Tallow stays exactly under the cursor when switching window dimensions
         const targetX = cur.x + Math.round((cur.width - width) / 2)
         const targetY = cur.y + (cur.height - height)
         x = Math.max(workArea.x, Math.min(workArea.x + workArea.width - width, targetX))
@@ -433,7 +433,7 @@ export class WindowManager {
   }
 
   /**
-   * In Gaming Mode Capri is click-through so she never eats clicks meant for the game
+   * In Gaming Mode Tallow is click-through so she never eats clicks meant for the game
    * (mouse events are still forwarded so the renderer can re-enable clicks while Ctrl is held).
    */
   public setCompanionClickThrough(ignore: boolean): void {
@@ -516,7 +516,7 @@ export class WindowManager {
       })
 
       // Dock to position with ample vertical room for downward speech bubble
-      // If the user already moved Capri in Gaming Mode, prioritize her saved position
+      // If the user already moved Tallow in Gaming Mode, prioritize her saved position
       const primaryDisplay = this.currentDisplay()
       const workArea = primaryDisplay.workArea
       const width = 360
@@ -546,7 +546,7 @@ export class WindowManager {
       this.companionWin.setAlwaysOnTop(true, 'screen-saver', 1)
       this.companionWin.moveTop()
 
-      // Periodic top-most keepalive so DirectX full-screen games cannot cover Capri
+      // Periodic top-most keepalive so DirectX full-screen games cannot cover Tallow
       this.gamingKeepAliveInterval = setInterval(() => {
         if (
           this.companionWin &&

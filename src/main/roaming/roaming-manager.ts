@@ -21,7 +21,7 @@ export interface WindowedAppInfo {
 
 const WALKING_QUOTES_EN = [
   'Whoa! This takes me back! Running free across the net.',
-  "C'mon, let's play! Let's see some bounce in those boots, choomba!",
+  "C'mon, let's play! Let's see some bounce in those boots, friend!",
   'Hey-oh! You full of any more fun surprises? Vigilance online.',
   "More creative? That's right. Show 'em a good time!",
   'Which way? Follow me. A force the likes of which the world has never seen!',
@@ -32,7 +32,7 @@ const WALKING_QUOTES_EN = [
 
 const WALKING_QUOTES_ES = [
   '¡Upa! ¡Esto me trae recuerdos! Corriendo libre por la red.',
-  '¡Vamos a jugar! ¡A ver esa energía en las botas, choomba!',
+  '¡Vamos a jugar! ¡A ver esa energía en las botas, friend!',
   '¡Ey-oh! ¿Tenés alguna otra sorpresa divertida? Vigilancia en línea.',
   '¿Más creativos? Así se habla. ¡A romperla!',
   '¿Por dónde? Seguime. ¡Una fuerza como nunca se vio!',
@@ -42,24 +42,24 @@ const WALKING_QUOTES_ES = [
 ]
 
 const STILL_QUOTES_EN = [
-  "Standing by whenever you're ready to jack into the net, choomba.",
+  "Standing by whenever you're ready to jack into the net, friend.",
   'What good is an operating system without a computer to operate? Keeping watch, boo.',
-  "Guarding your chrome and scanning background telemetry, choomba.",
+  "Guarding your chrome and scanning background telemetry, friend.",
   "See me, don'tcha? I know you can! Finally, I found you!",
   'Monitoring the subnet. Let me know when you need to breach something.'
 ]
 
 const STILL_QUOTES_ES = [
-  'Haciendo guardia para cuando estés listo para conectarte a la red, choomba.',
+  'Haciendo guardia para cuando estés listo para conectarte a la red, friend.',
   '¿De qué sirve un sistema operativo sin una máquina que operar? Te estoy cuidando la espalda, boo.',
-  'Cuidando tu ciberware y escaneando telemetría de fondo, choomba.',
+  'Cuidando tu ciberware y escaneando telemetría de fondo, friend.',
   'Me ves, ¿no? ¡Sé que podés! ¡Al fin te encontré!',
   'Monitoreando la subred. Avisame cuando necesites vulnerar algo.'
 ]
 
 const TAB_QUOTES_EN = [
   "Perched right up here on your tabs! Keeping watch over your workspace.",
-  'Got a birds-eye view of your deck from up here, choomba.',
+  'Got a birds-eye view of your deck from up here, friend.',
   'Taking a breather right over your tabs. Keeping an eye on your windows.',
   'Free from corporate shackles and chilling up here! Watching your tabs.',
   'Resting on your active window. Ping me whenever you need backup, {name}.'
@@ -67,7 +67,7 @@ const TAB_QUOTES_EN = [
 
 const TAB_QUOTES_ES = [
   '¡Acomodada acá arriba de tus pestañas! Mirando qué estás tramando en tu espacio de trabajo.',
-  'Tengo vista panorámica de tu pantalla desde acá arriba, choomba.',
+  'Tengo vista panorámica de tu pantalla desde acá arriba, friend.',
   'Tomándome un respiro sobre tus pestañas. Ojo al piojo con lo que hacés, que te estoy mirando.',
   '¡Libre de ataduras corporativas y descansando acá arriba! Espiando tus ventanas.',
   'Descansando en tu ventana activa. Avisame cuando quieras hackear algo, {name}.'
@@ -82,7 +82,7 @@ export class RoamingManager {
   private autonomousTimer: NodeJS.Timeout | null = null
   private userDragPauseTimer: NodeJS.Timeout | null = null
 
-  // Mini-game: Catch Capri
+  // Mini-game: Catch Tallow
   private isCatchGameActive = false
   private catchGameTimer: NodeJS.Timeout | null = null
   private catchGameTimeRemaining = 15
@@ -605,7 +605,7 @@ export class RoamingManager {
     }, 10000)
   }
 
-  // --- "Catch Capri" Desktop Mini-Game ---
+  // --- "Catch Tallow" Desktop Mini-Game ---
   public startCatchGame(): void {
     const companionWin = windowManager.getCompanionWindow()
     if (!companionWin) return
@@ -630,8 +630,8 @@ export class RoamingManager {
     const isEs = consciousnessService.getPreferredLanguage() === 'es'
     agentManager.setCompanionSpeech(
       isEs
-        ? "¡Atrapame si podés, choomba! ¡Haceme clic antes de que se acabe el tiempo!"
-        : "Catch me if you can, choomba! Click on me before the timer runs out!",
+        ? "¡Atrapame si podés, friend! ¡Haceme clic antes de que se acabe el tiempo!"
+        : "Catch me if you can, friend! Click on me before the timer runs out!",
       4000
     )
 
@@ -668,16 +668,16 @@ export class RoamingManager {
       agentManager.setCompanionState('happy')
       agentManager.setCompanionSpeech(
         isEs
-          ? "¡Buenos reflejos, choomba! Me atrapaste con todas las de la ley."
-          : "Fast reflexes, choomba! You caught me fair and square.",
+          ? "¡Buenos reflejos, friend! Me atrapaste con todas las de la ley."
+          : "Fast reflexes, friend! You caught me fair and square.",
         4500
       )
     } else {
       agentManager.setCompanionState('curious')
       agentManager.setCompanionSpeech(
         isEs
-          ? "¡Demasiado lento, choomba! Vas a tener que acelerar ese ciberware la próxima."
-          : "Too slow, choomba! Gotta overclock that cyberware next time.",
+          ? "¡Demasiado lento, friend! Vas a tener que acelerar ese ciberware la próxima."
+          : "Too slow, friend! Gotta overclock that cyberware next time.",
         4500
       )
     }

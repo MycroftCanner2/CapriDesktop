@@ -1,5 +1,5 @@
 /**
- * How Capri replaces herself on Linux, depending on how she was installed:
+ * How Tallow replaces herself on Linux, depending on how she was installed:
  * - .deb: apt installs the new package, behind the desktop's password prompt (pkexec).
  * - .tar.gz: no password needed, the new folder takes the place of the one she runs from.
  * Anything else (no pkexec, a folder she can't write to) returns null and she opens the release page.
@@ -81,7 +81,7 @@ export async function unpackNextToApp(archive: string, execPath: string): Promis
 }
 
 /**
- * Outlives Capri: waits for her to close, swaps the folders if there's a new one (putting the old one
+ * Outlives Tallow: waits for her to close, swaps the folders if there's a new one (putting the old one
  * back if that fails) and opens her. Arguments: her pid, her executable, the new folder or "".
  */
 export const LINUX_RESTART_SCRIPT = `

@@ -1,7 +1,7 @@
 /**
- * Plays a reply from the model that changes Capri's look (see look-tags.ts) part by part. Audio is
+ * Plays a reply from the model that changes Tallow's look (see look-tags.ts) part by part. Audio is
  * prepared ahead in order, so one part follows the other with no wait. While it plays, nothing else
- * makes Capri talk or move. Pressing the talk hotkey cancels it.
+ * makes Tallow talk or move. Pressing the talk hotkey cancels it.
  */
 
 import { IPC_CHANNELS, ScriptEventPayload } from '../../ipc/channels'

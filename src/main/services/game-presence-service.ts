@@ -1,5 +1,5 @@
 /**
- * Notices any game in the foreground, puts Capri in Gaming Mode and, every so often, has her
+ * Notices any game in the foreground, puts Tallow in Gaming Mode and, every so often, has her
  * comment on that game. The foreground window comes from a PowerShell script on Windows and from
  * xdotool on Linux.
  */
@@ -80,7 +80,7 @@ export class GamePresenceService {
     this.timer = null
   }
 
-  /** A game Capri has no in-match adapter for is open, even if it isn't the focused window */
+  /** A game Tallow has no in-match adapter for is open, even if it isn't the focused window */
   public isGameSessionActive(): boolean {
     return !!this.game && isAlive(this.game.pid)
   }

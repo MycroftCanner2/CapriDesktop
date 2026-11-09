@@ -84,16 +84,16 @@ export async function openMicrophone(audio: MediaTrackConstraints = {}): Promise
   throw firstError
 }
 
-/** The line Capri says when the microphone can't be opened */
+/** The line Tallow says when the microphone can't be opened */
 export function micErrorLine(kind: MicError): string {
   switch (kind) {
     case 'denied':
-      return 'The system is blocking my microphone, choomba. Allow it in your privacy settings.'
+      return 'The system is blocking my microphone, friend. Allow it in your privacy settings.'
     case 'none':
-      return "I can't find any microphone, choomba. Plug one in or pick another in my voice settings."
+      return "I can't find any microphone, friend. Plug one in or pick another in my voice settings."
     case 'busy':
-      return 'Another app is holding the microphone, choomba. Close it and try again.'
+      return 'Another app is holding the microphone, friend. Close it and try again.'
     default:
-      return "I couldn't open the microphone, choomba. Try picking another one in my voice settings."
+      return "I couldn't open the microphone, friend. Try picking another one in my voice settings."
   }
 }

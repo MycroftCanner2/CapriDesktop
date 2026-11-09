@@ -2,16 +2,16 @@
    corners, condensed uppercase type, cyan only for things that are online. No glows or gradients. */
 
 .cp-vars {
-  --cp-red: #ff5f57;
-  --cp-red-hi: #ff8a7a;
-  --cp-red-dim: #a8433d;
-  --cp-red-line: rgba(255, 95, 87, 0.28);
-  --cp-red-fill: #251011;
-  --cp-cyan: #5ef6ff;
-  --cp-yellow: #fcee0a;
-  --cp-bg: #0b0708;
-  --cp-panel: #110a0b;
-  --cp-text: #e6d6cb;
+  --cp-red: #e0af67;
+  --cp-red-hi: #e0af67;
+  --cp-red-dim: #cb4f2a;
+  --cp-red-line: rgba(224, 175, 103, 0.28);
+  --cp-red-fill: #1f1b16;
+  --cp-cyan: #e2d4b8;
+  --cp-yellow: #ddb23c;
+  --cp-bg: #0a0908;
+  --cp-panel: #0f0e0c;
+  --cp-text: #e6dbcb;
   --cp-muted: #9b8279;
   color: var(--cp-red);
   font-family: var(--cp-font-ui);
@@ -29,7 +29,7 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: repeating-linear-gradient(0deg, transparent 0 3px, rgba(255, 95, 87, 0.03) 3px 4px);
+  background: repeating-linear-gradient(0deg, transparent 0 3px, rgba(224, 175, 103, 0.03) 3px 4px);
 }
 
 .cp-mono {
@@ -79,15 +79,15 @@
   --fill: var(--cp-red-fill);
 }
 .cp-frame.is-warn {
-  --frame: rgba(252, 238, 10, 0.45);
-  --fill: #141106;
+  --frame: rgba(221, 178, 60, 0.45);
+  --fill: #100d0a;
 }
 
 .cp-option {
   transition: color 0.1s;
 }
 .cp-option:hover:not(.is-active) {
-  --frame: rgba(255, 95, 87, 0.6);
+  --frame: rgba(224, 175, 103, 0.6);
 }
 
 /* Selected row marker, like the game's menus */
@@ -104,7 +104,7 @@
   --c: 9px;
   clip-path: polygon(0 0, calc(100% - var(--c)) 0, 100% var(--c), 100% 100%, var(--c) 100%, 0 calc(100% - var(--c)));
   background: var(--cp-red);
-  color: #140808;
+  color: #110e0b;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.14em;
@@ -142,7 +142,7 @@
   outline: none;
 }
 .cp-input::placeholder {
-  color: #5d4540;
+  color: #554f48;
 }
 
 /* Header rule with a solid block at the start */
@@ -163,7 +163,7 @@
 
 .cp-seg {
   height: 4px;
-  background: rgba(255, 95, 87, 0.18);
+  background: rgba(224, 175, 103, 0.18);
 }
 .cp-seg.on {
   background: var(--cp-red);
@@ -237,15 +237,15 @@
   font-weight: 600;
 }
 .cp-vars select {
-  background-color: #110a0b !important;
+  background-color: #0f0e0c !important;
   color: var(--cp-text) !important;
 }
 .cp-vars select option {
-  background-color: #110a0b;
+  background-color: #0f0e0c;
   color: var(--cp-text);
 }
 .cp-vars .cyber-input {
-  background-color: #110a0b !important;
+  background-color: #0f0e0c !important;
   color: var(--cp-text) !important;
   border: 1px solid var(--cp-red-line) !important;
   border-radius: 0;
@@ -258,7 +258,7 @@
 .cp-vars .cyber-btn {
   --c: 7px;
   clip-path: polygon(0 0, calc(100% - var(--c)) 0, 100% var(--c), 100% 100%, var(--c) 100%, 0 calc(100% - var(--c)));
-  background: #1c0e0f;
+  background: #181512;
   border: 1px solid var(--cp-red-line);
   border-radius: 0;
   color: var(--cp-red);
@@ -267,7 +267,7 @@
 }
 .cp-vars .terminal-btn:hover:not(:disabled),
 .cp-vars .cyber-btn:hover:not(:disabled) {
-  background: #2a1213;
+  background: #231e19;
   border-color: var(--cp-red);
   color: var(--cp-red-hi);
 }

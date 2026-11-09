@@ -113,8 +113,8 @@ export const AgentChat: React.FC<AgentChatProps> = ({ transparent = false }) => 
             } else {
               setSpeech(
                 lang === 'es'
-                  ? "¡Chau chau, choomba! ¡Lo lograste! ¡Démosles a estos estáticos un espectáculo que jamás olviden!"
-                  : "Bye-bye, choomba! Yay, you did it! Let's give these statics a spectacle they'll never forget!",
+                  ? "¡Chau chau, friend! ¡Lo lograste! ¡Démosles a estos estáticos un espectáculo que jamás olviden!"
+                  : "Bye-bye, friend! Yay, you did it! Let's give these statics a spectacle they'll never forget!",
                 6500
               )
             }
@@ -151,13 +151,13 @@ export const AgentChat: React.FC<AgentChatProps> = ({ transparent = false }) => 
     setPromptInput('')
     setIsRunning(true)
 
-    // Capri reacts with speech
+    // Tallow reacts with speech
     setEmotion('talking')
     if (window.api) window.api.companion.setState('talking')
     setSpeech(
       lang === 'es'
-        ? "Te va a gustar esto... ¡Conectando y ejecutando código, choomba!"
-        : "You'll like this game... Jacking in and executing code, choomba!",
+        ? "Te va a gustar esto... ¡Conectando y ejecutando código, friend!"
+        : "You'll like this game... Jacking in and executing code, friend!",
       3500
     )
 
@@ -196,8 +196,8 @@ export const AgentChat: React.FC<AgentChatProps> = ({ transparent = false }) => 
       setEmotion('curious')
       setSpeech(
         lang === 'es'
-          ? "¿Te dio miedo? Acción denegada. ¡Dale, no seas tímido, choomba!"
-          : "Gave you a handicap, huh? Action denied. Go on, don't be shy, choomba!",
+          ? "¿Te dio miedo? Acción denegada. ¡Dale, no seas tímido, friend!"
+          : "Gave you a handicap, huh? Action denied. Go on, don't be shy, friend!",
         3000
       )
     }
@@ -206,7 +206,7 @@ export const AgentChat: React.FC<AgentChatProps> = ({ transparent = false }) => 
   return (
     <div
       className={`flex-1 flex flex-col h-full ${
-        transparent ? 'bg-transparent' : 'bg-[#180b0b]/60'
+        transparent ? 'bg-transparent' : 'bg-[#14120f]/60'
       } overflow-hidden select-text`}
     >
       {/* Messages Scroll Area */}
@@ -227,7 +227,7 @@ export const AgentChat: React.FC<AgentChatProps> = ({ transparent = false }) => 
                   </>
                 ) : (
                   <>
-                    <span className="text-stone-300 font-semibold">capri</span>
+                    <span className="text-stone-300 font-semibold">tallow</span>
                     <span className="text-cyan-400">&gt;</span>
                   </>
                 )}
@@ -244,24 +244,24 @@ export const AgentChat: React.FC<AgentChatProps> = ({ transparent = false }) => 
                 className={`cp-cut max-w-[90%] rounded-none p-3 leading-relaxed whitespace-pre-wrap ${
                   transparent
                     ? isUser
-                      ? 'bg-[#281213]/75 border border-[#55292a]/80 text-stone-100 backdrop-blur-md'
-                      : 'bg-[#140909]/75 border border-[#3b1c1d]/80 text-stone-200 backdrop-blur-md'
+                      ? 'bg-[#221d18]/75 border border-[#484036]/80 text-stone-100 backdrop-blur-md'
+                      : 'bg-[#110f0c]/75 border border-[#322c25]/80 text-stone-200 backdrop-blur-md'
                     : isUser
-                    ? 'bg-[#271212] border border-[#411f20] text-stone-100'
-                    : 'bg-[#180b0b] border border-[#311718] text-stone-200'
+                    ? 'bg-[#211d18] border border-[#373029] text-stone-100'
+                    : 'bg-[#14120f] border border-[#29241f] text-stone-200'
                 }`}
               >
                 {msg.content}
 
                 {/* Render Tool Calls in Assistant Message */}
                 {msg.toolCalls && msg.toolCalls.length > 0 && (
-                  <div className="mt-2 space-y-1.5 border-t border-[#311718] pt-2">
+                  <div className="mt-2 space-y-1.5 border-t border-[#29241f] pt-2">
                     {msg.toolCalls.map((t, idx) => (
                       <div
                         key={idx}
                         className={`${
-                          transparent ? 'bg-[#100707]/80 backdrop-blur-sm' : 'bg-[#100707]'
-                        } border border-[#381a1b] rounded-none p-2 text-[14px]`}
+                          transparent ? 'bg-[#0d0c0a]/80 backdrop-blur-sm' : 'bg-[#0d0c0a]'
+                        } border border-[#2f2923] rounded-none p-2 text-[14px]`}
                       >
                         <div className="flex items-center justify-between text-[13px] mb-1">
                           <span className="text-stone-300 font-semibold flex items-center gap-1">
@@ -304,13 +304,13 @@ export const AgentChat: React.FC<AgentChatProps> = ({ transparent = false }) => 
           <div className="flex flex-col items-start space-y-1">
             <div className="flex items-center gap-1.5 text-[12px] text-stone-400 px-1 cp-mono">
               <Bot size={11} className="text-cyan-400" />
-              <span>capri &gt; {tr('chat_streaming')}</span>
+              <span>tallow &gt; {tr('chat_streaming')}</span>
             </div>
             <div
               className={`cp-cut max-w-[90%] rounded-none p-3 ${
                 transparent
-                  ? 'bg-[#140909]/80 border border-cp-500/50 text-stone-100 backdrop-blur-md'
-                  : 'bg-[#180b0b] border border-[#3c1c1d] text-stone-100'
+                  ? 'bg-[#110f0c]/80 border border-cp-500/50 text-stone-100 backdrop-blur-md'
+                  : 'bg-[#14120f] border border-[#332c25] text-stone-100'
               } whitespace-pre-wrap leading-relaxed`}
             >
               {activeStreamText}
@@ -326,7 +326,7 @@ export const AgentChat: React.FC<AgentChatProps> = ({ transparent = false }) => 
         {pendingPermission && (
           <div
             className={`p-3 my-2 border border-yellow-500/40 ${
-              transparent ? 'bg-[#161208]/85 backdrop-blur-md' : 'bg-[#161208]'
+              transparent ? 'bg-[#120f0c]/85 backdrop-blur-md' : 'bg-[#120f0c]'
             } text-yellow-200 rounded-none text-[14px]`}
           >
             <div className="flex items-center gap-2 mb-1.5 text-yellow-400 font-bold cp-mono">
@@ -361,12 +361,12 @@ export const AgentChat: React.FC<AgentChatProps> = ({ transparent = false }) => 
         onSubmit={handleSend}
         className={`p-2.5 ${
           transparent
-            ? 'bg-black/65 border-t border-[#311718]/80 backdrop-blur-md'
-            : 'bg-[#170a0b] border-t border-[#311718]'
+            ? 'bg-black/65 border-t border-[#29241f]/80 backdrop-blur-md'
+            : 'bg-[#13110e] border-t border-[#29241f]'
         } flex items-center gap-2 cp-mono`}
       >
         <span className="text-cp-400 font-bold text-[14px] select-none pl-1 flex items-center gap-1">
-          <span>capri</span>
+          <span>tallow</span>
           <span className="text-cyan-400">&gt;</span>
         </span>
         <input
@@ -379,15 +379,15 @@ export const AgentChat: React.FC<AgentChatProps> = ({ transparent = false }) => 
           disabled={isRunning}
           className={`flex-1 ${
             transparent
-              ? 'bg-black/55 border-[#3f1e1f]/90 backdrop-blur-sm'
-              : 'bg-[#210f10] border-[#3c1c1d]'
+              ? 'bg-black/55 border-[#352f28]/90 backdrop-blur-sm'
+              : 'bg-[#1c1814] border-[#332c25]'
           } border text-stone-100 text-[14px] px-3 py-2 rounded-none focus:outline-none focus:border-cp-500 transition-colors`}
         />
 
         {/* Always mounted: unmounting it when a task started threw away a recording in progress */}
         <MicButton
           onText={(text) => {
-            // Capri got busy while you were talking: keep the text in the box instead of losing it
+            // Tallow got busy while you were talking: keep the text in the box instead of losing it
             if (useAgentStore.getState().isRunning) setPromptInput(text)
             else handleSend(undefined, text)
           }}

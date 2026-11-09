@@ -1,7 +1,7 @@
 /**
  * Guesses the language of a message from its alphabet, its letters and its most typical words.
  * When the evidence is thin or tied it says so ('unknown') instead of guessing: a wrong guess makes
- * Capri answer in a language nobody spoke to her in. Words shared between languages ("no", "la",
+ * Tallow answer in a language nobody spoke to her in. Words shared between languages ("no", "la",
  * "de", "mi") are left out on purpose, because they decide nothing.
  */
 

@@ -1,11 +1,11 @@
 /**
- * "Sign in with Grok": lets Capri think with the user's own SuperGrok / X Premium subscription
+ * "Sign in with Grok": lets Tallow think with the user's own SuperGrok / X Premium subscription
  * instead of a paid xAI API key.
  *
  * xAI runs a standard OpenID Connect server at auth.x.ai. It supports the authorization-code flow
  * with PKCE (browser + loopback callback) and the device-code flow (short code typed in any
  * browser). xAI has no public console to register a third-party OAuth client, so — like the
- * integrations xAI itself announced (Hermes Agent, OpenClaw, OpenCode, Kilo Code) — Capri uses the
+ * integrations xAI itself announced (Hermes Agent, OpenClaw, OpenCode, Kilo Code) — Tallow uses the
  * shared public Grok CLI client. `plan=generic` is required by that client; `referrer` only says
  * who is asking.
  *
@@ -237,7 +237,7 @@ export function cancelXaiLogin(): void {
 }
 
 const CALLBACK_PAGE = (ok: boolean): string =>
-  `<!doctype html><meta charset="utf-8"><title>Capri Desktop</title><body style="background:#0b0b12;color:#e8e8f0;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0"><div style="text-align:center"><h2 style="color:${ok ? '#4ef2ff' : '#ff4f6d'}">${ok ? 'Signed in to Grok' : 'Sign-in failed'}</h2><p>${ok ? 'You can close this tab and go back to Capri.' : 'Go back to Capri and try again.'}</p></div></body>`
+  `<!doctype html><meta charset="utf-8"><title>Crow Companion</title><body style="background:#0b0b12;color:#e8e8f0;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0"><div style="text-align:center"><h2 style="color:${ok ? '#4ef2ff' : '#ff4f6d'}">${ok ? 'Signed in to Grok' : 'Sign-in failed'}</h2><p>${ok ? 'You can close this tab and go back to Tallow.' : 'Go back to Tallow and try again.'}</p></div></body>`
 
 /** Browser sign-in: PKCE with a one-shot loopback server on the redirect the shared client expects */
 async function loginWithBrowser(): Promise<StoredTokens> {

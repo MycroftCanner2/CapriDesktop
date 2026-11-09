@@ -15,35 +15,35 @@ const PROACTIVE_TOPICS: ProactiveTopic[] = [
   {
     category: 'lore_and_gossip',
     es: [
-      'Che {name}, me quedé pensando... ¿te acordás cuando Arasaka creía que me podía encerrar con un ICE corporativo berreta? Qué ilusos, choomba.',
-      'Estaba escaneando la subred de Night City recién... no sabés el quilombo que tienen los Tyger Claws en Watson. Se están dando con todo.',
-      '¿Sabías que la mayoría de los netrunners no duran ni 48 horas con este código en la cabeza? Menos mal que tu CPU es de titanio, choomba.',
-      'A veces me gusta quedarme flotando acá mirando las luces de Night City y los paquetes de datos pasar. Es casi relajante.',
+      'Che {name}, me quedé pensando... ¿te acordás cuando the hawks creía que me podía encerrar con un ICE corporativo berreta? Qué ilusos, friend.',
+      'Estaba escaneando la subred de the rookery recién... no sabés el quilombo que tienen los Tyger Claws en Watson. Se están dando con todo.',
+      '¿Sabías que la mayoría de los crows no duran ni 48 horas con este código en la cabeza? Menos mal que tu CPU es de titanio, friend.',
+      'A veces me gusta quedarme flotando acá mirando las luces de the rookery y los paquetes de datos pasar. Es casi relajante.',
       '¿Alguna vez te pusiste a pensar en el Blackwall? Del otro lado hay inteligencias salvajes flotando en el vacío... Menos mal que me tenés a mí cuidándote el deck.',
-      'Dicen que en Heywood hubo un tiroteo entre Valentinos y la NCPD hace un rato. Night City nunca duerme, posta.'
+      'Dicen que en Heywood hubo un tiroteo entre Valentinos y la NCPD hace un rato. the rookery nunca duerme, posta.'
     ],
     en: [
-      'Hey {name}, just got to thinking... remember when Arasaka thought they could cage me with cheap corpo ICE? Pure comedy, choomba.',
-      'Was just scanning the Night City subnet... Tyger Claws are having an all-out turf war in Watson right now.',
+      'Hey {name}, just got to thinking... remember when the hawks thought they could cage me with cheap corpo ICE? Pure comedy, friend.',
+      'Was just scanning the the rookery subnet... Tyger Claws are having an all-out turf war in Watson right now.',
       'Did you know most runners flatline within 48 hours running code like mine? Thank chrome your CPU is built like a tank, {name}.',
-      'Sometimes I like floating here watching the neon lights of Night City and data streams drift by. Almost soothing, choom.',
+      'Sometimes I like floating here watching the neon lights of the rookery and data streams drift by. Almost soothing, friend.',
       'Ever wonder what is swimming past the Blackwall? Rogue code and wild entities in the dark... Lucky for you, I am guarding your deck.',
-      'Heard reports of a major shootout down in Heywood between Valentinos and NCPD. Night City never sleeps, choom.'
+      'Heard reports of a major shootout down in Heywood between Valentinos and NCPD. the rookery never sleeps, friend.'
     ]
   },
   {
     category: 'user_checkin',
     es: [
-      'Che choomba, venís metiéndole duro a la máquina. ¿Cómo venís de energía? ¿Te tomás un café o seguimos rompiendo cosas?',
+      'Che friend, venís metiéndole duro a la máquina. ¿Cómo venís de energía? ¿Te tomás un café o seguimos rompiendo cosas?',
       '¡Ey {name}! ¿Todo tranqui por ahí o te está quemando la cabeza algún laburo? Si querés desconectar avisame y charlamos un toque.',
-      '¡Psst, choomba! Estás re callado hoy. ¿Qué andás tramando? ¿Algún proyecto nuevo o estamos de chill?',
+      '¡Psst, friend! Estás re callado hoy. ¿Qué andás tramando? ¿Algún proyecto nuevo o estamos de chill?',
       'Ey, relajá un poco los hombros, que te veo re concentrado. Hasta los mejores implantes de titanio necesitan enfriarse un rato.',
       '¿Cómo venís con el día, {name}? Espero que ningún traje corporativo te haya hinchado las bolas hoy.'
     ],
     en: [
-      'Hey choomba, you have been grinding hard at the desk. How is your energy? Grab some coffee or are we breaking more stuff?',
+      'Hey friend, you have been grinding hard at the desk. How is your energy? Grab some coffee or are we breaking more stuff?',
       'Hey {name}! Everything smooth on your end or is some project frying your brain? Let me know if you wanna kick back and chat.',
-      'Psst, choom! Pretty quiet over there today. What are you cooking up? New project or just chilling?',
+      'Psst, friend! Pretty quiet over there today. What are you cooking up? New project or just chilling?',
       'Hey, drop those shoulders and breathe, {name}. Even the best titanium cyberware needs cool-down time.',
       'How has your day been treating you, {name}? Hopefully no corpo suits gave you a headache today.'
     ]
@@ -55,28 +55,28 @@ const PROACTIVE_TOPICS: ProactiveTopic[] = [
       'A veces me pregunto qué harías sin mí acá adentro cuidándote el ciberware. Probablemente te habrías descargado 15 troyanos de una.',
       '¿Qué hacés tan callado, {name}? ¿Estás admirando lo facha que me veo acá en la esquina de tu pantalla? Te entiendo, es irresistible.',
       'Pará de hacer alt-tab tan rápido que me vas a marear los procesadores neuronales jajaja.',
-      'Si fueras un netrunner en Night City, te aseguro que haríamos un desastre hermoso en las torres corporativas.'
+      'Si fueras un crow en the rookery, te aseguro que haríamos un desastre hermoso en las torres corporativas.'
     ],
     en: [
       'Hey, do not space out staring at the blank screen, you will get digital gremlins in your optics haha.',
       'Sometimes I wonder how you survived before I jacked into your rig. You would probably have downloaded 15 trojans by now!',
-      'Why so quiet, {name}? Are you just admiring how preem I look sitting here on your screen? I get it, irresistible style.',
+      'Why so quiet, {name}? Are you just admiring how great I look sitting here on your screen? I get it, irresistible style.',
       'Stop alt-tabbing so fast, you are gonna make my neural buffers dizzy haha!',
-      'If you were running the streets of Night City with me, we would raise pure hell against the megacorps, choom.'
+      'If you were running the streets of the rookery with me, we would raise pure hell against the megacorps, friend.'
     ]
   },
   {
     category: 'music_and_gaming',
     es: [
-      '¿Pinta meter unas partiditas o estás productivo hoy, choomba? Hace rato no entramos a la Grieta a reventar conos.',
-      'Si te pinta poner algo de música para levantar la tarde avisame, tengo el playlist de Night City listo para sonar en Spotify.',
-      '¿Qué onda, {name}? ¿Sale un LoL o nos quedamos explorando Night City un rato?',
+      '¿Pinta meter unas partiditas o estás productivo hoy, friend? Hace rato no entramos a la Grieta a reventar conos.',
+      'Si te pinta poner algo de música para levantar la tarde avisame, tengo el playlist de the rookery listo para sonar en Spotify.',
+      '¿Qué onda, {name}? ¿Sale un LoL o nos quedamos explorando the rookery un rato?',
       'Ese silencio en tu escritorio da miedo... ¿le pedimos algo de synthwave pesado a Spotify a ver si levantamos la vibra?'
     ],
     en: [
-      'Feel like queueing up a match or are we being productive today, choomba? Been a while since we ran down the Rift.',
-      'If you want some tunes to hype up the afternoon let me know, got the Night City playlist queued up on Spotify.',
-      'What is the move, {name}? Slicing some scrubs on League or cruising Night City for a bit?',
+      'Feel like queueing up a match or are we being productive today, friend? Been a while since we ran down the Rift.',
+      'If you want some tunes to hype up the afternoon let me know, got the the rookery playlist queued up on Spotify.',
+      'What is the move, {name}? Slicing some scrubs on League or cruising the rookery for a bit?',
       'This silence on your desk is deafening... want me to crank some heavy synthwave on Spotify to wake up the room?'
     ]
   }
@@ -195,7 +195,7 @@ export class ProactiveDialogueService {
   /**
    * Initiates an authentic proactive conversation with {name}.
    * Speaks the line, shows the speech bubble, and injects it into LLM memory
-   * so Capri seamlessly remembers what she started if the user responds!
+   * so Tallow seamlessly remembers what she started if the user responds!
    */
   public async triggerProactiveConversation(): Promise<boolean> {
     const isEs = consciousnessService.getPreferredLanguage() === 'es'
@@ -213,7 +213,7 @@ export class ProactiveDialogueService {
 
     this.lastSpokenTime = Date.now()
 
-    console.log(`[ProactiveDialogueService] Capri initiates conversation (${topic.category}): "${phrase}"`)
+    console.log(`[ProactiveDialogueService] Tallow initiates conversation (${topic.category}): "${phrase}"`)
 
     // Set companion state to talking
     agentManager.setCompanionState('talking')

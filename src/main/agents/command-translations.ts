@@ -379,7 +379,7 @@ function plain(text: string): string {
     .trim()
 }
 
-const POLITE = /^(?:hey |hola |ok |okay |dis |bitte |ei |ehi |oi |эй )?(?:capri |kapri |カプリ |카프리 )?(?:s il te plait |s il te plaît |stp |bitte |per favore |por favor |пожалуйста |请你|请|請)?/
+const POLITE = /^(?:hey |hola |ok |okay |dis |bitte |ei |ehi |oi |эй )?(?:tallow |capri |kapri |カプリ |카프리 )?(?:s il te plait |s il te plaît |stp |bitte |per favore |por favor |пожалуйста |请你|请|請)?/
 const POLITE_END = /(?: s il te plait| stp| bitte| per favore| por favor| capri| пожалуйста|ください|してください|주세요)$/
 
 function key(text: string): string {

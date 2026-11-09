@@ -1,5 +1,5 @@
 /**
- * Lets the model change Capri's look in the middle of a reply. It writes a tag before the words it applies to, and the reply is cut there:
+ * Lets the model change Tallow's look in the middle of a reply. It writes a tag before the words it applies to, and the reply is cut there:
  *
  *   "Dejame ver. [look:eye] Mmm, acá hay algo raro. [look:talk] Igual ya lo arreglo."
  *

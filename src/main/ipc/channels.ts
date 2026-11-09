@@ -77,6 +77,14 @@ export const IPC_CHANNELS = {
   AGENT_SET_CONFIG: 'agent:setConfig',
   AGENT_DETECT_OLLAMA: 'agent:detectOllama',
   AGENT_CLEAR_HISTORY: 'agent:clearHistory',
+  // Tallow, the local crow (Hugging Face model on llama-server)
+  TALLOW_GET_STATUS: 'tallow:getStatus',
+  TALLOW_STATUS: 'tallow:status',
+  TALLOW_START: 'tallow:start',
+  TALLOW_SET_TOKEN: 'tallow:setToken',
+  TALLOW_FORGET: 'tallow:forget',
+  TALLOW_LINE: 'tallow:line',
+  TALLOW_OPEN_DATA: 'tallow:openData',
   LLM_GET_SETTINGS: 'llm:getSettings',
   LLM_SET_SETTINGS: 'llm:setSettings',
   LLM_LIST_MODELS: 'llm:listModels',
@@ -157,6 +165,12 @@ export type CompanionEmotionState =
   | 'capri2'
   | 'closed'
   | 'asustada'
+  // Tallow's own actions (from his mood tags)
+  | 'lean'
+  | 'droop'
+  | 'love'
+  | 'fluff'
+  | 'alarm'
 
 export interface RoamingStatusPayload {
   isRoaming: boolean
@@ -169,7 +183,7 @@ export interface RoamingStatusPayload {
   currentBehavior?: 'walking' | 'still' | 'tab'
 }
 
-/** Capri's own local agent is the only engine */
+/** Tallow's own local agent is the only engine */
 export type AgentMode = 'capri-local'
 
 export interface AgentConfigPayload {
