@@ -116,6 +116,11 @@ export function registerIpcHandlers(): void {
     }
   )
 
+  ipcMain.handle(IPC_CHANNELS.COMPANION_SET_MUTED, (_event, muted: boolean) => {
+    windowManager.setAllAudioMuted(!!muted)
+    return true
+  })
+
   ipcMain.handle(
     IPC_CHANNELS.COMPANION_SPEAK,
     (_event, payload: { text: string; durationMs?: number }) => {
@@ -261,14 +266,13 @@ export function registerIpcHandlers(): void {
     const firstTime = !consciousnessService.isOnboardingDone()
     consciousnessService.setOnboardingDone(true)
     windowManager.finishOnboarding()
-    // First install: Tallow introduces herself once the setup window is gone
+    // First install: nothing scripted is said here
     if (firstTime) {
       const s = consciousnessService.getLanguageSettings()
       const lang = s.textLang && s.textLang !== 'auto' ? s.textLang : consciousnessService.getPreferredLanguage()
-      setTimeout(() => {
-        agentManager.setCompanionState('talking')
-        agentManager.setCompanionSpeech(welcomeSpeech(lang), 22000, true)
-      }, 1500)
+      // No preset introduction: his first words come from his model once it is ready (tallow-presence)
+      void lang
+      void welcomeSpeech
     }
     return true
   })

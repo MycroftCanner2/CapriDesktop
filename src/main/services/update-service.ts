@@ -78,10 +78,15 @@ export function speechLang(): Lang {
   return s.speechLang && s.speechLang !== 'auto' ? s.speechLang : consciousnessService.getPreferredLanguage()
 }
 
-/** Speaks a line through the companion (bubble + voice) */
+/**
+ * Update progress, shown as an app status next to Tallow (⚙). It's not Tallow talking: no voice,
+ * and the expression tags of the old spoken lines are dropped.
+ */
 export function speak(text: string): void {
   const durationMs = Math.min(60000, Math.max(5000, text.length * 75))
-  windowManager.broadcast(IPC_CHANNELS.COMPANION_SPEECH_CHANGED, { text: personalize(localizeLine(text, speechLang())), durationMs, speakVoice: true })
+  const plain = personalize(localizeLine(text, speechLang())).replace(/\[[a-z_ ]+\]\s*/gi, '').replace(/\s+/g, ' ').trim()
+  if (!plain) return
+  windowManager.broadcast(IPC_CHANNELS.COMPANION_SPEECH_CHANGED, { text: `⚙ ${plain}`, durationMs, speakVoice: false, appStatus: true })
 }
 
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms))

@@ -1,4 +1,5 @@
 import { localizeLine } from '../../../shared/lines'
+import { renderEmotes } from '../utils/emotes'
 import { personalize } from '../utils/userName'
 import React from 'react'
 import { X } from 'lucide-react'
@@ -55,7 +56,7 @@ export const SpeechBubble: React.FC<SpeechBubbleProps> = ({
   }, [isExecuting])
 
   const displayText = personalize(
-    isExecuting ? text || `${localizeLine('thinking', uiLang)}${thinkingDots}` : text || (children ? "What's on your mind, {name}?" : '')
+    isExecuting ? text || `${localizeLine('thinking', uiLang)}${thinkingDots}` : text || ''
   )
 
   // If there is no text, no active execution, no recording, and no interactive input children, don't render anything
@@ -178,7 +179,12 @@ export const SpeechBubble: React.FC<SpeechBubbleProps> = ({
                 {/* AI Dialogue text */}
                 {displayText && (
                   <div className={`${compact ? 'text-[11px] leading-tight' : 'text-[12px] leading-snug'} text-[#f8fafc] font-normal tracking-wide break-words`}>
-                    {displayText}
+                    {displayText.startsWith('⚙ ') ? (
+                      // App status (mic, mute, server...), not something Tallow says
+                      <span className="text-slate-300/90 text-[11px] not-italic">{displayText}</span>
+                    ) : (
+                      renderEmotes(displayText)
+                    )}
                     <span
                       className="inline-block w-1.5 h-3.5 ml-1 bg-[#d6c29a] align-middle shadow-[0_0_6px_#d6c29a]"
                       style={{ animation: 'blink-caret 0.9s infinite' }}

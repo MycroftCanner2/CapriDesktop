@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { renderEmotes } from '../utils/emotes'
 import { useCompanionStore } from '../stores/useCompanionStore'
 import { useAgentStore } from '../stores/useAgentStore'
 import { AgentChat } from './AgentChat'
@@ -129,7 +130,7 @@ export const CapriCommandCenter: React.FC = () => {
           <div className="flex items-center gap-2 text-stone-300 truncate max-w-[80%]">
             <span className="text-cp-400 font-bold text-[14px]">&gt;</span>
             <span className="text-[13px] truncate">
-              {speech ||
+              {(speech && renderEmotes(speech)) ||
                 (emotion === 'capri2'
                   ? t('cc_lineDone')
                   : isRunning

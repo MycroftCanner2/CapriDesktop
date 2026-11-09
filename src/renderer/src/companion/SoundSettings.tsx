@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Volume2 } from 'lucide-react'
 import { useT } from '../utils/useUiLang'
-import { effectsVolume, glitchSoundOn, setEffectsVolume, setGlitchSoundOn, setVoiceVolume, voiceVolume } from '../utils/soundSettings'
+import { rawEffectsVolume, setEffectsVolume, setGlitchSoundOn, setVoiceVolume, rawVoiceVolume } from '../utils/soundSettings'
 
 const Slider: React.FC<{ label: string; value: number; onChange: (value: number) => void }> = ({ label, value, onChange }) => (
   <label className="block text-[13px] text-stone-300">
@@ -15,9 +15,9 @@ const Slider: React.FC<{ label: string; value: number; onChange: (value: number)
 
 export const SoundSettings: React.FC = () => {
   const t = useT()
-  const [voice, setVoice] = useState(voiceVolume())
-  const [effects, setEffects] = useState(effectsVolume())
-  const [glitch, setGlitch] = useState(glitchSoundOn())
+  const [voice, setVoice] = useState(rawVoiceVolume())
+  const [effects, setEffects] = useState(rawEffectsVolume())
+  const [glitch, setGlitch] = useState(() => { try { return localStorage.getItem('capri.glitchSound') !== '0' } catch { return true } })
   return (
     <div className="p-3 bg-black/60 border border-stone-800 space-y-3">
       <div className="text-stone-300 font-semibold text-[14px] flex items-center gap-1.5">

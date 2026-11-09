@@ -1,7 +1,9 @@
 import { personalize } from '../utils/userName'
 import { AlwaysListener } from '../utils/alwaysListening'
 import React, { useCallback, useEffect, useMemo, useState, useRef } from 'react'
-import { CapriRenderer, playCrowSound, playMultiGlitchSound, playPetChirpSound } from './CapriRenderer'
+import { spokenText, visibleText } from '../utils/emotes'
+import { CapriRenderer, playCrowSound, playMultiGlitchSound, playPetChirpSound, stopCrowSounds } from './CapriRenderer'
+import { stopDevVoice } from '../utils/devVoice'
 import { SpeechBubble } from './SpeechBubble'
 import { useT } from '../utils/useUiLang'
 import { localizeLine } from '../../../shared/lines'
@@ -260,12 +262,6 @@ export const CompanionView: React.FC = () => {
   const scareTriggeredRef = useRef<boolean>(false)
   const dragStartRef = useRef<{ startX: number; startY: number; lastX: number; lastY: number; moved: boolean } | null>(null)
 
-  // With a voice the bubble comes up when she starts talking: showing it before too reads as saying it twice
-  const sayGreeting = (text: string, durationMs: number) => {
-    if (greetedThisSession()) return
-    if (isVoiceMutedRef.current || isDeckOpenRef.current) setSpeech(text, durationMs)
-    else setTimeout(() => speakWithCapriVoice(text), 600)
-  }
 
   // Welcome back greeting on application mount (aware of reboots and past shutdowns)
   useEffect(() => {
@@ -278,51 +274,9 @@ export const CompanionView: React.FC = () => {
       window.api.agent.clearHistory().catch(() => {})
     }
 
-    if (window.api?.companion?.getConsciousness) {
-      window.api.companion.getConsciousness().then((res) => {
-        const isEs = currentLangRef.current === 'es'
-        const welcome = res?.bootGreeting || (isEs
-          ? "¡Bienvenido de vuelta, {name}! Conectada a tu ciberware y lista para la acción. ¿Qué hackeamos hoy, friend?"
-          : "Welcome back, {name}! Jacked into your cyberware and ready for action. What are we hacking today, friend?")
-        setChatMessages([
-          {
-            id: `init-${Date.now()}`,
-            role: 'assistant',
-            content: welcome,
-            timestamp: Date.now()
-          }
-        ])
-        sayGreeting(welcome, 6000)
-      }).catch(() => {
-        const isEs = currentLangRef.current === 'es'
-        const fallback = isEs
-          ? "¡Bienvenido de vuelta, {name}! Conectada a tu ciberware y lista para la acción. ¿Qué hackeamos hoy, friend?"
-          : "Welcome back, {name}! Jacked into your cyberware and ready for action. What are we hacking today, friend?"
-        setChatMessages([
-          {
-            id: `init-${Date.now()}`,
-            role: 'assistant',
-            content: fallback,
-            timestamp: Date.now()
-          }
-        ])
-        sayGreeting(fallback, 5000)
-      })
-    } else {
-      const isEs = currentLangRef.current === 'es'
-      const welcome = isEs
-        ? "¡Bienvenido de vuelta, {name}! Conectada a tu ciberware y lista para la acción. ¿Qué hackeamos hoy, friend?"
-        : "Welcome back, {name}! Jacked into your cyberware and ready for action. What are we hacking today, friend?"
-      setChatMessages([
-        {
-          id: `init-${Date.now()}`,
-          role: 'assistant',
-          content: welcome,
-          timestamp: Date.now()
-        }
-      ])
-      sayGreeting(welcome, 5000)
-    }
+    // No preset welcome line: Tallow's first words of a session come from his model (main process,
+    // when the local server is ready), like the proof of concept's "*sits down nearby*" turn.
+    setChatMessages([])
   }, [])
 
   // Voice State (STT & TTS with Tallow original voice)
@@ -336,6 +290,8 @@ export const CompanionView: React.FC = () => {
   const isVoiceMutedRef = useRef(isVoiceMuted)
   useEffect(() => {
     isVoiceMutedRef.current = isVoiceMuted
+    // Chromium-level mute for every window too, so no sound path can slip through
+    window.api?.companion?.setMuted?.(isVoiceMuted).catch(() => {})
   }, [isVoiceMuted])
 
   // Voice Type Selection: 'blip' (dialogue_blip.wav) vs 'tts' (real voice; Edge-TTS until another
@@ -466,13 +422,18 @@ export const CompanionView: React.FC = () => {
       try {
         localStorage.setItem('capri_voice_muted', String(next))
       } catch {}
+      window.api?.companion?.setMuted?.(next).catch(() => {})
+      if (next) {
+        stopCrowSounds()
+        stopDevVoice()
+      }
       if (next && activeAudioRef.current) {
         activeAudioRef.current.pause()
         activeAudioRef.current = null
         setIsSpeaking(false)
       }
       const isEs = currentLangRef.current === 'es'
-      setSpeech(next ? (isEs ? 'Audio silenciado.' : 'Audio muted.') : (isEs ? '¡Audio activado!' : 'Voice active!'), 2000)
+      setSpeech(next ? (isEs ? '⚙ Sonido silenciado.' : '⚙ All sound muted.') : (isEs ? '⚙ Sonido activado.' : '⚙ Sound on.'), 2000)
       return next
     })
   }
@@ -572,16 +533,22 @@ export const CompanionView: React.FC = () => {
     if (isDeckOpenRef.current || isVoiceMutedRef.current) return
 
     // Strip all emojis and unicode pictographs before synthesizing so TTS never pronounces emoji names
-    const clean = personalize(text)
+    const display = personalize(text)
       .replace(/[\u{1F300}-\u{1F9FF}]|[\u{1FA00}-\u{1FAFF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]|[\u{1F000}-\u{1F02F}]|[\u{1F0A0}-\u{1F0FF}]|[\u{1F100}-\u{1F64F}]|[\u{1F680}-\u{1F6FF}]/gu, '')
       .replace(/[🐾✨👀⚡🎉🦾🛑💬🎵🔥💥💡⚔️📹🎮💤✓✕⚠️🤖🐱🐶👍👎❤️]/g, '')
-      .replace(/[*#_~>|`]/g, '')
+      .replace(/[#_~>|`]/g, '')
       .replace(/\s+/g, ' ')
       .trim()
+    if (!display) return
 
-    if (!clean) return
-
-    const bubbleText = clean.replace(/\[[a-zA-Z0-9_\s\-]+\]/g, '').replace(/\s+/g, ' ').trim() || clean
+    // The bubble keeps the *emotes* (shown in italics); the voice never reads emotes, mood tags or caws
+    const bubbleText = visibleText(display).replace(/\[[a-zA-Z0-9_\s\-]+\]/g, '').replace(/\s+/g, ' ').trim() || display
+    const clean = spokenText(display)
+    if (!clean) {
+      setActiveSpeechText(bubbleText)
+      setSpeech(bubbleText, Math.min(9000, Math.max(3500, bubbleText.length * 70)))
+      return
+    }
     const emotions = clean.match(/\[[a-zA-Z0-9_\s\-]+\]/g) || []
     console.log('[Tallow Dialogue] Text to synthesize:', clean)
     console.log('[Tallow Dialogue] Emotions/Tags detected:', emotions)
@@ -758,7 +725,7 @@ export const CompanionView: React.FC = () => {
   const startVoiceRecording = async () => {
     if (isRecordingVoice || isProcessingVoice || micOpeningRef.current) return
     if (isExecuting) {
-      setSpeech("Hold on, I'm still thinking, friend.", 2500)
+      setSpeech('⚙ Tallow is still answering…', 2500)
       return
     }
     // The user started talking: Tallow stops so the mic doesn't pick her up
@@ -890,7 +857,7 @@ export const CompanionView: React.FC = () => {
           const arrayBuffer = await blob.arrayBuffer()
           // The first time Whisper is still downloading, and silence would look like a broken mic
           if ((await window.api.voice.sttState()) === 'loading') {
-            setSpeech("I'm still loading my hearing, friend. The first time can take a few minutes, hold on.", 0)
+            setSpeech('⚙ Speech recognition is still loading. The first time can take a few minutes.', 0)
           }
           const res = await window.api.voice.transcribe(arrayBuffer)
           setSpeech(null)
@@ -901,24 +868,22 @@ export const CompanionView: React.FC = () => {
             setActiveUserPrompt(finalText)
             handleSendMessage(finalText)
           } else if ((await window.api.voice.sttState()) === 'failed') {
-            setSpeech("My hearing isn't installed properly, friend. Run the setup again from the model settings.", 6000)
+            setSpeech("⚙ Speech recognition isn't installed properly. Run the setup again from the model settings.", 6000)
           } else if (micPeakRef.current >= 0 && micPeakRef.current < MIN_MIC_LEVEL) {
-            setSpeech("Your microphone isn't sending any sound, friend. Check the one selected in my voice settings.", 6000)
+            setSpeech("⚙ The microphone isn't sending any sound. Check the one selected in the voice settings.", 6000)
           } else if (res.error && !/no speech/i.test(res.error)) {
             console.warn('[VoiceRecord] Transcription failed:', res.error)
-            setSpeech(`Something failed in my hearing, friend: ${res.error.slice(0, 140)}`, 8000)
+            setSpeech(`⚙ Speech recognition failed: ${res.error.slice(0, 140)}`, 8000)
           } else {
             setSpeech(
-              isEs
-                ? "No te llegué a escuchar con todo este ruido de la red, friend. ¿Me repetís?"
-                : "Didn't catch that over the cyber ICE, friend. Mind repeating that?",
+              isEs ? '⚙ No se entendieron palabras. Probá de nuevo.' : '⚙ No words recognized. Try again.',
               3500
             )
           }
         } catch (err: any) {
           console.error('[VoiceRecord] Final transcription failed:', err)
           const isEs = currentLangRef.current === 'es'
-          setSpeech(isEs ? "¡Glitcheo en el micrófono! Probá de nuevo, friend." : "Microphone glitch! Try again, friend.", 3000)
+          setSpeech(isEs ? '⚙ Error del micrófono. Probá de nuevo.' : '⚙ Microphone error. Try again.', 3000)
         } finally {
           setIsRecordingVoice(false)
           isRecordingVoiceRef.current = false
@@ -975,7 +940,7 @@ export const CompanionView: React.FC = () => {
       setIsAlwaysListening(false)
       followUpUntilRef.current = 0
       try { localStorage.setItem('capri.alwaysListening', '0') } catch {}
-      setSpeech(isEs ? 'Listo, dejo de escucharte. Flecha derecha para volver a activarme.' : 'Okay, I stopped listening. Right arrow to turn me back on.', 3000)
+      setSpeech(isEs ? '⚙ Escucha continua apagada. Flecha derecha para activarla.' : '⚙ Always-listening is off. Right arrow turns it back on.', 3000)
       return
     }
 
@@ -999,7 +964,7 @@ export const CompanionView: React.FC = () => {
       setIsAlwaysListening(true)
       try { localStorage.setItem('capri.alwaysListening', '1') } catch {}
       setSpeech(
-        isEs ? 'Te escucho todo el tiempo, friend. Decí "Tallow" cuando me hables a mí.' : 'Always listening, friend. Say "Tallow" when you are talking to me.',
+        isEs ? '⚙ Escucha continua activada. Decí "Tallow" cuando le hables a él.' : '⚙ Always listening. Say "Tallow" when you are talking to him.',
         3500
       )
     } catch (err) {
@@ -1253,7 +1218,6 @@ export const CompanionView: React.FC = () => {
               isClosedActiveRef.current = true
               setEmotion('closed')
               if (window.api?.companion) window.api.companion.setState('closed')
-              setSpeech("Kaw! Gone. Carried it off, nothing left but a feather.", 3500)
               if (closedTimerRef.current) clearTimeout(closedTimerRef.current)
               closedTimerRef.current = setTimeout(() => {
                 isClosedActiveRef.current = false
@@ -1267,7 +1231,6 @@ export const CompanionView: React.FC = () => {
             if (toolName === 'shutdown_capri_and_ollama') {
               setEmotion('sleep')
               if (window.api?.companion) window.api.companion.setState('sleep')
-              setSpeech("Tucking my beak under my wing... see you at dawn, {name}!", 4000)
             }
 
             setChatMessages((prev) => {
@@ -1301,10 +1264,10 @@ export const CompanionView: React.FC = () => {
               .trim()
             const wasTallow = tallowLineRef.current
             tallowLineRef.current = false
-            if (textToSpeak && wasTallow) {
-              // Tallow speaks crow: his caw already played, the words go in the bubble
+            if (textToSpeak && wasTallow && (isVoiceMutedRef.current || !spokenText(textToSpeak))) {
+              // Tallow speaks crow: his caw already played as a sound; emotes are shown, never voiced
               setActiveSpeechText(textToSpeak)
-              setSpeech(textToSpeak, 6500)
+              setSpeech(textToSpeak, Math.min(9000, Math.max(4000, textToSpeak.length * 70)))
             } else if (textToSpeak) {
               if (isScriptPlayingRef.current) {
                 // She's in the middle of a reply: two voices at once would be worse than one line less
@@ -1345,14 +1308,15 @@ export const CompanionView: React.FC = () => {
 
         case 'session.error':
           setIsExecuting(false)
-          setEmotion('sleep')
           if (event.error) {
+            // An app status (model still downloading, server error...), not something Tallow says
+            if (event.source !== 'editor' && !isDeckOpenRef.current) setSpeech(`⚙ ${event.error}`, 7000)
             setChatMessages((prev) => [
               ...prev,
               {
                 id: `err-${Date.now()}`,
                 role: 'assistant',
-                content: `Ruffled feathers: ${event.error}`,
+                content: `⚙ ${event.error}`,
                 timestamp: Date.now()
               }
             ])
@@ -1483,6 +1447,17 @@ export const CompanionView: React.FC = () => {
   }, [isScriptPlaying, isEyeMode, isDesktopChatOpen, isExecuting, isSpeaking, isSynthesizingVoice, isTabMode])
 
   // Trigger scared animation & glitch effects
+  /**
+   * Petting, grabbing or carrying him: the user's *action* goes to his model, which decides what he
+   * does and says. No preset reaction lines (Crow Companion: every line comes from the model).
+   */
+  const lastAskRef = useRef(0)
+  const askTallowFor = (action: string): void => {
+    if (isExecutingRef.current || Date.now() - lastAskRef.current < 2500) return
+    lastAskRef.current = Date.now()
+    window.api?.agent?.sendPrompt(action, '', undefined, 'pet').catch(() => {})
+  }
+
   const triggerScaredReaction = () => {
     isScaredActiveRef.current = true
     if (scaredTimerRef.current) clearTimeout(scaredTimerRef.current)
@@ -1502,24 +1477,8 @@ export const CompanionView: React.FC = () => {
       window.api.companion.setState('asustada')
     }
 
-    const isEs = currentLangRef.current === 'es'
-    const scaredPhrases = isEs
-      ? [
-          "¡¡KYAAA!! ¡Te dije que pares! ¡Vas a sobrecargar mis sensores neuronales!!",
-          "¡KYAAA! ¡{name}, sacá las manos de encima!",
-          "¡Aaaah! ¡Cuidado con el ciberware! ¡Casi desconectás mi biochip!"
-        ]
-      : [
-          "KYAAA!! I told you to stop! You're overloading my neural sensors!!",
-          "KYAAA! {name}, hands off!!",
-          "Aaaah! Watch the cyberware! You almost dislodged my biochip!"
-        ]
-    const scream = scaredPhrases[Math.floor(Math.random() * scaredPhrases.length)]
-    setActiveUserPrompt(null)
-    setActiveSpeechText(scream)
-    setSpeech(scream, 4500)
-    interruptSpeech() // she reacts to what the user just did
-    speakWithCapriVoice(scream)
+    // What he does about it comes from his model, never a preset line
+    askTallowFor('*grabs at him*')
 
     scaredTimerRef.current = setTimeout(() => {
       isScaredActiveRef.current = false
@@ -1544,25 +1503,7 @@ export const CompanionView: React.FC = () => {
       scareTriggeredRef.current = false
       playPetChirpSound()
 
-      const isEs = currentLangRef.current === 'es'
-      const flusteredPhrases = isEs
-        ? [
-            "¡¿Qué estás haciendo?! ¡Pará de hacer eso!",
-            "¡¿Pero qué hacés?! ¡Pará de acariciarme la cabeza!",
-            "¡O-oye! ¡¿Qué hacés?! ¡No me toques el pelo!",
-            "What are you doing!!!!! stop doing dat!"
-          ]
-        : [
-            "What are you doing?!! Stop doing that!",
-            "What are you doing!!!!! stop doing dat!",
-            "Hey! What are you doing?! Hands off my hair!"
-          ]
-      const flusteredText = flusteredPhrases[Math.floor(Math.random() * flusteredPhrases.length)]
-      setActiveUserPrompt(null)
-      setActiveSpeechText(flusteredText)
-      setSpeech(flusteredText, 3000)
-      interruptSpeech() // she reacts to what the user just did
-      speakWithCapriVoice(flusteredText)
+      askTallowFor('*strokes the top of his head*')
 
       if (pettingTimerRef.current) clearTimeout(pettingTimerRef.current)
       // If user holds for >= 2.5 seconds, trigger the scare gif/video
@@ -1581,11 +1522,6 @@ export const CompanionView: React.FC = () => {
         }
         setIsPetting(false)
         isPettingRef.current = false
-        if (!scareTriggeredRef.current) {
-          const isEs = currentLangRef.current === 'es'
-          const poutText = isEs ? "¡No me despeines los circuitos!" : "Don't mess up my cyberware, friend!"
-          setSpeech(poutText, 2500)
-        }
       }
       window.addEventListener('mouseup', onMouseUp)
       return
@@ -1670,25 +1606,7 @@ export const CompanionView: React.FC = () => {
 
         if (isScaredGrab) {
           isScaredActiveRef.current = true
-          const isReleaseEs = currentLangRef.current === 'es'
-          const scaredReleasePhrases = isReleaseEs
-            ? [
-                "Uff... ¡No me vuelvas a agarrar así, friend!",
-                "¡Gah! ¡Avisame antes de moverme como una valija, {name}!",
-                "Mis circuitos del Soulkiller todavía están vibrando... ¡Qué susto!",
-                "Menos mal... De vuelta en estática firme. ¡Mantené las manos quietas la próxima!"
-              ]
-            : [
-                "Phew... Never grab me like that again, friend!",
-                "Gah! Warn me before you move me like luggage, {name}!",
-                "My soulkiller circuits are still vibrating from that... Geez!",
-                "Whew... Back on solid static. Keep your hands to yourself next time!"
-              ]
-          const relPhrase = scaredReleasePhrases[Math.floor(Math.random() * scaredReleasePhrases.length)]
-          setActiveSpeechText(relPhrase)
-          setSpeech(relPhrase, 4500)
-          interruptSpeech() // she reacts to what the user just did
-          speakWithCapriVoice(relPhrase)
+          askTallowFor('*sets him back down*')
 
           if (scaredTimerRef.current) clearTimeout(scaredTimerRef.current)
           scaredTimerRef.current = setTimeout(() => {
@@ -1702,29 +1620,9 @@ export const CompanionView: React.FC = () => {
             }
           }, 4800)
         } else {
-          const isDragEs = currentLangRef.current === 'es'
-          const dragPhrases = isDragEs
-            ? [
-                "¡Yuuujuuu! ¡Recalibrando coordenadas físicas!",
-                "¡Ey, cuidado con el ciberware, friend! Pero me gusta este lugar.",
-                "¡Nuevas coordenadas fijadas! Me copa este punto de vista, {name}.",
-                "¡Moviéndome por la estática! ¿Qué hackeamos desde acá, friend?",
-                "¡Paseando por el espacio físico! Lindo panorama desde acá arriba."
-              ]
-            : [
-                "Wheee! Repositioning my physical coordinates!",
-                "Hey, hands off the cyberware, friend! But I like this spot.",
-                "New coordinates locked! Digging the new vantage point, {name}.",
-                "Moved through the static! What are we hacking from here, friend?",
-                "Carried across meatspace! Nice view from up here."
-              ]
-          const phrase = dragPhrases[Math.floor(Math.random() * dragPhrases.length)]
           setActiveUserPrompt(null)
           setEmotion('happy')
-          setActiveSpeechText(phrase)
-          setSpeech(phrase)
-          interruptSpeech() // she reacts to what the user just did
-          speakWithCapriVoice(phrase)
+          askTallowFor('*carries him to a new spot and sets him down*')
           setTimeout(() => {
             setEmotion('standing')
           }, 4500)
@@ -1754,8 +1652,6 @@ export const CompanionView: React.FC = () => {
     if (next) {
       window.api?.companion?.setEyeMode?.(true)
       window.api?.roaming?.setActive(false)
-      const isEs = currentLangRef.current === 'es'
-      setSpeech(isEs ? "¿En qué estás pensando, {name}? ¡Hablame o decime qué hackeamos!" : "What's on your mind, {name}? Talk to me or tell me what to hack!", 3500)
       setTimeout(() => promptInputRef.current?.focus(), 100)
     } else {
       window.api?.companion?.setEyeMode?.(false)
@@ -1846,7 +1742,7 @@ export const CompanionView: React.FC = () => {
         timestamp: Date.now() + 1
       }
       setChatMessages((prev) => [...prev, userMsg, asstMsg])
-      setSpeech('¡Abriendo panel de voz TTS!', 3000)
+      setSpeech('⚙ Voice settings', 2000)
       return
     }
 
@@ -1882,7 +1778,7 @@ export const CompanionView: React.FC = () => {
         {
           id: `err-${Date.now()}`,
           role: 'assistant',
-          content: localizeLine(`Failed to reach cyberware core: ${err?.message || err}`, getLineLanguage()),
+          content: `⚙ Could not send the message: ${err?.message || err}`,
           timestamp: Date.now()
         }
       ])
@@ -1890,21 +1786,9 @@ export const CompanionView: React.FC = () => {
   }
 
   const handleClearChat = () => {
-    const isEs = currentLangRef.current === 'es'
-    const resetMsg = isEs
-      ? "¡Bancos de memoria reiniciados, {name}! ¿Cuál es nuestra próxima jugada, friend?"
-      : "Memory banks refreshed, {name}! What's our next move, friend?"
-    const resetList: DesktopChatMessage[] = [
-      {
-        id: `init-${Date.now()}`,
-        role: 'assistant',
-        content: resetMsg,
-        timestamp: Date.now()
-      }
-    ]
-    setChatMessages(resetList)
+    setChatMessages([])
     setActiveUserPrompt(null)
-    setSpeech(resetMsg, 4000)
+    setSpeech(currentLangRef.current === 'es' ? '⚙ Chat borrado.' : '⚙ Chat cleared.', 2500)
     try {
       localStorage.removeItem(STORAGE_KEY)
     } catch {}
@@ -2210,7 +2094,6 @@ export const CompanionView: React.FC = () => {
                           window.api.roaming.setActive(false)
                         }
                         const isEs = currentLangRef.current === 'es'
-                        setSpeech(isEs ? "¿En qué estás pensando, {name}?" : "What's on your mind, {name}?", 3500)
                         setTimeout(() => promptInputRef.current?.focus(), 100)
                       } else {
                         if (window.api?.companion?.setEyeMode) {
@@ -2263,7 +2146,7 @@ export const CompanionView: React.FC = () => {
                         try {
                           localStorage.setItem('capri_voice_type', next)
                         } catch {}
-                        setSpeech(next === 'blip' ? 'Voice: Dialogue Blip' : 'Voice: Original TTS', 2000)
+                        setSpeech(next === 'blip' ? '⚙ Voice: dialogue blip' : '⚙ Voice: TTS', 2000)
                         return next
                       })
                     }}
@@ -2299,7 +2182,6 @@ export const CompanionView: React.FC = () => {
                     window.api.roaming.setActive(false)
                   }
                   const isEs = currentLangRef.current === 'es'
-                  setSpeech(isEs ? "¿En qué estás pensando, {name}?" : "What's on your mind, {name}?", 3500)
                   setTimeout(() => promptInputRef.current?.focus(), 100)
                 } else {
                   if (window.api?.companion?.setEyeMode) {
@@ -2351,7 +2233,7 @@ export const CompanionView: React.FC = () => {
                   try {
                     localStorage.setItem('capri_voice_type', next)
                   } catch {}
-                  setSpeech(next === 'blip' ? 'Voice: Dialogue Blip' : 'Voice: Original TTS', 2000)
+                  setSpeech(next === 'blip' ? '⚙ Voice: dialogue blip' : '⚙ Voice: TTS', 2000)
                   return next
                 })
               }}

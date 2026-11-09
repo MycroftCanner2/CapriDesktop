@@ -114,6 +114,7 @@ export interface IElectronAPI {
     onLineLanguage: (callback: (lang: string) => void) => () => void
     setLanguage: (lang: string) => Promise<string>
     speak: (text: string, durationMs?: number) => Promise<boolean>
+    setMuted: (muted: boolean) => Promise<boolean>
     onStateChanged: (callback: (state: CompanionEmotionState) => void) => () => void
     onSpeechChanged: (callback: (payload: { text: string; durationMs: number; speakVoice?: boolean }) => void) => () => void
     onLanguageChanged: (callback: (lang: string) => void) => () => void

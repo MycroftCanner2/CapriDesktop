@@ -217,6 +217,9 @@ const api = {
     speak: (text: string, durationMs?: number): Promise<boolean> =>
       ipcRenderer.invoke(IPC_CHANNELS.COMPANION_SPEAK, { text, durationMs }),
 
+    /** Mute toggle: every window's audio is muted at the Chromium level as well */
+    setMuted: (muted: boolean): Promise<boolean> => ipcRenderer.invoke(IPC_CHANNELS.COMPANION_SET_MUTED, !!muted),
+
     onStateChanged: (callback: (state: CompanionEmotionState) => void): (() => void) => {
       const subscription = (_event: IpcRendererEvent, state: CompanionEmotionState): void => callback(state)
       ipcRenderer.on(IPC_CHANNELS.COMPANION_STATE_CHANGED, subscription)

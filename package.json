@@ -1,6 +1,6 @@
 {
   "name": "crow-companion",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
   "description": "Crow Companion: Tallow, a little crow that lives on your desktop. A fork of Capri Desktop with every feature kept (chat, animations, tray, onboarding, voice) and a local Hugging Face model (digi-the-robot/Tallow) served by llama.cpp llama-server.",
   "main": "./out/main/index.js",

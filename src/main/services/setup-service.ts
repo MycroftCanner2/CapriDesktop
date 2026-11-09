@@ -235,7 +235,7 @@ export class SetupService {
       }
 
       // Their files stay open while they run, and Windows wouldn't let them be deleted
-      say('Closing Ollama and her hearing while everything moves...')
+      say('Closing Ollama and the voice tools while everything moves...')
       stopped = true
       voiceService.stopServer()
       if (isWindows) {

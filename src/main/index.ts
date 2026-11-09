@@ -14,6 +14,7 @@ import { gamePresenceService } from './services/game-presence-service'
 import { updateService } from './services/update-service'
 import { legacyUserDataDir } from './services/legacy-data'
 import { tallowService } from './tallow/tallow-service'
+import { tallowPresence } from './tallow/tallow-presence'
 import { isTallowMode } from './services/llm-gateway'
 import { PORTABLE_DATA_DIR, portableRoot } from './services/portable'
 import fs from 'fs'
@@ -68,6 +69,15 @@ const gotTheLock = app.requestSingleInstanceLock()
 if (!gotTheLock) {
   app.quit()
 } else {
+  // Muted means muted in every window, also the ones opened later (scanner, deck, onboarding)
+  app.on('browser-window-created', (_e, w) => {
+    try {
+      w.webContents.setAudioMuted(windowManager.isAudioMuted())
+    } catch {
+      // ignore
+    }
+  })
+
   app.on('second-instance', () => {
     const compWin = windowManager.getCompanionWindow()
     if (compWin && !compWin.isDestroyed()) {
@@ -129,6 +139,7 @@ if (!gotTheLock) {
 
     // Tallow, the local crow: on first open this clones the model from Hugging Face into the data
     // folder, then starts llama-server on 127.0.0.1. Progress shows next to him.
+    tallowPresence.start()
     if (isTallowMode()) {
       setTimeout(() => tallowService.ensureStarted().catch((err) => console.warn('[Tallow] start failed:', err)), 1500)
     }

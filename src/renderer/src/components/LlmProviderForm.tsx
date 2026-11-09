@@ -66,7 +66,7 @@ export const LlmProviderForm = forwardRef<LlmProviderFormHandle, { onProviderCha
       window.api?.agent?.getLlmSettings?.().then((s) => {
         if (!s) return
         setProvider(s.provider)
-        if (s.preset) setPreset(s.preset)
+        if (s.preset && PRESETS.some((p) => p.id === s.preset)) setPreset(s.preset)
         if (s.baseUrl) setBaseUrl(s.baseUrl)
         setModel(s.model || XAI_DEFAULT_MODEL)
         setHasKey(s.hasKey)

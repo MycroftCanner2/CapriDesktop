@@ -608,7 +608,35 @@ export class WindowManager {
     }
   }
 
+  private audioMuted = false
+
+  /** The mute toggle: no window can make a sound, whatever code path plays it */
+  public setAllAudioMuted(muted: boolean): void {
+    this.audioMuted = muted
+    for (const w of BrowserWindow.getAllWindows()) {
+      try {
+        if (!w.isDestroyed()) w.webContents.setAudioMuted(muted)
+      } catch {
+        // closing
+      }
+    }
+  }
+
+  public isAudioMuted(): boolean {
+    return this.audioMuted
+  }
+
   public broadcast(channel: string, ...args: unknown[]): void {
+    // Crow Companion: everything Tallow says comes from his model. A preset line (greeting, quip,
+    // "done, friend!") never reaches his bubble or voice; only lines marked fromModel do.
+    if (channel === IPC_CHANNELS.COMPANION_SPEECH_CHANGED) {
+      const p = args[0] as { text?: string; fromModel?: boolean; appStatus?: boolean } | undefined
+      // appStatus: an app message (update available...), shown as a ⚙ status and never voiced
+      if (!p?.fromModel && !p?.appStatus) {
+        console.log(`[Crow] preset line not shown: ${String(p?.text || '').slice(0, 120)}`)
+        return
+      }
+    }
     if (this.companionWin && !this.companionWin.isDestroyed()) {
       this.companionWin.webContents.send(channel, ...args)
     }

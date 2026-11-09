@@ -1,4 +1,4 @@
-import { voiceVolume } from './soundSettings'
+import { allMuted, voiceVolume } from './soundSettings'
 import { personalize } from './userName'
 import dialogueBlipAudio from '../assets/dialogue_blip.wav'
 import { useAgentStore } from '../stores/useAgentStore'
@@ -32,15 +32,8 @@ export function extractSpokenDevExcerpt(rawText: string): string {
     .replace(/\s+/g, ' ')
     .trim()
 
-  // If nothing is left (e.g. prompt only returned raw code), return a cheerful crow voice line
-  if (!cleaned || cleaned.length < 5) {
-    const fallbackLines = [
-      "Done! Code is patched and ready, friend!",
-      "Executed! Check out the updated code!",
-      "Target breached! Script updated with zero ICE alarms!"
-    ]
-    return fallbackLines[Math.floor(Math.random() * fallbackLines.length)]
-  }
+  // Nothing speakable (only code): stay quiet rather than say a preset line
+  if (!cleaned || cleaned.length < 5) return ''
 
   // Take first 1-3 sentences, maximum ~220 characters for crisp dialogue
   const sentences = cleaned.split(/(?<=[.!?])\s+/).filter(Boolean)
@@ -91,7 +84,7 @@ try {
  * whatever she is already saying. Respects isDevVoiceEnabled setting.
  */
 export async function speakDevVoice(text: string, options?: DevLineOptions): Promise<void> {
-  if (!useAgentStore.getState().isDevVoiceEnabled) return
+  if (!useAgentStore.getState().isDevVoiceEnabled || !text.trim()) return
   if (devQueue.length >= 4) devQueue.shift()
   devQueue.push({ text, options })
   if (devPumping) return
@@ -136,6 +129,12 @@ function playDevLine(text: string, options?: DevLineOptions): Promise<void> {
       try {
         options?.onStart?.()
 
+        // Muted: the bubble only, no voice and no blip
+        if (allMuted()) {
+          setTimeout(() => (voiceId === currentVoiceId ? ended() : finish()), Math.max(2500, clean.length * 55))
+          return
+        }
+
         // Try neural voice synthesis via main process Edge TTS
         if (window.api?.voice?.synthesize) {
           const res = await window.api.voice.synthesize(clean)
@@ -161,7 +160,7 @@ function playDevLine(text: string, options?: DevLineOptions): Promise<void> {
 
         // Fallback: Dialogue Blip audio with automatic duration
         const blip = new Audio(dialogueBlipAudio)
-        blip.volume = 0.65
+        blip.volume = 0.65 * voiceVolume()
         activeDevAudio = blip
         const duration = Math.min(5000, Math.max(2000, clean.length * 45))
         await blip.play().catch(() => {})
@@ -182,14 +181,7 @@ function playDevLine(text: string, options?: DevLineOptions): Promise<void> {
  * Speaks a quick acknowledgement when the user sends a message in dev mode.
  */
 export async function speakDevAck(): Promise<void> {
-  const acks = [
-    "Analyzing that code, friend!",
-    "Jacking in and executing, friend!",
-    "Whoa, let's see what you've got here!",
-    "Watching your code like a hawk, friend!"
-  ]
-  const randomAck = acks[Math.floor(Math.random() * acks.length)]
-  // The user just sent something: interrupt whatever she was saying
+  // No preset acknowledgement line (Crow Companion: everything he says comes from a model).
+  // The user just sent something: interrupt whatever is playing.
   stopDevVoice()
-  await speakDevVoice(randomAck, { isFullExcerpt: true })
 }

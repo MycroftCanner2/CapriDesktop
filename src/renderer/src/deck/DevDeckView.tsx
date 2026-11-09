@@ -24,6 +24,8 @@ import {
 
 type DeckTab = 'chat' | 'editor'
 
+const TALLOW_OPTION = 'Tallow (local crow)'
+
 export const DevDeckView: React.FC = () => {
   const [activeTab, setActiveTab] = useState<DeckTab>('chat')
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
@@ -32,6 +34,8 @@ export const DevDeckView: React.FC = () => {
   const { setEmotion, setSpeech } = useCompanionStore()
   const t = useT()
   const [cloudModel, setCloudModel] = useState<string | null>(null)
+  // Tallow (the local crow) is the default brain: shown from the first paint, before the settings load
+  const [brainProvider, setBrainProvider] = useState<'tallow' | 'local' | 'cloud'>('tallow')
   const {
     isRunning,
     projectPath,
@@ -56,7 +60,10 @@ export const DevDeckView: React.FC = () => {
   // A cloud model is chosen in the settings: the top bar only shows it
   useEffect(() => {
     if (isSettingsOpen) return
-    window.api?.agent.getLlmSettings().then((s) => setCloudModel(s.provider === 'cloud' ? s.model : null))
+    window.api?.agent.getLlmSettings().then((s) => {
+      setBrainProvider(s.provider)
+      setCloudModel(s.provider === 'cloud' ? s.model : null)
+    })
     window.api?.agent.detectOllama().then((res) => res && setOllamaStatus(res))
   }, [isSettingsOpen, setOllamaStatus])
 
@@ -103,7 +110,7 @@ export const DevDeckView: React.FC = () => {
                 const dir = await window.api.system.selectDirectory()
                 if (dir) {
                   setProjectPath(dir)
-                  setSpeech(`Workspace switched to: ${dir.split(/[\\/]/).filter(Boolean).pop()}! Ready to breach, friend!`, 3500)
+                  setSpeech(`⚙ Workspace: ${dir.split(/[\\/]/).filter(Boolean).pop()}`, 3000)
                 }
               }
             }}
@@ -140,7 +147,6 @@ export const DevDeckView: React.FC = () => {
           <button
             onClick={() => {
               setActiveTab('editor')
-              setSpeech('Watching your code like a hawk, friend!', 3000)
             }}
             className={`cp-cut flex items-center gap-1.5 px-3 py-1 rounded-none text-[14px] transition-colors ${
               activeTab === 'editor'
@@ -167,13 +173,13 @@ export const DevDeckView: React.FC = () => {
             <Cpu size={12} className="text-cyan-400" />
             <span className="text-stone-500 text-[12px] uppercase">{t('deck_model')}:</span>
             <select
-              value={cloudModel || currentModel}
-              disabled={!!cloudModel}
+              value={brainProvider === 'tallow' ? TALLOW_OPTION : cloudModel || currentModel}
+              disabled={brainProvider !== 'local'}
               onChange={(e) => handleModelChange(e.target.value)}
               className="bg-[#1c1814] text-stone-100 font-semibold text-[14px] outline-none cursor-pointer max-w-[180px] truncate"
               style={{ colorScheme: 'dark' }}
             >
-              {(cloudModel ? [cloudModel] : modelOptions).map((m) => (
+              {(brainProvider === 'tallow' ? [TALLOW_OPTION] : cloudModel ? [cloudModel] : modelOptions).map((m) => (
                 <option key={m} value={m} className="bg-[#13110e] text-stone-200">
                   {m}
                 </option>

@@ -169,11 +169,9 @@ export class AgentManager extends EventEmitter {
         companionWin.focus()
       }
 
-      // Tallow wakes up, greets user, displays speech bubble and speaks it aloud with neural voice
-      setTimeout(() => {
-        this.setCompanionState('talking')
-        this.setCompanionSpeech(wakeupPhrase, 7500, true)
-      }, 250)
+      // No preset wake-up line: what he does about it comes from his model
+      void wakeupPhrase
+      setTimeout(() => this.tallowStimulus('*the long job on the screen finally finishes*'), 250)
 
       // Only after she has told the user to drop what they're doing, open the result
       if (hasResult) setTimeout(() => openPendingResult(), 4500)
@@ -239,6 +237,7 @@ export class AgentManager extends EventEmitter {
     // that task: otherwise its end was treated as a desktop answer, the result opened right
     // away and the "sleepy head" wake-up never happened
     const isDevTask = source === 'editor'
+    if (!this.stimulusRunning) this.lastUserPromptAt = Date.now()
     if (isDevTask) {
       this.devTaskRunning = true
       this.devTaskStartedAt = Date.now()
@@ -255,6 +254,7 @@ export class AgentManager extends EventEmitter {
         apiKey: this.config.apiKey
       })
     } finally {
+      this.isRunning = false
       // Desktop prompts never wake the user up: only the end of a prompt sent from Dev Mode,
       // decided here when that very prompt returns (some agent paths emit no session.finished)
       if (isDevTask) {
@@ -270,6 +270,25 @@ export class AgentManager extends EventEmitter {
     }
   }
 
+  /**
+   * Something that happens around Tallow ("*sits down nearby, not too close*", "*the human stares
+   * into a bright window*"). It goes to his model like a typed action; whatever he does is his own.
+   * Skipped while he is already answering, and outside Tallow mode.
+   */
+  public tallowStimulus(action: string): void {
+    if (!isTallowMode() || this.isRunning || this.stimulusRunning) return
+    this.stimulusRunning = true
+    this.sendPrompt(action, '', undefined, 'pet')
+      .catch(() => {})
+      .finally(() => {
+        this.stimulusRunning = false
+        this.isRunning = false
+      })
+  }
+  private stimulusRunning = false
+  /** When the user last typed, said or did something to him (not his own glances) */
+  public lastUserPromptAt = 0
+
   /** Kept for the IPC contract: Tallow's local agent never asks for tool permissions */
   public respondPermission(_requestId: string, _approved: boolean): void {}
 
@@ -278,7 +297,6 @@ export class AgentManager extends EventEmitter {
     if (this.devTaskRunning) this.devTaskCancelled = true
     this.capriLocal.cancel()
     this.setCompanionState('idle')
-    this.setCompanionSpeech('Session cancelled, friend.', 3000)
   }
 
   public getStatus(): { isRunning: boolean; mode: string } {

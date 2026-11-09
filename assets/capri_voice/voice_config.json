@@ -1,13 +1,13 @@
 {
   "provider": "edge-tts",
-  "active_voice": "en-US-AriaNeural",
-  "voice_es": "es-AR-ElenaNeural",
-  "pitch": "+32Hz",
-  "rate": "+25%",
-  "synth_preset": "cyber_android",
+  "active_voice": "en-US-GuyNeural",
+  "voice_es": "es-AR-TomasNeural",
+  "pitch": "+0Hz",
+  "rate": "+10%",
+  "synth_preset": "none",
   "elevenlabs": {
     "api_key": "",
-    "voice_id": "21m00Tcm4TlvDq8ikWAM",
+    "voice_id": "pNInz6obpgDQGcFmaJgB",
     "model_id": "eleven_multilingual_v2",
     "stability": 0.5,
     "similarity_boost": 0.75

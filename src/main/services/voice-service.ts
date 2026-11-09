@@ -1,3 +1,4 @@
+import { spokenText as voiceOnlyText } from '../../shared/emotes'
 import { storageDir } from './storage-location'
 import { detectLanguage } from './language-detect'
 import { llmFetch, usesOllama } from './llm-gateway'
@@ -333,7 +334,8 @@ export class VoiceService {
    */
   public async synthesize(text: string, langOverride?: string, opts: { silent?: boolean } = {}): Promise<SynthesizeResult> {
     // Strip all emoji characters and pictorial symbols so TTS does not read them out loud
-    const cleanText = stripLookTags(text)
+    // *emotes*, mood tags and caws are never voiced (see src/shared/emotes.ts)
+    const cleanText = voiceOnlyText(stripLookTags(text))
       .replace(/[\u{1F300}-\u{1F9FF}]|[\u{1FA00}-\u{1FAFF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]|[\u{1F000}-\u{1F02F}]|[\u{1F0A0}-\u{1F0FF}]|[\u{1F100}-\u{1F64F}]|[\u{1F680}-\u{1F6FF}]/gu, '')
       .replace(/[🐾✨👀⚡🎉🦾🛑💬🎵🔥💥💡⚔️📹🎮💤✓✕⚠️🤖🐱🐶👍👎❤️]/g, '')
       .replace(/[*#_~>|`]/g, '')
@@ -670,10 +672,10 @@ export class VoiceService {
     }
     return {
       provider: 'edge-tts',
-      active_voice: 'en-US-AriaNeural',
-      voice_es: 'es-AR-ElenaNeural',
-      pitch: '+28Hz',
-      rate: '+25%',
+      active_voice: 'en-US-GuyNeural',
+      voice_es: 'es-AR-TomasNeural',
+      pitch: '+0Hz',
+      rate: '+10%',
       synth_preset: 'none'
     }
   }

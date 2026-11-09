@@ -47,31 +47,30 @@ export interface VoiceConfigData {
 }
 
 const EDGE_VOICES_EN = [
-  { id: 'en-US-AriaNeural', label: 'Aria (Tallow Original - Expressive & Confident)' },
-  { id: 'en-US-AnaNeural', label: 'Ana (Cute & Cartoon)' },
-  { id: 'en-US-JennyNeural', label: 'Jenny (Warm & Friendly)' },
-  { id: 'en-US-EmmaMultilingualNeural', label: 'Emma (Multilingual & Cheerful)' },
-  { id: 'en-US-AvaMultilingualNeural', label: 'Ava (Conversational & Expressive)' },
-  { id: 'en-GB-SoniaNeural', label: 'Sonia (British English - Pleasant)' },
-  { id: 'en-US-MichelleNeural', label: 'Michelle (Smooth & Clear)' }
+  { id: 'en-US-GuyNeural', label: 'Guy (Tallow default - Warm & Lively)' },
+  { id: 'en-US-ChristopherNeural', label: 'Christopher (Calm & Clear)' },
+  { id: 'en-US-EricNeural', label: 'Eric (Friendly)' },
+  { id: 'en-US-RogerNeural', label: 'Roger (Playful)' },
+  { id: 'en-US-AndrewMultilingualNeural', label: 'Andrew (Multilingual & Natural)' },
+  { id: 'en-US-BrianMultilingualNeural', label: 'Brian (Multilingual & Casual)' },
+  { id: 'en-GB-RyanNeural', label: 'Ryan (British English)' }
 ]
 
 const EDGE_VOICES_ES = [
-  { id: 'es-AR-ElenaNeural', label: 'Elena (Tallow Original Argentina - Amigable)' },
-  { id: 'es-MX-DaliaNeural', label: 'Dalia (México - Expresiva y Natural)' },
-  { id: 'es-ES-ElviraNeural', label: 'Elvira (España - Positiva y Clara)' },
-  { id: 'es-CO-SalomeNeural', label: 'Salomé (Colombia - Cálida)' },
-  { id: 'es-CL-CatalinaNeural', label: 'Catalina (Chile - Amable)' },
-  { id: 'es-US-PalomaNeural', label: 'Paloma (US Spanish - Dinámica)' }
+  { id: 'es-AR-TomasNeural', label: 'Tomás (Argentina - voz por defecto de Tallow)' },
+  { id: 'es-MX-JorgeNeural', label: 'Jorge (México - Natural)' },
+  { id: 'es-ES-AlvaroNeural', label: 'Álvaro (España - Claro)' },
+  { id: 'es-CO-GonzaloNeural', label: 'Gonzalo (Colombia - Cálido)' },
+  { id: 'es-CL-LorenzoNeural', label: 'Lorenzo (Chile - Amable)' },
+  { id: 'es-US-AlonsoNeural', label: 'Alonso (US Spanish - Dinámico)' }
 ]
 
 const ELEVENLABS_POPULAR_VOICES = [
-  { id: '21m00Tcm4TlvDq8ikWAM', label: 'Rachel (Calm, young female)' },
-  { id: 'AZnzlk1XvdvUeBnXmlld', label: 'Domi (Strong, confident female)' },
-  { id: 'EXAVITQu4vr4xnSDxMaL', label: 'Bella (Sweet, expressive female)' },
-  { id: 'MF3mGyEYCl7XYWbV9V6O', label: 'Elli (Youthful, playful female)' },
-  { id: 'XB0fDUnXU5powFXDhCwa', label: 'Charlotte (Seductive, soft female)' },
-  { id: 'Xb7hH8MSUJpSbSDYk0k2', label: 'Alice (Clear, confident female)' }
+  { id: 'pNInz6obpgDQGcFmaJgB', label: 'Adam (Deep, warm male)' },
+  { id: 'ErXwobaYiN019PkySvjV', label: 'Antoni (Well-rounded male)' },
+  { id: 'TxGEqnHWrfWFTfGW9XjX', label: 'Josh (Young, lively male)' },
+  { id: 'VR6AewLTigWG4xSOukaG', label: 'Arnold (Crisp male)' },
+  { id: 'yoZ06aMxZJJ28mfd3POQ', label: 'Sam (Raspy male)' }
 ]
 
 interface VoiceSettingsModalProps {
@@ -84,15 +83,15 @@ export const VoiceSettingsModal: React.FC<VoiceSettingsModalProps> = ({ isOpen, 
   const [provider, setProvider] = useState<'edge-tts' | 'elevenlabs' | 'fish-audio'>('edge-tts')
 
   // Edge-TTS State
-  const [activeVoiceEn, setActiveVoiceEn] = useState('en-US-AriaNeural')
-  const [activeVoiceEs, setActiveVoiceEs] = useState('es-AR-ElenaNeural')
+  const [activeVoiceEn, setActiveVoiceEn] = useState('en-US-GuyNeural')
+  const [activeVoiceEs, setActiveVoiceEs] = useState('es-AR-TomasNeural')
   const [pitchHz, setPitchHz] = useState(32)
   const [ratePercent, setRatePercent] = useState(25)
   const [synthPreset, setSynthPreset] = useState('none')
 
   // ElevenLabs State
   const [elApiKey, setElApiKey] = useState('')
-  const [elVoiceId, setElVoiceId] = useState('21m00Tcm4TlvDq8ikWAM')
+  const [elVoiceId, setElVoiceId] = useState('pNInz6obpgDQGcFmaJgB')
   const [elModelId, setElModelId] = useState('eleven_multilingual_v2')
   const [elStability, setElStability] = useState(0.5)
   const [elSimilarity, setElSimilarity] = useState(0.75)
@@ -122,8 +121,8 @@ export const VoiceSettingsModal: React.FC<VoiceSettingsModalProps> = ({ isOpen, 
       window.api.voice.getConfig().then((cfg) => {
         if (!cfg) return
         setProvider(cfg.provider || 'edge-tts')
-        setActiveVoiceEn(cfg.active_voice || 'en-US-AriaNeural')
-        setActiveVoiceEs(cfg.voice_es || 'es-AR-ElenaNeural')
+        setActiveVoiceEn(cfg.active_voice || 'en-US-GuyNeural')
+        setActiveVoiceEs(cfg.voice_es || 'es-AR-TomasNeural')
 
         const parsedPitch = parseInt((cfg.pitch || '+32Hz').replace(/[^\d-]/g, ''), 10)
         setPitchHz(isNaN(parsedPitch) ? 32 : parsedPitch)
@@ -135,7 +134,7 @@ export const VoiceSettingsModal: React.FC<VoiceSettingsModalProps> = ({ isOpen, 
 
         if (cfg.elevenlabs) {
           setElApiKey(cfg.elevenlabs.api_key || '')
-          setElVoiceId(cfg.elevenlabs.voice_id || '21m00Tcm4TlvDq8ikWAM')
+          setElVoiceId(cfg.elevenlabs.voice_id || 'pNInz6obpgDQGcFmaJgB')
           setElModelId(cfg.elevenlabs.model_id || 'eleven_multilingual_v2')
           setElStability(cfg.elevenlabs.stability ?? 0.5)
           setElSimilarity(cfg.elevenlabs.similarity_boost ?? 0.75)
@@ -170,7 +169,7 @@ export const VoiceSettingsModal: React.FC<VoiceSettingsModalProps> = ({ isOpen, 
       synth_preset: synthPreset,
       elevenlabs: {
         api_key: elApiKey.trim(),
-        voice_id: elVoiceId.trim() || '21m00Tcm4TlvDq8ikWAM',
+        voice_id: elVoiceId.trim() || 'pNInz6obpgDQGcFmaJgB',
         model_id: elModelId,
         stability: elStability,
         similarity_boost: elSimilarity
@@ -253,8 +252,8 @@ export const VoiceSettingsModal: React.FC<VoiceSettingsModalProps> = ({ isOpen, 
 
   const handleResetDefaults = () => {
     setProvider('edge-tts')
-    setActiveVoiceEn('en-US-AriaNeural')
-    setActiveVoiceEs('es-AR-ElenaNeural')
+    setActiveVoiceEn('en-US-GuyNeural')
+    setActiveVoiceEs('es-AR-TomasNeural')
     setPitchHz(28)
     setRatePercent(25)
     setSynthPreset('none')

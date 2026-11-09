@@ -274,7 +274,7 @@ export const CodeEditorView: React.FC = () => {
     const ok = await window.api.system.writeFile(root, activeTab.path, activeTab.content)
     if (ok) {
       setTabs((prev) => prev.map((t) => (t.path === activeTab.path ? { ...t, saved: t.content } : t)))
-      setSpeech(`Saved ${activeTab.path.split('/').pop()}!`, 2000)
+      setSpeech(`⚙ Saved ${activeTab.path.split('/').pop()}`, 2000)
     }
   }, [activeTab, root, setSpeech])
 

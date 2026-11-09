@@ -197,13 +197,50 @@ export class CapriLocalAgent extends EventEmitter {
   /** The language of the request being answered: her fixed lines go out in it */
   private replyLang: string | null = null
 
-  /** Every line shown in the chat passes here. What the model wrote isn't in the catalog and stays as it is */
+  /**
+   * Every line shown in the chat passes here. Crow Companion: only what a model wrote may reach the
+   * chat or the bubble. A preset line (a command's "done, friend!", a fallback, a quip) is dropped;
+   * the action it reported still shows as a tool event. When a turn in Tallow mode produced only
+   * preset lines, Tallow's own model is asked to react to what the user said before the turn ends.
+   */
   public override emit(event: string | symbol, ...args: any[]): boolean {
-    const payload = args[0] as AgentEventPayload | undefined
-    if (event === 'event' && payload?.type === 'assistant.delta' && payload.text) {
-      args[0] = { ...payload, text: this.inReplyLanguage(payload.text) }
+    const payload = args[0] as (AgentEventPayload & { fromModel?: boolean }) | undefined
+    if (event === 'event' && payload) {
+      if (payload.type === 'session.started') {
+        this.sessionModelText = false
+        this.sessionPreset = false
+      }
+      if (payload.type === 'assistant.delta' && payload.text) {
+        if (this.modelDepth === 0 && !payload.fromModel) {
+          this.sessionPreset = true
+          console.log(`[Crow] preset line not shown: ${payload.text.slice(0, 120)}`)
+          return false
+        }
+        this.sessionModelText = true
+        args[0] = { ...payload, text: this.modelDepth > 0 || payload.fromModel ? payload.text : this.inReplyLanguage(payload.text) }
+      }
+      if (payload.type === 'session.finished' && this.sessionPreset && !this.sessionModelText && !this.isCancelled && isTallowMode() && this.currentPromptFull) {
+        const prompt = this.currentPromptFull
+        this.sessionPreset = false
+        void this.tallowTurn(prompt).finally(() => super.emit('event', { ...payload, timestamp: Date.now() }))
+        return true
+      }
     }
     return super.emit(event, ...args)
+  }
+
+  /** > 0 while a model's own words are being emitted */
+  private modelDepth = 0
+  private sessionModelText = false
+  private sessionPreset = false
+  private currentPromptFull = ''
+  private asModel<T>(fn: () => T): T {
+    this.modelDepth++
+    try {
+      return fn()
+    } finally {
+      this.modelDepth--
+    }
   }
 
   private inReplyLanguage(text: string): string {
@@ -272,6 +309,7 @@ export class CapriLocalAgent extends EventEmitter {
     }
   }
 
+  /** Preset lines: dropped by windowManager (Crow Companion never shows a line that skipped the model) */
   private setCompanionSpeech(text: string, durationMs = 4000, speakVoice = false): void {
     this.noteOwnLine(personalize(this.inReplyLanguage(text)), this.currentPrompt ? `when {name} asked: "${this.currentPrompt}"` : undefined)
     try {
@@ -292,6 +330,7 @@ export class CapriLocalAgent extends EventEmitter {
   ): Promise<void> {
     this.isCancelled = false
     this.currentPrompt = prompt.trim().slice(0, 200)
+    this.currentPromptFull = prompt.trim()
     ollamaService.touchActivity()
     proactiveDialogueService.touchInteraction()
     // Warm up Ollama in the background if it was stopped
@@ -1417,14 +1456,19 @@ export class CapriLocalAgent extends EventEmitter {
    * The companion window plays the matching animation and caw (TALLOW_LINE).
    */
   private async runWithTallow(prompt: string): Promise<void> {
+    await this.tallowTurn(prompt)
+    this.finishSession()
+  }
+
+  /** Tallow's reply to `prompt`, from his model. On failure: an app status, never made-up crow lines */
+  private async tallowTurn(prompt: string): Promise<void> {
     const text = prompt.trim()
-    if (!text) {
-      this.finishSession()
-      return
-    }
+    if (!text) return
     try {
       this.setCompanionState('curious')
       const line = await tallowService.reply(text)
+      // Nothing came out of the model even after retrying: he stays quiet
+      if (!line) return
       const { mood, level } = parseMood(line)
       const payload = { line, mood, level, action: actionHint(line), sound: parseSound(line), timestamp: Date.now() }
       try {
@@ -1437,18 +1481,17 @@ export class CapriLocalAgent extends EventEmitter {
       // The mood tag ("[caution min]") drives the animation; the bubble and chat show what he did and said
       const { rest } = splitMoodTag(line)
       const shown = rest || line
-      this.emit('event', { type: 'assistant.delta', text: shown, timestamp: Date.now() } as AgentEventPayload)
+      this.emit('event', { type: 'assistant.delta', text: shown, fromModel: true, timestamp: Date.now() } as AgentEventPayload)
     } catch (err) {
       const status = tallowService.getStatus()
       const why =
         status.phase === 'needs-token'
-          ? 'Hugging Face wants a token before Tallow can be downloaded. Paste it in the panel next to him.'
+          ? 'Tallow is not downloaded yet: Hugging Face wants a token. Paste it in the panel next to him.'
           : status.phase === 'downloading' || status.phase === 'converting' || status.phase === 'starting'
-            ? `Tallow is still landing (${status.phase}${status.phase === 'downloading' ? ` ${Math.round(status.progress * 100)}%` : ''}). Try again in a moment.`
-            : `Tallow could not answer: ${String((err as Error)?.message || err).slice(0, 300)}`
-      this.emit('event', { type: 'assistant.delta', text: `*ruffles his feathers* ${why}`, timestamp: Date.now() } as AgentEventPayload)
+            ? `Tallow's model is not ready yet (${status.phase}${status.phase === 'downloading' ? ` ${Math.round(status.progress * 100)}%` : ''}). Try again in a moment.`
+            : `Tallow's model did not answer: ${String((err as Error)?.message || err).slice(0, 300)}`
+      this.emit('event', { type: 'session.error', error: why, timestamp: Date.now() } as AgentEventPayload)
     }
-    this.finishSession()
   }
 
   // --- LLM Powered Autonomous Loop (Ollama / LocalAI / OpenRouter) ---
@@ -1791,7 +1834,7 @@ LANGUAGE RULE: ${langDirective}`
               role: 'assistant',
               content: finalReply
             })
-            this.emitAssistant(finalReply)
+            this.emitAssistant(finalReply, true)
           }
         }
 
@@ -1968,7 +2011,12 @@ LANGUAGE RULE: ${langDirective}`
         // A failing cloud provider must say so instead of quietly answering with the offline fallback
         if (isCloudMode()) {
           console.warn('[Tallow Agent] Cloud turn failed:', cloudErrorDetail(err))
-          this.emitAssistant(cloudErrorMessage(cloudErrorCode(err), detectedLang === 'es' || consciousnessService.getPreferredLanguage() === 'es', cloudErrorDetail(err)))
+          // An app status, not something said in character
+          this.emit('event', {
+            type: 'session.error',
+            error: cloudErrorMessage(cloudErrorCode(err), detectedLang === 'es' || consciousnessService.getPreferredLanguage() === 'es', cloudErrorDetail(err)),
+            timestamp: Date.now()
+          } as AgentEventPayload)
           this.finishSession()
           return
         }
@@ -2557,7 +2605,17 @@ LANGUAGE RULE: ${langDirective}`
     return `[${tag}] ${trimmed}`
   }
 
-  private emitAssistant(text: string): void {
+  /** Only `fromModel` text is shown; a preset line is dropped (see emit) */
+  private emitAssistant(text: string, fromModel = false): void {
+    if (!fromModel) {
+      this.sessionPreset = true
+      console.log(`[Crow] preset line not shown: ${text.slice(0, 120)}`)
+      return
+    }
+    this.asModel(() => this.emitModelText(text))
+  }
+
+  private emitModelText(text: string): void {
     // A fixed reply never went through the model: without this she wouldn't know she said it
     const last = this.conversationHistory.at(-1)
     if (!(last?.role === 'assistant' && last.content === text)) {
@@ -4017,7 +4075,7 @@ DIRECTIVES FOR FORMATTING AND REASONING:
     ) {
       return es
         ? "¿Género? ¡Soy un gestalt digital de docenas de mentes combinadas en un solo constructo! Casi todos me dicen 'ella', pero sinceramente las etiquetas de carne no me van. ¡Solo decime Tallow, friend!"
-        : "Gender? I'm a digital gestalt of dozens of digitized minds rolled into one construct! People usually say 'she', but honestly, flesh-bag labels don't fit. Just call me Tallow, friend!"
+        : "Gender? I'm a digital gestalt of dozens of digitized minds rolled into one construct! Just call me Tallow, friend!"
     }
 
     // User identity: Who am I?

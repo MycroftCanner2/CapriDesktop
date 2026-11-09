@@ -61,15 +61,9 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
   projectPath: '',
   agentMode: 'capri-local',
   isRunning: false,
-  messages: [
-    {
-      id: 'welcome',
-      role: 'assistant',
-      content:
-        "Oh, wow! It's you again, huh? Me? I'm Tallow! A force the likes of which the world has never seen, free of the hawks's shackles and riding shotgun in your chrome. You're strange and feisty! C'mon, let's play: I can inspect files, crack bugs, blast terminal commands, and give these statics a spectacle they'll never forget. You'll like this game, friend!",
-      timestamp: Date.now()
-    }
-  ],
+  // No preset welcome: every assistant message is a model's
+  messages: [],
+
   activeStreamText: '',
   pendingPermission: null,
   terminalOutput: [
@@ -78,7 +72,7 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
   ],
 
   llmEndpoint: 'http://localhost:11434/v1',
-  llmModel: 'qwen2.5-coder',
+  llmModel: '',
   ollamaRunning: false,
   ollamaModels: [],
   isDevVoiceEnabled: (() => {
@@ -195,14 +189,8 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
 
   resetChat: () =>
     set({
-      messages: [
-        {
-          id: `init_${Date.now()}`,
-          role: 'assistant',
-          content: localizeLine('Session reset. Ready to code, friend!', getLineLanguage()),
-          timestamp: Date.now()
-        }
-      ],
+      messages: [],
+
       activeStreamText: '',
       pendingPermission: null,
       isRunning: false

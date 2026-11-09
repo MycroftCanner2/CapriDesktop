@@ -6,7 +6,7 @@
     "format": "mp3"
   },
   "edge_tts": {
-    "voice": "en-US-AriaNeural"
+    "voice": "en-US-GuyNeural"
   },
   "robotic_filter": {
     "enabled": true,

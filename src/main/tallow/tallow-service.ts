@@ -420,6 +420,12 @@ class TallowService extends EventEmitter {
 
   // ---------------------------------------------------------------- talking to him
 
+  /** His last line from the saved conversation (shown on start without speaking, like the PoC) */
+  lastLine(): string | null {
+    for (let i = this.history.length - 1; i >= 0; i--) if (this.history[i].role === 'tallow') return this.history[i].text
+    return null
+  }
+
   /** One line from Tallow. Calls are queued so a glance and a typed line never talk over each other */
   reply(userText: string): Promise<string> {
     const run = async (): Promise<string> => {
@@ -431,8 +437,15 @@ class TallowService extends EventEmitter {
       this.history.push({ role: 'user', text: userText })
       const { ids, history } = promptIds(this.sp, this.history, CTX)
       this.history = history
+      // No preset fallback line: an empty completion is sampled again, and if the model still says
+      // nothing he stays quiet (the turn is dropped from the history)
       let line = await this.complete(ids)
-      if (!line) line = '*tilts his head* kaw.'
+      for (let i = 0; !line && i < 2; i++) line = await this.complete(ids)
+      if (!line) {
+        this.history.pop()
+        this.log('empty completion three times: Tallow stays quiet')
+        return ''
+      }
       this.history.push({ role: 'tallow', text: line })
       this.saveHistory()
       return line

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
+import { renderEmotes } from '../utils/emotes'
 import { useT } from '../utils/useUiLang'
 import { Send, Square, CheckCircle2, XCircle, AlertTriangle, Terminal as TerminalIcon, Bot } from 'lucide-react'
 import { useAgentStore, PermissionRequest } from '../stores/useAgentStore'
@@ -110,13 +111,6 @@ export const AgentChat: React.FC<AgentChatProps> = ({ transparent = false }) => 
             const responseText = lastMsg && lastMsg.role === 'assistant' ? lastMsg.content : ''
             if (useAgentStore.getState().isDevVoiceEnabled && responseText) {
               speakDevVoice(responseText)
-            } else {
-              setSpeech(
-                lang === 'es'
-                  ? "¡Chau chau, friend! ¡Lo lograste! ¡Démosles a estos estáticos un espectáculo que jamás olviden!"
-                  : "Bye-bye, friend! Yay, you did it! Let's give these statics a spectacle they'll never forget!",
-                6500
-              )
             }
           }
           break
@@ -151,15 +145,9 @@ export const AgentChat: React.FC<AgentChatProps> = ({ transparent = false }) => 
     setPromptInput('')
     setIsRunning(true)
 
-    // Tallow reacts with speech
+    // No preset reaction line: what he says comes from the model's answer
     setEmotion('talking')
     if (window.api) window.api.companion.setState('talking')
-    setSpeech(
-      lang === 'es'
-        ? "Te va a gustar esto... ¡Conectando y ejecutando código, friend!"
-        : "You'll like this game... Jacking in and executing code, friend!",
-      3500
-    )
 
     if (useAgentStore.getState().isDevVoiceEnabled) {
       speakDevAck()
@@ -186,20 +174,10 @@ export const AgentChat: React.FC<AgentChatProps> = ({ transparent = false }) => 
     setPendingPermission(null)
     if (approved) {
       setEmotion('working')
-      setSpeech(
-        lang === 'es'
-          ? "¡Bien jugado, boo! Autorizado, atravesando el ICE..."
-          : "That was all you, boo! Authorized, pushing through ICE...",
-        3000
-      )
+      setSpeech(lang === 'es' ? '⚙ Permiso concedido.' : '⚙ Permission granted.', 2500)
     } else {
       setEmotion('curious')
-      setSpeech(
-        lang === 'es'
-          ? "¿Te dio miedo? Acción denegada. ¡Dale, no seas tímido, friend!"
-          : "Gave you a handicap, huh? Action denied. Go on, don't be shy, friend!",
-        3000
-      )
+      setSpeech(lang === 'es' ? '⚙ Permiso denegado.' : '⚙ Permission denied.', 2500)
     }
   }
 
@@ -251,7 +229,7 @@ export const AgentChat: React.FC<AgentChatProps> = ({ transparent = false }) => 
                     : 'bg-[#14120f] border border-[#29241f] text-stone-200'
                 }`}
               >
-                {msg.content}
+                {msg.role === 'assistant' ? renderEmotes(msg.content) : msg.content}
 
                 {/* Render Tool Calls in Assistant Message */}
                 {msg.toolCalls && msg.toolCalls.length > 0 && (

@@ -214,7 +214,7 @@ export class CodingAgent {
       `All visible text on the page must be in ${language}, the user's language, with real, specific copy about the user's topic.`,
       '',
       "WHO IS WHO: the request is written by the user TO Tallow, their AI companion. Tallow is a clever, cheeky carrion crow who lives on the user's desktop, loves shiny things and peanuts, and talks like a loyal friend.",
-      '- "you", "yourself", "vos", "ti", "sobre vos", "sobre ti", "about you" = Tallow. A page "about you" is a page ABOUT TALLOW (her personality, powers, style), not about the user.',
+      '- "you", "yourself", "vos", "ti", "sobre vos", "sobre ti", "about you" = Tallow. A page "about you" is a page ABOUT TALLOW (his personality, crow habits, style), not about the user.',
       '- "me", "mí", "yo", "sobre mí", "about me", "my" = the user who wrote the request.',
       '',
       'You communicate ONLY with these blocks:',
